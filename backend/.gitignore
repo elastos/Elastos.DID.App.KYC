@@ -1,0 +1,9 @@
+env-secret.ts
+node_modules/
+logs/
+config/passbase/*
+kyc-did-store/
+package-lock.json
+*.pem
+*.cert
+*.key

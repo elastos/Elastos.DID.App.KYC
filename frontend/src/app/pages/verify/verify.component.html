@@ -1,0 +1,31 @@
+<Toolbar></Toolbar>
+
+<div class="content">
+  <h2>Identity Verification</h2>
+  <p>The following third party KYC (Know Your Customer) providers can process your identity. During the process you will
+    be required to do some actions such as scanning your face or your passport. Once the process is completed, DID
+    credentials will be generated and you can download them here. The process can take a few minutes.</p>
+
+  <div class="providers" *ngIf="!verificationCompleted">
+    <div class="passbase">
+      <b>Passbase:</b>
+      <div #passbaseButton *ngIf="browserSupportsPassbaseVerificationFlow()"></div>
+      <div *ngIf="!browserSupportsPassbaseVerificationFlow()">
+        Currently, this verification cannot be done from inside Elastos Essentials. Click the following link to open
+        this app in an external browser, then sign in with your DID through wallet connect there to continue.
+
+        <a href="https://www.google.fr" target="_system">TEST</a> --
+        <div (click)="testOpen()">TESTOPEN</div> --
+        <div (click)="testOpen2()">TESTOPEN2</div> --
+        <div (click)="testOpen3()">TESTOPEN3</div> --
+        <div (click)="testOpen4()">TESTOPEN4</div>
+      </div>
+    </div>
+  </div>
+  <div class="verification-completed" *ngIf="verificationCompleted">
+    <b>Great, you're done!</b>. Please wait a few hours and come back to this
+    application to verify your verification progress, and import your credentials.
+  </div>
+</div>
+
+<Clouds></Clouds>

@@ -1,0 +1,21 @@
+<!-- Toolbar -->
+<Toolbar></Toolbar>
+
+<div class="content" role="main">
+  <div class="heading">Please sign in with your DID to continue</div>
+
+  <div class="card-container" *ngIf="!signingIn">
+    <button mat-stroked-button (click)="signIn()">Sign in with Elastos DID</button>
+  </div>
+
+  <mat-progress-spinner *ngIf="signingIn" diameter="20" color="color" mode="indeterminate">
+  </mat-progress-spinner>
+
+  <div class="wc-disconnect" (click)="disconnectEssentials()" *ngIf="canDisconnectWalletConnectEssentials()">
+    Disconnect previous Wallet connect session from Elastos Essentials
+  </div>
+
+  <Clouds></Clouds>
+</div>
+
+<router-outlet></router-outlet>
