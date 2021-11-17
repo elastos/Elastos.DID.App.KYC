@@ -10,7 +10,7 @@
     "node": ">=11.6.0"
   },
   "dependencies": {
-    "@elastosfoundation/did-js-sdk": "^2.1.3",
+    "@elastosfoundation/did-js-sdk": "^2.1.7",
     "@passbase/node": "^1.3.0",
     "bignumber.js": "^9.0.1",
     "body-parser": "^1.19.0",
