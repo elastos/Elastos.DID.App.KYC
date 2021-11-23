@@ -62,8 +62,8 @@ class PassbaseService {
       }
 
       // Low verification score, low trust. Don't generate credentials.
-      console.log(`Identity found for ${user.passbaseUUID} but trust score is too low: ${identity.score}`);
       if (identity.score < 0.8) {
+        console.log(`Identity found for ${user.passbaseUUID} but trust score is too low: ${identity.score}`);
         return [];
       }
 
