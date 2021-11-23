@@ -58,29 +58,4 @@ export class VerifyComponent {
       }
     });
   }
-
-  /**
-   * Tells if the current browser supports passbase flow or not.
-   * For instance, essentials doesn't support built-in camera access, so the passbase flow
-   * must happen in an external browser.
-   */
-  public browserSupportsPassbaseVerificationFlow(): boolean {
-    return !("EssentialsDABConnector" in window);
-  }
-
-  testOpen() {
-    window.open("http://www.google.com/", "_system");
-  }
-
-  testOpen2() {
-    window.open("http://www.google.com/", "_blank");
-  }
-
-  testOpen3() {
-    window.open("http://www.google.com/", "_system", "location=yes");
-  }
-
-  testOpen4() {
-    window.open("http://www.google.com/", "_blank", "location=yes");
-  }
 }

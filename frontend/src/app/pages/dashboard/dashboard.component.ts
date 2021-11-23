@@ -29,13 +29,19 @@ export class DashboardComponent {
     // Fetch status
     this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
     this.fetchingVerificationStatus = false
-    this.verificationStatus = VerificationStatus.VERIFIED
 
+    //this.verificationStatus = VerificationStatus.VERIFIED
     //this.verificationStatus = VerificationStatus.UNVERIFIED; // DEBUG
 
     // Fetch user's credentials
     this.availableCredentials = await this.credentialsService.fetchUserCredentials();
     this.fetchingCredentials = false;
+
+    // If we have verifiable credentials, force status to "verified". The first time when both
+    // "status" and "credentials" apis are called at the same time, the server status is "pending"
+    // because credentials are not fetched yet. Can be improved
+    if (this.availableCredentials.length > 0)
+      this.verificationStatus = VerificationStatus.VERIFIED;
   }
 
   public getCredentialIcon(credential: VerifiableCredential) {
