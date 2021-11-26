@@ -19,6 +19,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { VerifyComponent } from './pages/verify/verify.component';
+import { VerifiedComponent } from './pages/verified/verified.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { VerifyComponent } from './pages/verify/verify.component';
     HomeComponent,
     DashboardComponent,
     LoginComponent,
-    VerifyComponent
+    VerifyComponent,
+    VerifiedComponent
   ],
   imports: [
     BrowserModule,

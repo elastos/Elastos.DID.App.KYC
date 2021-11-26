@@ -1,0 +1,114 @@
+<Toolbar></Toolbar>
+
+<!-- <div class="content">
+  <h2>Identity Verification</h2>
+  <p>The following third party KYC (Know Your Customer) providers can process your identity. During the process you will
+    be required to do some actions such as scanning your face or your passport. Once the process is completed, DID
+    credentials will be generated and you can download them here. The process can take a few minutes.</p>
+
+  <div class="providers" *ngIf="!verificationCompleted">
+    <div class="passbase">
+      <b>Passbase:</b>
+      <div #passbaseButton></div>
+    </div>
+  </div>
+  <div class="verification-completed" *ngIf="verificationCompleted">
+    <b>Great, you're done!</b>. Please wait a few hours and come back to this
+    application to verify your verification progress, and import your credentials.
+  </div>
+</div> -->
+
+<div class="container">
+  <div class="wrapper-box">
+    <div class="d-flex justify-content-center my-2">
+      <p class="heading text-center">Dashboard</p>
+    </div>
+    <div class="d-flex justify-content-center mt-4">
+      <p class="paragraph text-center p-color-000000">Verification Status</p>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+      <div class="green-box py-3 px-4">
+        <p class="paragraph text-center p-color-4AF08C font-weight-bold">Your identity was verified!</p>
+        <p class="paragraph f-13 text-center m-0">Find your credentials below.</p>
+      </div>
+    </div>
+    <!-- <div class="d-flex justify-content-center my-5">
+      <a class="button text-decoration-none" href="/verify">
+        <span class="mx-3">Verify</span>
+        <img src="../../../assets/arrow_icon.svg" class="align-bottom" alt=">">
+      </a>
+    </div> -->
+    <div class="d-flex flex-column justify-content-center mb-3 mt-5 ">
+      <p class=" paragraph text-center font-weight-bold">My Credentials</p>
+    </div>
+
+    <div class="d-flex flex-column justify-content-center mb-3">
+      <div class="d-flex mx-4 align-content-center">
+        <img src="../../../assets/half_round.svg" class="ml-1 mr-1" alt="half Round Icon">
+        <p class="pb-0 mt-3 f-12"><b>Full Name</b></p>
+      </div>
+      <div class="blue-box justify-content-center row py-3 mx-4">
+        <div class="col-4">
+          <p class="p-color-4ab4f0 font-weight-bold">First name</p>
+
+          <p class="p-color-4ab4f0 font-weight-bold">Last name</p>
+
+          <p class="p-color-4ab4f0 font-weight-bold">Signed by</p>
+        </div>
+        <div class="col-8">
+          <p class="p-color-000000">BENJAMIN DOMINIQUE</p>
+
+          <p class="p-color-000000">PIETTE</p>
+
+          <p class="p-color-000000">Trinity Tech Co. Ltd.
+            on behalf of Passbase</p>
+        </div>
+        <button class="button p-color-white">
+          Import to Identity wallet
+        </button>
+        <div class="d-flex justify-content-center mt-2">
+          <img src="../../../assets/square.svg" alt="Square">
+          <p class="p-color-grey">
+            After importing a credential in
+            your identity wallet, you can use it
+            in third party dApps upon request.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-column justify-content-center">
+      <div class="d-flex mx-4 align-content-center">
+        <img src="../../../assets/half_round.svg" class="ml-1 mr-1" alt="half Round Icon">
+        <p class="pb-0 mt-3 f-12"><b>Nationality</b></p>
+      </div>
+      <div class="blue-box justify-content-center row py-3 mx-4">
+        <div class="col-5">
+          <p class="p-color-4ab4f0 font-weight-bold">Nationality</p>
+
+          <p class="p-color-4ab4f0 font-weight-bold">Lorem ip</p>
+
+          <p class="p-color-4ab4f0 font-weight-bold">Lorem ipsum</p>
+        </div>
+        <div class="col-7">
+          <p class="p-color-000000">FR 🇫🇷</p>
+
+          <p class="p-color-000000">Lorem</p>
+
+          <p class="p-color-000000">Lorem dolor</p>
+        </div>
+        <!-- <button class="button p-color-white">
+          Import to Identity wallet
+        </button> -->
+        <div class="d-flex justify-content-center mt-2">
+          <img src="../../../assets/square.svg" alt="Square">
+          <p class="p-color-grey">
+            After importing a credential in
+            your identity wallet, you can use it
+            in third party dApps upon request.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <Clouds></Clouds> -->
