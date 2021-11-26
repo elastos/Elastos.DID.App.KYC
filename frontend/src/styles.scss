@@ -7,7 +7,8 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  // font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Montserrat !important;
 }
 
 h1,
@@ -18,7 +19,97 @@ h5,
 h6 {
   margin: 8px 0;
 }
+@import "~bootstrap/dist/css/bootstrap.css";
 
-p {
-  margin: 0;
+.center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -15%);
+}
+
+.d-flex-evenly {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.pos-relative {
+  position: relative;
+}
+
+.pos-absolute {
+  position: absolute;
+}
+
+.mp-0 {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.c-46acf4 {
+  color: #46acf4;
+}
+
+.shadow-b8e1fc {
+  box-shadow: 0 20px 20px 0 #b8e1fc;
+}
+
+.heading {
+  font-size: 30px;
+  font-weight: 700;
+  color: #4ab4f0;
+  line-height: 36.57px;
+}
+
+.paragraph {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 18px;
+}
+
+.p-color-4ab4f0 {
+  color: #4ab4f0;
+}
+
+.p-color-B7B7B7 {
+  color: #b7b7b7;
+}
+
+.p-color-000000 {
+  color: #000000;
+}
+
+.font-weight-bold {
+  font-weight: bold;
+}
+
+.font-weight-bolder {
+  font-weight: bolder;
+}
+
+.p-color-4AF08C {
+  color: #4af08c;
+}
+
+.p-color-white {
+  color: white;
+}
+
+.p-color-grey {
+  color: grey;
+}
+.ml-0 {
+  margin-left: 0px;
+}
+.ml-1 {
+  margin-left: 0.5rem;
+}
+.mr-1 {
+  margin-right: 0.5rem;
+}
+
+.pl-3 {
+  margin-left: 1rem;
 }

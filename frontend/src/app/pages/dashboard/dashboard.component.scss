@@ -1,158 +1,184 @@
-.content {
-  display: flex;
-  margin: 82px auto 32px;
-  padding: 0 16px;
-  max-width: 960px;
-  flex-direction: column;
-  align-items: center;
+// .content {
+//   display: flex;
+//   margin: 82px auto 32px;
+//   padding: 0 16px;
+//   max-width: 960px;
+//   flex-direction: column;
+//   align-items: center;
 
-  .verification-badge {
-    padding: 10px;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    text-align: center;
+//   .verification-badge {
+//     padding: 10px;
+//     border-radius: 10px;
+//     color: white;
+//     font-weight: bold;
+//     text-align: center;
 
-    &.unverified {
-      background: #1875d1;
-    }
+//     &.unverified {
+//       background: #1875d1;
+//     }
 
-    &.verified {
-      background: #048f22;
-    }
+//     &.verified {
+//       background: #048f22;
+//     }
 
-    &.pending {
-      background: #d11865;
-    }
+//     &.pending {
+//       background: #d11865;
+//     }
+//   }
+// }
+
+// svg.material-icons {
+//   height: 24px;
+//   width: auto;
+// }
+
+// svg.material-icons:not(:last-child) {
+//   margin-right: 8px;
+// }
+
+// .card svg.material-icons path {
+//   fill: #888;
+// }
+
+// .card-container {
+//   display: flex;
+//   flex-wrap: wrap;
+//   justify-content: center;
+//   margin-top: 16px;
+// }
+
+// .card {
+//   all: unset;
+//   border-radius: 4px;
+//   border: 1px solid #eee;
+//   background-color: #fafafa;
+//   width: 200px;
+//   margin: 0 8px 16px;
+//   padding: 18px;
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   align-items: center;
+//   transition: all 0.2s ease-in-out;
+//   line-height: 24px;
+// }
+
+// .card-container .card:not(:last-child) {
+//   margin-right: 0;
+// }
+
+// .card.card-small {
+//   height: 16px;
+//   width: 168px;
+// }
+
+// .card-container .card:not(.highlight-card) {
+//   cursor: pointer;
+// }
+
+// .card-container .card:not(.highlight-card):hover {
+//   transform: translateY(-3px);
+//   box-shadow: 0 4px 17px rgba(0, 0, 0, 0.35);
+// }
+
+// .card-container .card:not(.highlight-card):hover .material-icons path {
+//   fill: rgb(105, 103, 103);
+// }
+
+// .card.highlight-card {
+//   background-color: #1976d2;
+//   color: white;
+//   font-weight: 600;
+//   border: none;
+//   width: auto;
+//   min-width: 30%;
+//   position: relative;
+// }
+
+// .card.card.highlight-card span {
+//   margin-left: 60px;
+// }
+
+// .credentials {
+//   .credential {
+//     background: white;
+//     border-radius: 10px;
+//     overflow: hidden;
+//     box-shadow: rgba(0, 0, 0, 0.3) 0 0 20px;
+//     min-width: 50vw;
+//     margin-bottom: 20px;
+
+//     .name {
+//       background: #1875d1;
+//       color: #eee;
+//       padding: 10px;
+//       text-align: center;
+//       font-weight: bold;
+//       display: flex;
+//       align-items: center;
+//       justify-content: flex-start;
+
+//       img {
+//         margin-right: 5px;
+//         height: 30px;
+//       }
+//     }
+
+//     .properties {
+//       padding: 10px;
+//       display: flex;
+//       flex-direction: column;
+//       align-items: center;
+
+//       .property {
+//         width: 100%;
+//         display: flex;
+//         margin-bottom: 10px;
+
+//         .label {
+//           width: 100px;
+//           font-weight: bold;
+//           margin-right: 10px;
+//         }
+//       }
+//     }
+
+//     .note {
+//       display: flex;
+//       justify-content: center;
+//       color: #888;
+//       font-style: italic;
+//       margin-top: 10px;
+
+//       mat-icon {
+//         margin-right: 5px;
+//       }
+//     }
+//   }
+// }
+
+.wrapper-box {
+  margin: 43px 13px;
+
+  .button {
+    background: linear-gradient(180deg, rgba(74, 180, 240, 0.5) 0%, rgba(74, 180, 240, 0.3) 100%);
+    box-shadow: 0px 0px 20px rgba(74, 180, 240, 0.5);
+    border-radius: 20px;
+    padding: 8px 43px;
+    border: 1px solid #4ab4f0;
+    font-size: 18px;
+    color: #4ab4f0;
+    font-weight: 600;
   }
-}
 
-svg.material-icons {
-  height: 24px;
-  width: auto;
-}
+  .grey-box {
+    border-radius: 25px;
+    border: 1px solid #b7b7b7;
+    background-color: lightgray;
+  }
 
-svg.material-icons:not(:last-child) {
-  margin-right: 8px;
-}
-
-.card svg.material-icons path {
-  fill: #888;
-}
-
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.card {
-  all: unset;
-  border-radius: 4px;
-  border: 1px solid #eee;
-  background-color: #fafafa;
-  width: 200px;
-  margin: 0 8px 16px;
-  padding: 18px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s ease-in-out;
-  line-height: 24px;
-}
-
-.card-container .card:not(:last-child) {
-  margin-right: 0;
-}
-
-.card.card-small {
-  height: 16px;
-  width: 168px;
-}
-
-.card-container .card:not(.highlight-card) {
-  cursor: pointer;
-}
-
-.card-container .card:not(.highlight-card):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 17px rgba(0, 0, 0, 0.35);
-}
-
-.card-container .card:not(.highlight-card):hover .material-icons path {
-  fill: rgb(105, 103, 103);
-}
-
-.card.highlight-card {
-  background-color: #1976d2;
-  color: white;
-  font-weight: 600;
-  border: none;
-  width: auto;
-  min-width: 30%;
-  position: relative;
-}
-
-.card.card.highlight-card span {
-  margin-left: 60px;
-}
-
-.credentials {
-  .credential {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 0 20px;
-    min-width: 50vw;
-    margin-bottom: 20px;
-
-    .name {
-      background: #1875d1;
-      color: #eee;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-
-      img {
-        margin-right: 5px;
-        height: 30px;
-      }
-    }
-
-    .properties {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      .property {
-        width: 100%;
-        display: flex;
-        margin-bottom: 10px;
-
-        .label {
-          width: 100px;
-          font-weight: bold;
-          margin-right: 10px;
-        }
-      }
-    }
-
-    .note {
-      display: flex;
-      justify-content: center;
-      color: #888;
-      font-style: italic;
-      margin-top: 10px;
-
-      mat-icon {
-        margin-right: 5px;
-      }
-    }
+  .f-13 {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.5);
   }
 }

@@ -1,8 +1,7 @@
-<a href="/"><img class="logo" width="40" alt="Elastos Credentials Toolbox" src="assets/elastos_logo_white.webp" />
-</a>
-<span>DID KYC Service</span>
-<div class="spacer"></div>
-<div class="signed-in-container" *ngIf="authService.isAuthenticated()">
-  <!-- <div class="did">{{ authService.signedInDID() }}</div> -->
-  <button class="signout" mat-raised-button (click)="signOut()">Sign out</button>
+<div class="d-flex-evenly shadow-b8e1fc">
+  <img class="pt-3 pl-3" alt="Elastos Credentials Toolbox" src="assets/elastos_logo_blue.svg" />
+  <div class="pos-relative pt-3">
+    <img alt="Elastos Credentials Toolbox" src="assets/sign_out_btn.svg" />
+    <p class="center-text mp-0 c-46acf4">Sign out</p>
+  </div>
 </div>
