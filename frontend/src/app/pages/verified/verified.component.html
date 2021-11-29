@@ -21,93 +21,96 @@
 <div class="container">
   <div class="wrapper-box">
     <div class="d-flex justify-content-center my-2">
-      <p class="heading text-center">Dashboard</p>
+      <p class="heading c-4ab4f0 text-center">Dashboard</p>
     </div>
     <div class="d-flex justify-content-center mt-4">
-      <p class="paragraph text-center p-color-000000">Verification Status</p>
+      <p class="fw-500 fs-15 text-center fw-bold c-000000">Verification status</p>
     </div>
     <div class="d-flex justify-content-center mt-3">
-      <div class="green-box py-3 px-4">
-        <p class="paragraph text-center p-color-4AF08C font-weight-bold">Your identity was verified!</p>
-        <p class="paragraph f-13 text-center m-0">Find your credentials below.</p>
+      <div class="green-box py-1 px-4">
+        <p class="fw-500 fs-15 text-center c-4af08c fw-bold">Your identity was<br />verified!</p>
+        <p class="fw-500 op-5 fs-12 text-center m-0">Find your credentials below.</p>
       </div>
     </div>
-    <!-- <div class="d-flex justify-content-center my-5">
-      <a class="button text-decoration-none" href="/verify">
-        <span class="mx-3">Verify</span>
-        <img src="../../../assets/arrow_icon.svg" class="align-bottom" alt=">">
-      </a>
-    </div> -->
     <div class="d-flex flex-column justify-content-center mb-3 mt-5 ">
-      <p class=" paragraph text-center font-weight-bold">My Credentials</p>
+      <p class=" fw-500 fs-15 text-center fw-bold">My credentials</p>
     </div>
 
     <div class="d-flex flex-column justify-content-center mb-3">
-      <div class="d-flex mx-4 align-content-center">
-        <img src="../../../assets/half_round.svg" class="ml-1 mr-1" alt="half Round Icon">
-        <p class="pb-0 mt-3 f-12"><b>Full Name</b></p>
+      <div class="d-flex mx-4 align-content-center dark-img">
+        <img src="../../../assets/half_round_white.svg" class="ml-2 mr-2 icon-width" alt="half Round Icon"
+          *ngIf="isDarkTheme">
+        <img src="../../../assets/half_round.svg" class="ml-2 mr-2" alt="half Round Icon" *ngIf="!isDarkTheme">
+        <p class="pb-0 mt-3 fs-12 fw-500">Full name</p>
       </div>
-      <div class="blue-box justify-content-center row py-3 mx-4">
+      <div class="blue-box fs-12 justify-content-center row pt-3 mx-4">
         <div class="col-4">
-          <p class="p-color-4ab4f0 font-weight-bold">First name</p>
+          <p class="c-4ab4f0 fw-bold">First names</p>
 
-          <p class="p-color-4ab4f0 font-weight-bold">Last name</p>
+          <p class="c-4ab4f0 fw-bold">Last name</p>
 
-          <p class="p-color-4ab4f0 font-weight-bold">Signed by</p>
+          <p class="c-4ab4f0 fw-bold">Signed by</p>
         </div>
         <div class="col-8">
-          <p class="p-color-000000">BENJAMIN DOMINIQUE</p>
+          <p class="c-000000 fw-500">BENJAMIN DOMINIQUE</p>
 
-          <p class="p-color-000000">PIETTE</p>
+          <p class="c-000000 fw-500">PIETTE</p>
 
-          <p class="p-color-000000">Trinity Tech Co. Ltd. on behalf of Passbase</p>
+          <p class="c-000000 fw-500">Trinity Tech Co. Ltd. on behalf of Passbase</p>
         </div>
-        <button class="button p-color-white">
+        <button class="blue-btn fs-12 px-2 py-0 inline-fit-content fw-unset c-white">
           Import to Identity wallet
         </button>
         <div class="d-flex justify-content-center mt-2">
-          <img src="../../../assets/square.svg" alt="Square">
-          <p class="p-color-grey">
-            After importing a credential in
-            your identity wallet, you can use it
-            in third party dApps upon request.</p>
+          <img src="../../../assets/square.svg" class="icon-img" alt="Square" *ngIf="!isDarkTheme">
+          <img src="../../../assets/square_dark.svg" class="icon-img" alt="Square" *ngIf="isDarkTheme">
+          <p class="op-5 fw-500">
+            <i>
+              After importing a credential in
+              your identity wallet, you can use it
+              in third party dApps upon request.</i>
+          </p>
         </div>
       </div>
     </div>
 
     <div class="d-flex flex-column justify-content-center">
       <div class="d-flex mx-4 align-content-center">
-        <img src="../../../assets/half_round.svg" class="ml-1 mr-1" alt="half Round Icon">
-        <p class="pb-0 mt-3 f-12"><b>Nationality</b></p>
+        <img src="../../../assets/half_round_white.svg" class="ml-2 mr-2 icon-width" alt="half Round Icon"
+          *ngIf="isDarkTheme">
+        <img src="../../../assets/half_round.svg" class="ml-2 mr-2" alt="half Round Icon" *ngIf="!isDarkTheme">
+        <p class="pb-0 mt-3 fs-12 fw-500">Nationality</p>
       </div>
-      <div class="blue-box justify-content-center row py-3 mx-4">
+      <div class="blue-box fs-12 justify-content-center row pt-3 mx-4">
         <div class="col-5">
-          <p class="p-color-4ab4f0 font-weight-bold">Nationality</p>
+          <p class="c-4ab4f0 fw-bold">Nationality</p>
 
-          <p class="p-color-4ab4f0 font-weight-bold">Lorem ip</p>
+          <p class="c-4ab4f0 fw-bold">Lorem ip</p>
 
-          <p class="p-color-4ab4f0 font-weight-bold">Lorem ipsum</p>
+          <p class="c-4ab4f0 fw-bold">Lorem ipsum</p>
         </div>
         <div class="col-7">
-          <p class="p-color-000000">FR 🇫🇷</p>
+          <p class="c-000000 fw-500">FR 🇫🇷</p>
 
-          <p class="p-color-000000">Lorem</p>
+          <p class="c-000000 fw-500">Lorem</p>
 
-          <p class="p-color-000000">Lorem dolor</p>
+          <p class="c-000000 fw-500">Lorem dolor</p>
         </div>
-        <!-- <button class="button p-color-white">
+        <!-- <button class="button c-white">
           Import to Identity wallet
         </button> -->
         <div class="d-flex justify-content-center mt-2">
-          <img src="../../../assets/square.svg" alt="Square">
-          <p class="p-color-grey">
-            After importing a credential in
-            your identity wallet, you can use it
-            in third party dApps upon request.</p>
+          <img src="../../../assets/square.svg" class="icon-img" alt="Square" *ngIf="!isDarkTheme">
+          <img src="../../../assets/square_dark.svg" class="icon-img" alt="Square" *ngIf="isDarkTheme">
+          <p class="op-5 dark-mode fw-500">
+            <i>
+              After importing a credential in
+              your identity wallet, you can use it
+              in third party dApps upon request.</i>
+          </p>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- <Clouds></Clouds> -->
+<Clouds></Clouds>

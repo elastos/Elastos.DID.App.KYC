@@ -3,11 +3,24 @@
 html,
 body {
   height: 100%;
-  background: white;
 }
+// @media (prefers-color-scheme: dark) {
+//   body {
+//     background-color: black;
+//   }
+//   .wrapper-box {
+//     p {
+//       color: white;
+//     }
+//   }
+// }
+// @media (prefers-color-scheme: light) {
+//   body {
+//     background-color: white;
+//   }
+// }
 body {
   margin: 0;
-  // font-family: Roboto, "Helvetica Neue", sans-serif;
   font-family: Montserrat !important;
 }
 
@@ -47,69 +60,203 @@ h6 {
   padding: 0 !important;
 }
 
+.shadow-b8e1fc {
+  box-shadow: 0 0px 50px 15px #b8e1fc;
+}
+
+// color
+
+.c-4af08c {
+  color: #4af08c !important;
+}
+
+.c-greytext {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.c-white {
+  color: white;
+}
+
+.c-4ab4f0 {
+  color: #4ab4f0 !important;
+}
+
+.c-b7b7b7 {
+  color: #b7b7b7 !important;
+}
+
 .c-46acf4 {
   color: #46acf4;
 }
 
-.shadow-b8e1fc {
-  box-shadow: 0 20px 20px 0 #b8e1fc;
-}
+// margin
 
-.heading {
-  font-size: 30px;
-  font-weight: 700;
-  color: #4ab4f0;
-  line-height: 36.57px;
-}
-
-.paragraph {
-  font-style: normal;
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 18px;
-}
-
-.p-color-4ab4f0 {
-  color: #4ab4f0;
-}
-
-.p-color-B7B7B7 {
-  color: #b7b7b7;
-}
-
-.p-color-000000 {
-  color: #000000;
-}
-
-.font-weight-bold {
-  font-weight: bold;
-}
-
-.font-weight-bolder {
-  font-weight: bolder;
-}
-
-.p-color-4AF08C {
-  color: #4af08c;
-}
-
-.p-color-white {
-  color: white;
-}
-
-.p-color-grey {
-  color: grey;
-}
 .ml-0 {
-  margin-left: 0px;
+  margin-left: 0rem;
 }
 .ml-1 {
+  margin-left: 0.25rem;
+}
+.ml-2 {
   margin-left: 0.5rem;
 }
+
+.mt-2rem {
+  margin-top: 2.5rem;
+}
+
 .mr-1 {
+  margin-right: 0.25rem;
+}
+.mr-2 {
   margin-right: 0.5rem;
 }
+
+// padding
 
 .pl-3 {
   margin-left: 1rem;
 }
+
+.px-2rem {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+//font-weight
+
+.fw-unset {
+  font-weight: unset !important;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+
+.fw-500 {
+  font-weight: 500;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+//font-size
+
+.fs-12 {
+  font-size: 12px;
+}
+
+.fs-13 {
+  font-size: 13px;
+}
+
+.fs-15 {
+  font-size: 15px;
+}
+
+//line height
+
+.lh-3 {
+  line-height: 1rem;
+}
+
+//width
+
+.w-90 {
+  width: 90% !important;
+}
+
+//opacity
+
+.op-5 {
+  opacity: 0.5;
+}
+
+//additional css classes
+
+.inline-fit-content {
+  inline-size: fit-content;
+}
+
+.grey-box {
+  border: 1px solid #b7b7b7;
+  background-color: lightgray;
+  background: linear-gradient(180deg, rgba(183, 183, 183, 0.5) 0%, rgba(183, 183, 183, 0.3) 100%);
+  box-shadow: 0px 0px 20px rgba(183, 183, 183, 0.5);
+  border-radius: 20px;
+}
+
+.blue-btn {
+  background: linear-gradient(180deg, rgba(74, 180, 240, 0.5) 0%, rgba(74, 180, 240, 0.3) 100%);
+  box-shadow: 0px 0px 20px rgba(74, 180, 240, 0.5);
+  border-radius: 20px;
+  padding: 8px 25px;
+  border: 1px solid #4ab4f0;
+  font-weight: 700;
+  &:active {
+    transform: matrix(0.95, 0, 0, 0.95, 0, 0);
+  }
+}
+
+.blue-box {
+  background: linear-gradient(180deg, rgba(74, 180, 240, 0.5) 0%, rgba(74, 180, 240, 0.3) 100%);
+  box-shadow: 0px 0px 20px rgba(74, 180, 240, 0.5);
+  border-radius: 20px;
+  border: 1px solid #4ab4f0;
+}
+
+.green-box {
+  background: linear-gradient(180deg, rgba(74, 240, 140, 0.5) 0%, rgba(74, 240, 140, 0.3) 100%);
+  box-shadow: 0px 0px 20px rgba(81, 216, 152, 0.5);
+  border-radius: 25px;
+  border: 1px solid #4af08c;
+}
+
+.icon-width {
+  width: 6%;
+}
+
+.icon-img {
+  height: fit-content;
+  margin-right: 10px;
+  margin-top: 3px;
+}
+
+.img-btn {
+  &:active {
+    transform: matrix(0.95, 0, 0, 0.95, 0, 0);
+  }
+}
+
+.heading {
+  font-size: 30px;
+  font-weight: 600;
+  color: #4ab4f0;
+  line-height: 36.57px;
+}
+
+.wrapper-box {
+  margin: 43px 13px;
+}
+
+// @media (prefers-color-scheme: dark) {
+//   body {
+//     background-color: black;
+//   }
+//   .wrapper-box {
+//     p {
+//       color: white;
+//     }
+//     .dark-mode {
+//       color: #b7b7b7;
+//     }
+//   }
+// }
+
+// @media (prefers-color-scheme: light) {
+//   body {
+//     background-color: white;
+//   }
+// }

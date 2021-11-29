@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { BrowserModule } from '@angular/platform-browser';
 import { CloudsComponent } from './clouds/clouds.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { AppRoutingModule } from './../app-routing.module';
 
 @NgModule({
   declarations: [
@@ -13,6 +14,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
     CloudsComponent
   ],
   imports: [
+    AppRoutingModule,
     BrowserModule,
     MatInputModule,
     MatButtonModule,

@@ -12,6 +12,7 @@ import { CredentialsService } from 'src/app/services/credentials.service';
   styleUrls: ['./dashboard.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
+
 export class DashboardComponent {
   public fetchingVerificationStatus = true;
   public verificationStatus: VerificationStatus;

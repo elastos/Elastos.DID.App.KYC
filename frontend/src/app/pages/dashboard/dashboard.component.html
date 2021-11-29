@@ -68,37 +68,37 @@
 <div class="container">
   <div class="wrapper-box">
     <div class="d-flex justify-content-center my-2">
-      <p class="heading text-center">Dashboard</p>
+      <p class="heading c-4ab4f0 text-center">Dashboard</p>
     </div>
-    <div class="d-flex justify-content-center mt-5">
-      <p class="paragraph text-center p-color-000000">Verification Status</p>
+    <div class="d-flex justify-content-center mt-2rem">
+      <p class="fw-500 fs-15 text-center fw-bold">Verification Status</p>
     </div>
     <div class="d-flex justify-content-center mt-3">
-      <div class="grey-box py-3 px-4">
-        <p class="paragraph text-center font-weight-bold">Not Verified Yet.</p>
-        <p class="paragraph f-13 text-center">Continue below to verify <br />
+      <div class="grey-box pt-2 px-2rem">
+        <p class="fw-500 fs-15 text-center mb-2 fw-bold">Not verified yet.</p>
+        <p class="fw-500 fs-12 op-5 text-center lh-3">Continue below to verify <br />
           your identity</p>
         <!-- <div *ngIf="verificationStatus === 'verified'" class="verification-badge verified">
-            <p class="paragraph text-center font-weight-bold">Your identity is being verified...</p>
-            <p class="paragraph f-13 text-center">Please check again later.</p>
+            <p class="fw-500 fs-15 text-center fw-bold">Your identity is being verified...</p>
+            <p class="fw-500 fs-15 fs-13 text-center">Please check again later.</p>
           </div>
           <div *ngIf="verificationStatus === 'pending'" class="verification-badge pending">
-            <p class="paragraph text-center font-weight-bold">Your identity was verified!</p>
-            <p class="paragraph f-13 text-center">Find your credentials below.</p>
+            <p class="fw-500 fs-15 text-center fw-bold">Your identity was verified!</p>
+            <p class="fw-500 fs-15 fs-13 text-center">Find your credentials below.</p>
           </div> -->
       </div>
     </div>
     <div class="d-flex justify-content-center my-5">
-      <a class="button text-decoration-none" href="/verify">
-        <span class="mx-3">Verify</span>
+      <a class="blue-btn fs-15 text-decoration-none c-4ab4f0" [routerLink]="['/verify']">
+        <span class="mx-3">Verify now</span>
         <img src="../../../assets/arrow_icon.svg" class="align-bottom" alt=">">
       </a>
     </div>
     <div class="d-flex flex-column justify-content-center">
-      <p class="paragraph text-center font-weight-bold">My Creadentials</p>
-      <p class="paragraph f-13 text-center">No Creadentials Yet.</p>
+      <p class="fw-500 fs-15 text-center fw-bold">My Credentials</p>
+      <p class="fw-500 fs-12 text-center op-5 dark-mode">No credentials yet.</p>
     </div>
   </div>
 </div>
 
-<!-- <Clouds></Clouds> -->
+<Clouds></Clouds>

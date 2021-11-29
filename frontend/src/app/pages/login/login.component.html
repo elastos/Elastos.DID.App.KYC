@@ -22,32 +22,34 @@
   <div class="wrapper-box">
     <div class="row mb-3">
       <div class="col-2">
-        <a href="/"><img src="../../../assets/left_arrow.svg" alt="Arrow Icon"></a>
+        <a [routerLink]="['/']"><img src="../../../assets/left_arrow.svg" alt="Arrow Icon"></a>
       </div>
       <div class="col-8">
-        <p class="paragraph p-color-4ab4f0 text-center">Please sign in with your DID
+        <p class="fw-500 fs-15 c-4ab4f0 text-center">Please sign in with your DID<br />
           to continue</p>
       </div>
       <div class="col-2">
       </div>
     </div>
     <div class="d-flex justify-content-center">
-      <img src="../../../assets/half_round_button.svg" *ngIf="!signingIn" (click)="signIn()" alt="Half Round Button">
+      <img src="../../../assets/half_round_button.svg" class="img-btn" *ngIf="!signingIn" (click)="signIn()"
+        alt="Half Round Button">
       <mat-progress-spinner *ngIf="signingIn" diameter="20" color="color" mode="indeterminate">
       </mat-progress-spinner>
     </div>
 
     <div class="d-flex justify-content-center text-center mt-4 mx-3">
-      <p class="paragraph p-color-B7B7B7">Disconnect previous Wallet Connect session from Elastos Essentials
+      <p class="fw-500 fs-15 op-5 w-90">Disconnect previous Wallet Connect session from Elastos
+        Essentials
       </p>
     </div>
     <div class="d-flex justify-content-center text-center mt-2">
-      <button class="button" (click)="disconnectEssentials()">
+      <button class="blue-btn fs-12 px-2 py-1 c-4ab4f0 fw-unset" (click)="disconnectEssentials()">
         Disconnect
       </button>
     </div>
   </div>
-  <!-- <Clouds></Clouds> -->
+  <Clouds></Clouds>
 </div>
 
 <router-outlet></router-outlet>
