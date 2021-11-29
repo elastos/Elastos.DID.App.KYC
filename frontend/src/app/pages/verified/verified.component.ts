@@ -30,39 +30,4 @@ export class VerifiedComponent implements OnInit {
     let themeColor = document.body.style.backgroundColor
     this.isDarkTheme = themeColor === 'black' ? true : false;
   }
-
-  async ngAfterViewInit() {
-    let passbaseMetadata = await this.credentialsService.fetchUserPassbaseMetadata();
-
-    // Get passbase button ready
-    Passbase.renderButton(
-      this.passbaseButton.nativeElement,
-      process.env.NG_APP_PASSBASE_PUBLIC_API_KEY, {
-      onStart: () => {
-        console.log("Passbase onstart");
-        this.verificationInProgress = true;
-      },
-      onError: (error, context) => {
-        console.log("Passbase onerror", error);
-        this.verificationInProgress = false;
-      },
-      // onSubmitted: received at the very end of the verification steps before clicking "finish"
-      onSubmitted: (identityAccessKey) => {
-        console.log("Passbase onSubmitted", identityAccessKey);
-
-        this.credentialsService.savePassbaseUUID(identityAccessKey);
-      },
-      // onFinish: received at the very end of the verification steps after clicking "finish"
-      onFinish: (identityAccessKey) => {
-        console.log("Passbase onFinish", identityAccessKey);
-
-        this.verificationInProgress = false;
-        this.verificationCompleted = true;
-      },
-      metaData: passbaseMetadata,
-      prefillAttributes: {
-        email: this.authService.getAuthUser().email // pre-fill user's email for convenience, if provided
-      }
-    });
-  }
 }
