@@ -1,7 +1,6 @@
-# Trinity-tech W3C Verifiable Credentials generation service for KYC
+# KYC-me - Elastos W3C Verifiable Credentials generation service for KYC
 
 ## Introduction
-
 
 ## Deployment
 
