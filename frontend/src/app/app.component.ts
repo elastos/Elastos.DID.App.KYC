@@ -12,7 +12,7 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    let qParams = window.location.href.split('&');
+    let qParams = window.location.href.split('?');
     document.body.style.backgroundColor = qParams.includes('theme=dark')
       ? 'black'
       : 'white';

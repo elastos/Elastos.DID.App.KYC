@@ -11,10 +11,10 @@ import { AuthGuardService } from './services/auth-guard.service';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'home', component: HomeComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'verify', component: VerifyComponent },
-  { path: 'verified', component: VerifiedComponent },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuardService] },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
+  { path: 'verify', component: VerifyComponent, canActivate: [AuthGuardService] },
+  { path: 'verified', component: VerifiedComponent, canActivate: [AuthGuardService] },
   { path: '**', redirectTo: '/login', pathMatch: 'full' },
 ];
 
