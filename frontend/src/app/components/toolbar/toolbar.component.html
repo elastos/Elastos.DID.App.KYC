@@ -1,8 +1,16 @@
 <div class="d-flex-evenly shadow-b8e1fc">
-  <a [routerLink]='["/dashboard"]'><img class="pl-3" alt="Elastos Credentials Toolbox"
-      src="assets/elastos_logo_blue.svg" />
+  <a [routerLink]="['/dashboard']"
+    ><img
+      class="pl-3"
+      alt="Elastos Credentials Toolbox"
+      src="assets/elastos_logo_blue.svg"
+    />
   </a>
-  <div class="pos-relative pt-3" *ngIf="false">
+  <div class="pos-relative" *ngIf="!isUserLoggedIn" (click)="signIn()">
+    <img alt="Elastos Credentials Toolbox" src="assets/sign_out_btn.svg" />
+    <p class="center-text mp-0 c-46acf4">Sign In</p>
+  </div>
+  <div class="pos-relative" *ngIf="isUserLoggedIn" (click)="signOut()">
     <img alt="Elastos Credentials Toolbox" src="assets/sign_out_btn.svg" />
     <p class="center-text mp-0 c-46acf4">Sign out</p>
   </div>
