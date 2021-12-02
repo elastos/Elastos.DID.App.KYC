@@ -24,6 +24,11 @@ h6 {
 }
 @import "~bootstrap/dist/css/bootstrap.css";
 
+.container {
+  display: flex;
+  justify-content: center;
+}
+
 .center-text {
   position: absolute;
   top: 50%;
@@ -251,6 +256,7 @@ h6 {
 
 .wrapper-box {
   margin: 43px 13px;
+  max-width: 500px;
 }
 
 // @media (prefers-color-scheme: dark) {
