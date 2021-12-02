@@ -192,7 +192,7 @@ class PassbaseService {
     let filteredSubject = Object.assign({}, subject) as JSONObject;
     delete filteredSubject["displayable"];
 
-    console.log(`Checking if credential already exists in DB`, credentialType, filteredSubject);
+    console.log(`Checking if credential already exists in DB`, credentialType);
 
     let verifiableCredentials = existingCredentialsInDB.map(credential => {
       return VerifiableCredential.parse(JSON.stringify(credential));
@@ -238,7 +238,7 @@ class PassbaseService {
      */
     let credential = await new VerifiableCredential.Builder(issuer, targetDID)
       .id(credentialId)
-      .type(credentialType, "DisplayableCredential", "SensitiveCredential")
+      .types(credentialType, "DisplayableCredential", "SensitiveCredential")
       .properties(fullSubject)
       .expirationDate(moment().add(3, "years").toDate()) // 3 years validity
       .seal(didService.getStorePass());
