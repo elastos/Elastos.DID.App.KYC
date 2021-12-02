@@ -3,16 +3,17 @@ import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { DID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import jwtDecode from 'jwt-decode';
-import { User } from '../model/user';
+import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { User } from '../model/user';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private user: User = null;
   private postAuthRoute: string = null;
+  public authenticatedUser = new BehaviorSubject<User>(null);
 
   constructor(private jwtHelper: JwtHelperService, public router: Router) {
     this.loadUser();
@@ -25,14 +26,14 @@ export class AuthService {
     const token = this.getAuthToken();
     if (token) {
       try {
-        this.user = jwtDecode(token);
-        console.log("Loaded user from auth token:", this.user);
+        this.authenticatedUser.next(jwtDecode(token));
+        console.log("Loaded user from auth token:", this.authenticatedUser.value);
       }
       catch (e) {
         console.error("Failed to decode existing auth token, is this an invalid format?", token);
         // Cleanup this unclear state.
         localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-        this.user = null;
+        this.authenticatedUser.next(null);
       }
     }
   }
@@ -47,14 +48,14 @@ export class AuthService {
   }
 
   public getAuthUser(): User {
-    return this.user;
+    return this.authenticatedUser.value;
   }
 
   public signedInDID(): string {
-    if (!this.user)
+    if (!this.authenticatedUser.value)
       return null;
 
-    return this.user.did;
+    return this.authenticatedUser.value.did;
   }
 
   /**
@@ -101,8 +102,8 @@ export class AuthService {
 
           localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
 
-          this.user = jwtDecode(token);
-          console.log("Sign in: setting user to:", this.user);
+          this.authenticatedUser.next(jwtDecode(token));
+          console.log("Sign in: setting user to:", this.authenticatedUser.value);
 
           if (this.postAuthRoute) {
             this.router.navigate([this.postAuthRoute]);
@@ -122,7 +123,8 @@ export class AuthService {
   }
 
   public signOut() {
-    this.user = null;
+    console.log("Signing out");
+    this.authenticatedUser.next(null);
     localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     this.router.navigate(['home']);
   }

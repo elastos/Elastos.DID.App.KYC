@@ -3,7 +3,7 @@ import {
   ActivatedRouteSnapshot,
   CanActivate,
   Router,
-  RouterStateSnapshot,
+  RouterStateSnapshot
 } from '@angular/router';
 import { AuthService } from './auth.service';
 
@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root',
 })
 export class AuthGuardService implements CanActivate {
-  constructor(public auth: AuthService, public router: Router) {}
+  constructor(public auth: AuthService, public router: Router) { }
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -20,10 +20,7 @@ export class AuthGuardService implements CanActivate {
     if (!this.auth.isAuthenticated()) {
       this.auth.setPostAuthRoute(state.url);
 
-      let qParams = window.location.href.split('?');
-      let themeValue = qParams.includes('theme=dark') ? 'dark' : 'light';
-
-      this.router.navigate(['login'], { queryParams: { theme: themeValue } });
+      this.router.navigate(['login']);
       return false;
     }
     return true;

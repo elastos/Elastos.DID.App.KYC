@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk/typings';
 import { VerificationStatus } from 'src/app/model/verificationstatus';
 import { CredentialsService } from 'src/app/services/credentials.service';
+import { ThemeService } from 'src/app/services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,12 +19,15 @@ export class DashboardComponent {
   public verificationStatus: VerificationStatus;
   public fetchingCredentials = true;
   public availableCredentials: VerifiableCredential[] = [];
+  public isDarkTheme; // TODO: NOT LIKE THIS, REWORK
 
   constructor(
     private _bottomSheet: MatBottomSheet,
     private _snackBar: MatSnackBar,
     private credentialsService: CredentialsService,
+    private themeService: ThemeService,
     private router: Router) {
+    this.isDarkTheme = this.themeService.isDarkMode;
   }
 
   async ngAfterViewInit() {
@@ -32,7 +36,7 @@ export class DashboardComponent {
     this.fetchingVerificationStatus = false
 
     //this.verificationStatus = VerificationStatus.VERIFIED
-    //this.verificationStatus = VerificationStatus.UNVERIFIED; // DEBUG
+    //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
 
     // Fetch user's credentials
     this.availableCredentials = await this.credentialsService.fetchUserCredentials();

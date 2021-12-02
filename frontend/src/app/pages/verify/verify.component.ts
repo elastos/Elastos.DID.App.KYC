@@ -2,13 +2,14 @@ import {
   Component,
   ElementRef,
   ViewChild,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import Passbase from '@passbase/button';
 import { AuthService } from 'src/app/services/auth.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
+import { ThemeService } from 'src/app/services/theme.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -27,12 +28,14 @@ export class VerifyComponent {
     private _bottomSheet: MatBottomSheet,
     private authService: AuthService,
     private credentialsService: CredentialsService,
+    private themeService: ThemeService,
     private router: Router
-  ) {}
+  ) { }
 
   async ngAfterViewInit() {
-    let passbaseMetadata =
-      await this.credentialsService.fetchUserPassbaseMetadata();
+    let passbaseMetadata = await this.credentialsService.fetchUserPassbaseMetadata();
+
+    console.log("this.themeService.isDarkMode", this.themeService.isDarkMode)
     Passbase.renderButton(
       this.passbaseButton.nativeElement,
       environment.passbaseKey,
@@ -62,6 +65,9 @@ export class VerifyComponent {
         prefillAttributes: {
           email: this.authService.getAuthUser().email, // pre-fill user's email for convenience, if provided
         },
+        theme: {
+          darkMode: this.themeService.isDarkMode // TODO: not working (remains white) - passbase team is checking this
+        }
       }
     );
   }

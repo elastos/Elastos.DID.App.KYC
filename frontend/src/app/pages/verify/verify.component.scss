@@ -1,21 +1,11 @@
-// .content {
-//   display: flex;
-//   margin: 82px auto 32px;
-//   padding: 0 16px;
-//   max-width: 960px;
-//   flex-direction: column;
-//   align-items: center;
+.passbase-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-//   .in-verification {
-//     font-weight: bold;
-//     font-size: 16px;
-//   }
-
-//   .verification-completed {
-//     background-color: rgb(0, 146, 66);
-//     color: white;
-//     border-radius: 10px;
-//     padding: 10px;
-//     box-shadow: 0 0 10px #666;
-//   }
-// }
+  mat-progress-spinner {
+    position: absolute;
+    z-index: -1;
+  }
+}

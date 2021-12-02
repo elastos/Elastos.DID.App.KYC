@@ -1,17 +1,18 @@
-<div class="d-flex-evenly shadow-b8e1fc">
-  <a [routerLink]="['/dashboard']"
-    ><img
-      class="pl-3"
-      alt="Elastos Credentials Toolbox"
-      src="assets/elastos_logo_blue.svg"
-    />
+<div class="d-flex-evenly shadow-b8e1fc align-items-center">
+  <a [routerLink]="['/']"><img class="pl-3" alt="Elastos Credentials Toolbox" src="assets/elastos_logo_blue.svg" />
   </a>
-  <div class="pos-relative" *ngIf="!isUserLoggedIn" (click)="signIn()">
-    <img alt="Elastos Credentials Toolbox" src="assets/sign_out_btn.svg" />
-    <p class="center-text mp-0 c-46acf4">Sign In</p>
+  <div class="pos-relative" *ngIf="!isUserLoggedIn && !currentlyOnSignInPage()" (click)="signIn()">
+    <div class="d-flex justify-content-center text-center mr-3">
+      <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset">
+        Sign in
+      </button>
+    </div>
   </div>
   <div class="pos-relative" *ngIf="isUserLoggedIn" (click)="signOut()">
-    <img alt="Elastos Credentials Toolbox" src="assets/sign_out_btn.svg" />
-    <p class="center-text mp-0 c-46acf4">Sign out</p>
+    <div class="d-flex justify-content-center text-center mr-3">
+      <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset">
+        Sign out
+      </button>
+    </div>
   </div>
 </div>

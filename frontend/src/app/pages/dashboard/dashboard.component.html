@@ -1,70 +1,5 @@
 <Toolbar></Toolbar>
 
-<!-- <div class="content">
-  <h1>Dashboard</h1>
-
-  <h2>Verification status</h2>
-  <mat-progress-spinner *ngIf="fetchingVerificationStatus" diameter="20" color="color" mode="indeterminate">
-  </mat-progress-spinner>
-  <div *ngIf="!fetchingVerificationStatus">
-    <div *ngIf="verificationStatus === 'unverified'" class="verification-badge unverified">
-      Not verified yet.<br />Continue below to verify your identity.
-    </div>
-    <div *ngIf="verificationStatus === 'verified'" class="verification-badge verified">
-      Your identity was verified!<br />Please find your credentials below.
-    </div>
-    <div *ngIf="verificationStatus === 'pending'" class="verification-badge pending">
-      Your identity is being verified,<br />please check again later.
-    </div>
-  </div>
-
-  <div class="card-container" *ngIf="!fetchingVerificationStatus && verificationStatus === 'unverified'">
-    <a class="card actionCard" href="/verify">
-      <span>Verify now</span>
-      <svg class="material-icons" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-      </svg> </a>
-  </div>
-
-  <h2>My credentials</h2>
-  <div *ngIf="fetchingCredentials">Loading credentials...</div>
-  <mat-progress-spinner *ngIf="fetchingCredentials" diameter="20" color="color" mode="indeterminate">
-  </mat-progress-spinner>
-
-  <div class="no-credential" *ngIf="!fetchingCredentials && availableCredentials.length == 0">
-    No credential yet.
-  </div>
-
-  <div *ngIf="!fetchingCredentials && availableCredentials.length > 0" class="credentials">
-    <div *ngFor="let credential of availableCredentials" class="credential">
-      <div class="name">
-        <img [src]="getCredentialIcon(credential)" />
-        {{getDisplayableCredentialName(credential)}}
-      </div>
-      <div class="properties">
-        <div class="property" *ngFor="let property of getCredentialProperties(credential)">
-          <div class="label">{{getDisplayableCredentialPropertyKey(property.key)}}</div>
-          <div class="value">{{property.value}}</div>
-        </div>
-
-        <div class="property">
-          <div class="label">Signed by</div>
-          <div class="value">Trinity Tech Co. Ltd. on behalf of Passbase</div>
-        </div>
-
-        <button mat-stroked-button color="primary" (click)="importCredential(credential)">Import to identity
-          wallet</button>
-
-        <div class="note">
-          <mat-icon>info</mat-icon> After importing a credential in your identity wallet, you can use it
-          in third party dApps upon request.
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div> -->
-
 <div class="container">
   <div class="wrapper-box">
     <div class="d-flex justify-content-center my-2">
@@ -73,31 +8,86 @@
     <div class="d-flex justify-content-center mt-2rem">
       <p class="fw-500 fs-15 text-center fw-bold">Verification Status</p>
     </div>
-    <div class="d-flex justify-content-center mt-3">
+    <div class="d-flex justify-content-center mt-3" *ngIf="verificationStatus === 'unverified'">
       <div class="grey-box pt-2 px-2rem">
         <p class="fw-500 fs-15 text-center mb-2 fw-bold">Not verified yet.</p>
-        <p class="fw-500 fs-12 op-5 text-center lh-3">Continue below to verify <br />
-          your identity</p>
-        <!-- <div *ngIf="verificationStatus === 'verified'" class="verification-badge verified">
-            <p class="fw-500 fs-15 text-center fw-bold">Your identity is being verified...</p>
-            <p class="fw-500 fs-15 fs-13 text-center">Please check again later.</p>
-          </div>
-          <div *ngIf="verificationStatus === 'pending'" class="verification-badge pending">
-            <p class="fw-500 fs-15 text-center fw-bold">Your identity was verified!</p>
-            <p class="fw-500 fs-15 fs-13 text-center">Find your credentials below.</p>
-          </div> -->
+        <p class="fw-500 fs-12 op-5 text-center lh-3">Continue below to verify <br />your identity</p>
       </div>
     </div>
-    <div class="d-flex justify-content-center my-5">
+    <div class="d-flex justify-content-center mt-3" *ngIf="verificationStatus === 'pending'">
+      <div class="grey-box py-1 px-4">
+        <p class="fw-500 fs-15 text-center mb-2 fw-bold">Your identity is<br />being verified...</p>
+        <p class="fw-500 op-5 fs-12 text-center m-0">Please check again later.</p>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center mt-3" *ngIf="verificationStatus === 'verified'">
+      <div class="green-box py-1 px-4">
+        <p class="fw-500 fs-15 text-center c-4af08c fw-bold">Your identity was<br />verified!</p>
+        <p class="fw-500 op-5 fs-12 text-center m-0">Find your credentials below.</p>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center my-5"
+      *ngIf="!fetchingVerificationStatus && verificationStatus === 'unverified'">
       <a class="blue-btn fs-15 text-decoration-none c-4ab4f0" [routerLink]="['/verify']">
         <span class="mx-3">Verify now</span>
         <img src="../../../assets/arrow_icon.svg" class="align-bottom" alt=">">
       </a>
     </div>
-    <div class="d-flex flex-column justify-content-center">
+    <div class="d-flex flex-column align-items-center justify-content-center mt-3">
       <p class="fw-500 fs-15 text-center fw-bold">My Credentials</p>
-      <p class="fw-500 fs-12 text-center op-5 dark-mode">No credentials yet.</p>
+      <mat-progress-spinner *ngIf="fetchingCredentials" diameter="20" color="color" mode="indeterminate">
+      </mat-progress-spinner>
+      <p class="fw-500 fs-12 text-center op-5 dark-mode"
+        *ngIf="!fetchingCredentials && availableCredentials.length == 0">No credential yet.</p>
     </div>
+
+    <div *ngIf="!fetchingCredentials && availableCredentials.length > 0" class="credentials pb-3">
+      <div class="d-flex flex-column justify-content-center mb-3" *ngFor="let credential of availableCredentials">
+        <div class="d-flex mx-4 align-content-center dark-img">
+          <img src="../../../assets/half_round_white.svg" class="ml-2 mr-2 icon-width" alt="half Round Icon"
+            *ngIf="isDarkTheme">
+          <img src="../../../assets/half_round.svg" class="ml-2 mr-2" alt="half Round Icon" *ngIf="!isDarkTheme">
+          <p class="pb-0 mt-3 fs-12 fw-500">{{getDisplayableCredentialName(credential)}}</p>
+        </div>
+        <div class="blue-box fs-12 justify-content-center row pt-3 mx-1">
+          <!-- Properties -->
+          <div class="fs-12 row" *ngFor="let property of getCredentialProperties(credential)">
+            <div class="col-4">
+              <p class="c-4ab4f0 fw-bold">{{getDisplayableCredentialPropertyKey(property.key)}}</p>
+            </div>
+            <div class="col-8">
+              <p class="c-000000 fw-500">{{property.value}}</p>
+            </div>
+          </div>
+          <!-- Signed by -->
+          <div class="fs-12 row">
+            <div class="col-4">
+              <p class="c-4ab4f0 fw-bold">Signed by</p>
+            </div>
+            <div class="col-8">
+              <p class="c-000000 fw-500">Trinity Tech Co. Ltd. on behalf of Passbase</p>
+            </div>
+          </div>
+          <!-- Import action -->
+          <button class="blue-btn fs-12 px-2 py-0 inline-fit-content fw-unset c-white"
+            (click)="importCredential(credential)">
+            Import to Identity wallet
+          </button>
+          <!-- Info -->
+          <div class="d-flex justify-content-center mt-2">
+            <img src="../../../assets/square.svg" class="icon-img" alt="Square" *ngIf="!isDarkTheme">
+            <img src="../../../assets/square_dark.svg" class="icon-img" alt="Square" *ngIf="isDarkTheme">
+            <p class="op-5 fw-500">
+              <i>
+                After importing a credential in
+                your identity wallet, you can use it
+                in third party dApps upon request.</i>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 

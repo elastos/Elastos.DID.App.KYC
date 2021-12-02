@@ -1,24 +1,24 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ConnectivityService } from './services/connectivity.service';
+import { ThemeService, ThemeType } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   constructor(
-    public connectorService: ConnectivityService // init
+    private themeService: ThemeService,
+    public connectorService: ConnectivityService, // init
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
-    let qParams = window.location.href.split('?');
-    document.body.style.backgroundColor = qParams.includes('theme=dark')
-      ? 'black'
-      : 'white';
-
-    document.body.style.color = qParams.includes('theme=dark')
-      ? 'white'
-      : 'black';
+    this.route.queryParams.subscribe(p => {
+      if ("theme" in this.route.snapshot.queryParams)
+        this.themeService.setTheme(this.route.snapshot.queryParams["theme"] === "dark" ? ThemeType.DARK : ThemeType.LIGHT);
+    })
   }
 }

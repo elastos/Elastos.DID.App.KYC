@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'Toolbar',
@@ -8,10 +8,12 @@ import { Router } from '@angular/router';
   styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent {
-  public isUserLoggedIn =
-    this.authService.getAuthUser() !== null ? true : false;
-  constructor(public authService: AuthService, public router: Router) {
-    authService.signedInDID();
+  public isUserLoggedIn = this.authService.isAuthenticated();
+
+  constructor(public authService: AuthService, public router: Router, private route: ActivatedRoute) {
+    this.authService.authenticatedUser.subscribe(user => {
+      this.isUserLoggedIn = user !== null;
+    });
   }
 
   public signIn() {
@@ -23,5 +25,9 @@ export class ToolbarComponent {
 
   public signOut() {
     this.authService.signOut();
+  }
+
+  public currentlyOnSignInPage(): boolean {
+    return this.route.snapshot.routeConfig.path === "login";
   }
 }

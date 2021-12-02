@@ -24,27 +24,33 @@
     <div class="d-flex justify-content-center mt-2">
       <p class="heading text-center c-4ab4f0">Identity Verification</p>
     </div>
-    <div class="d-flex flex-column mt-5 justify-content-center">
-      <p class="fw-500 fs-15 text-center c-000000">
+    <div class="d-flex flex-column mt-3 justify-content-center">
+      <p class="fs-15 text-center c-000000">
         The following third-party KYC <br />
         (Know Your Customer) providers can<br />
-        process your identity. During the process <br />
+        process your identity.
+      </p>
+      <p class="fs-15 text-center c-000000">
+        During the process <br />
         you will be required to do some actions<br />
         such as scanning your face or<br />
         your passport.
       </p>
-      <p class="fw-500 fs-15 text-center c-000000">
+      <p class="fs-15 text-center c-000000">
         Once the process is completed,<br />
         DID credentials will be generated and you<br />
         can download them here.<br />
       </p>
-      <p class="fw-500 fs-15 text-center c-000000">
+      <p class="fs-15 text-center c-000000">
         The process can take a few minutes.
       </p>
     </div>
-    <div class="mx-5 my-2 px-2rem text-center">
-      <p class="fw-600 fs-15 c-4ab4f0">Passbase :</p>
-      <div #passbaseButton></div>
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">Passbase</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate"></mat-progress-spinner>
+        <div #passbaseButton class="passbase-button"></div>
+      </div>
     </div>
     <!-- <div class="mx-5 my-2 d-flex justify-content-center">
       <img src="../../../assets/company_icon.svg" alt="Company Tags">
