@@ -45,16 +45,19 @@
         The process can take a few minutes.
       </p>
     </div>
-    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center">
+    <!-- Verify buttons -->
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">Passbase</div>
       <div class="passbase-container">
         <mat-progress-spinner diameter="20" color="color" mode="indeterminate"></mat-progress-spinner>
         <div #passbaseButton class="passbase-button"></div>
       </div>
     </div>
-    <!-- <div class="mx-5 my-2 d-flex justify-content-center">
-      <img src="../../../assets/company_icon.svg" alt="Company Tags">
-    </div> -->
+    <!-- Verification complete -->
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">Great, you're done!. Please wait a few hours and come back to this
+        application to verify your verification progress, and import your credentials.</div>
+    </div>
   </div>
 </div>
 

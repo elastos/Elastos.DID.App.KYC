@@ -10,7 +10,6 @@ import Passbase from '@passbase/button';
 import { AuthService } from 'src/app/services/auth.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { ThemeService } from 'src/app/services/theme.service';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-verify',
@@ -38,7 +37,7 @@ export class VerifyComponent {
     console.log("this.themeService.isDarkMode", this.themeService.isDarkMode)
     Passbase.renderButton(
       this.passbaseButton.nativeElement,
-      environment.passbaseKey,
+      process.env.NG_APP_PASSBASE_PUBLIC_API_KEY,
       {
         onStart: () => {
           console.log('Passbase onstart');

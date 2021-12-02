@@ -4,7 +4,6 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 import { DID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import jwtDecode from 'jwt-decode';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { User } from '../model/user';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
 
@@ -89,7 +88,7 @@ export class AuthService {
       const did = presentation.getHolder().getMethodSpecificId();
 
       try {
-        let response = await fetch(`${environment.apiURL}/api/v1/login`, {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

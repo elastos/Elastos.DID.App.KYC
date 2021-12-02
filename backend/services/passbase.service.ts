@@ -62,10 +62,11 @@ class PassbaseService {
       }
 
       // Low verification score, low trust. Don't generate credentials.
-      if (identity.score < 0.8) {
+      // NOTE: disabled - no need to check this, as we need to do a manual verification anyway
+      /* if (identity.score < 0.8) {
         console.log(`Identity found for ${user.passbaseUUID} but trust score is too low: ${identity.score}`);
         return [];
-      }
+      } */
 
       // Go through resources
       let generatedCredentials: VerifiableCredential[] = [];
@@ -231,9 +232,13 @@ class PassbaseService {
       }
     });
 
+    /**
+     * DisplayableCredential: standard format to make it easy to display credentials in a human friendly way on UIs.
+     * SensitiveCredential: standard format to warn users that they may be cautious about how they deal with such credentials, especially on UI, for instance to avoid publishing them on chain.
+     */
     let credential = await new VerifiableCredential.Builder(issuer, targetDID)
       .id(credentialId)
-      .type(credentialType, "DisplayableCredential")
+      .type(credentialType, "DisplayableCredential", "SensitiveCredential")
       .properties(fullSubject)
       .expirationDate(moment().add(3, "years").toDate()) // 3 years validity
       .seal(didService.getStorePass());

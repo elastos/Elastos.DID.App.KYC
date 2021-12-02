@@ -26,7 +26,6 @@ import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk'
 import { DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
 import { VerificationStatus } from '../model/verificationstatus';
 import { AuthService } from './auth.service';
-import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +38,7 @@ export class CredentialsService {
    */
   public async savePassbaseUUID(passbaseUUID: string) {
     try {
-      let response = await fetch(`${environment.apiURL}/api/v1/user/passbase/uuid`, {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/uuid`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,7 +58,7 @@ export class CredentialsService {
 
   public async fetchUserPassbaseMetadata(): Promise<string> {
     try {
-      let response = await fetch(`${environment.apiURL}/api/v1/user/passbase/metadata`, {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/metadata`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +81,7 @@ export class CredentialsService {
 
   public async fetchUserVerificationStatus(): Promise<VerificationStatus> {
     try {
-      let response = await fetch(`${environment.apiURL}/api/v1/user/verificationstatus`, {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/verificationstatus`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +104,7 @@ export class CredentialsService {
 
   public async fetchUserCredentials(): Promise<VerifiableCredential[]> {
     try {
-      let response = await fetch(`${environment.apiURL}/api/v1/user/credentials`, {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/credentials`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

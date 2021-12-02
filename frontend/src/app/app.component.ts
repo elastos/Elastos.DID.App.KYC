@@ -16,9 +16,11 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.queryParams.subscribe(p => {
-      if ("theme" in this.route.snapshot.queryParams)
-        this.themeService.setTheme(this.route.snapshot.queryParams["theme"] === "dark" ? ThemeType.DARK : ThemeType.LIGHT);
+    this.route.queryParams.subscribe(queryParams => {
+      console.log("queryParams", queryParams)
+      if ("theme" in queryParams) {
+        this.themeService.setTheme(queryParams["theme"] === "dark" ? ThemeType.DARK : ThemeType.LIGHT);
+      }
     })
   }
 }
