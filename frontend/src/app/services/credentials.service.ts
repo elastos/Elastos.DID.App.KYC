@@ -22,9 +22,9 @@
 
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk';
+import { VerifiableCredential } from '@elastosfoundation/did-js-sdk';
 import { DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
-import { VerificationStatus } from '../model/verificationstatus';
+import { RawVerificationStatus, VerificationStatus } from '../model/verificationstatus';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -89,40 +89,20 @@ export class CredentialsService {
         }
       });
       if (response.ok) {
-        let status = await response.json() as { passbase: VerificationStatus };
+        let status = await response.json() as RawVerificationStatus;
         console.log("Received verification status", status);
-        return status.passbase;
-      } else {
-        console.error(response.statusText);
-        return VerificationStatus.UNKNOWN;
-      }
-    } catch (error) {
-      console.log(error);
-      return VerificationStatus.UNKNOWN;
-    }
-  }
 
-  public async fetchUserCredentials(): Promise<VerifiableCredential[]> {
-    try {
-      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/credentials`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "token": this.authService.getAuthToken()
+        return {
+          passbase: status.passbase,
+          credentials: status.credentials.map(c => VerifiableCredential.parse(c))
         }
-      });
-      if (response.ok) {
-        let credentialsJson = await response.json() as JSONObject[];
-        console.log("Received credentials", credentialsJson);
-        let credentials = credentialsJson.map(c => VerifiableCredential.parse(c));
-        return credentials;
       } else {
         console.error(response.statusText);
-        return [];
+        return null;
       }
     } catch (error) {
       console.log(error);
-      return [];
+      return null;
     }
   }
 

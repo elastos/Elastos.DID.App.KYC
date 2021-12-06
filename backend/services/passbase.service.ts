@@ -10,8 +10,10 @@ import { readFileSync } from "fs";
 import moment from "moment";
 import { SecretConfig } from "../config/env-secret";
 import logger from "../logger";
+import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { PassportResourceEntry } from "../model/passbase/passportresourceentry";
 import { User } from "../model/user";
+import { dbService } from "./db.service";
 import { didService } from "./did.service";
 
 class PassbaseService {
@@ -44,8 +46,10 @@ class PassbaseService {
 
     try {
       let identity = await this.passbaseClient.getIdentityById(user.passbaseUUID);
-      if (!identity)
+      if (!identity) {
+        await dbService.setPassbaseVerificationStatus(user.did, PassbaseVerificationStatus.UNKNOWN);
         return []; // Failed to find this user
+      }
 
       //console.log("Identity:", identity);
 
@@ -55,6 +59,9 @@ class PassbaseService {
         console.log(`Identity found for ${user.passbaseUUID} but authenticated user's DID ${user.did} doesn't match metadata DID`, identity.metadata);
         return [];
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await dbService.setPassbaseVerificationStatus(user.did, identity.status as any);
 
       if (identity.status !== "approved") {
         console.log(`Identity found for ${user.passbaseUUID} but not approved yet`);

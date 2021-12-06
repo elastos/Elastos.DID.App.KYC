@@ -4,6 +4,7 @@ import { SecretConfig } from "../config/env-secret";
 import logger from "../logger";
 import { Credential } from "../model/credential";
 import { DataOrError, ErrorType } from "../model/dataorerror";
+import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { User } from "../model/user";
 
 class DBService {
@@ -91,6 +92,28 @@ class DBService {
             const updateResult = await usersCollection.updateOne({ did: did }, {
                 $set: {
                     passbaseUUID
+                }
+            });
+            if (!updateResult || updateResult.matchedCount === 0) {
+                return { errorType: ErrorType.STATE_ERROR, error: 'User not found' };
+            } else {
+                return {};
+            }
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: 'server error' };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async setPassbaseVerificationStatus(did: string, status: PassbaseVerificationStatus): Promise<DataOrError<void>> {
+        try {
+            await this.client.connect();
+            const usersCollection = this.client.db().collection('users');
+            const updateResult = await usersCollection.updateOne({ did: did }, {
+                $set: {
+                    passbaseVerificationStatus: status
                 }
             });
             if (!updateResult || updateResult.matchedCount === 0) {

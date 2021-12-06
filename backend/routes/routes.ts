@@ -4,7 +4,9 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { SecretConfig } from '../config/env-secret';
 import logger from '../logger';
+import { PassbaseVerificationStatus } from '../model/passbase/passbaseverificationstatus';
 import { User } from '../model/user';
+import { VerificationStatus } from '../model/verificationstatus';
 import { dbService } from '../services/db.service';
 // eslint-disable-next-line import/namespace
 import { passbaseService } from '../services/passbase.service';
@@ -83,7 +85,7 @@ router.post('/login', async (req, res) => {
     }
 })
 
-router.get('/user/verificationstatus', async (req, res) => {
+/* router.get('/user/verificationstatus', async (req, res) => {
     let userDid = req.user.did;
 
     // Retrieve the user from DB
@@ -101,29 +103,33 @@ router.get('/user/verificationstatus', async (req, res) => {
     else {
         // We have a passbase UUID, this means the user has tried to get verified.
         // Now check if it's completed/approved, or not yet.
-        // NOTE: for now, REJECTED verifications are not handled correctly here.
-        let dbCredentialsDataOrError = await dbService.getUserCredentials(userDid);
-        if (dbCredentialsDataOrError.error)
-            return apiError(res, dbCredentialsDataOrError);
-
-        let credentials = dbCredentialsDataOrError.data;
-        if (credentials.length === 0) {
-            return res.json({
-                passbase: "pending"
-            });
-        }
-        else {
+        if (user.passbaseStatus === "approved") {
             return res.json({
                 passbase: "verified"
             });
         }
+        else if (user.passbaseStatus === "created" || user.passbaseStatus === "declined"){
+            return res.json({
+                passbase: "declined"
+            });
+        }
+        else {
+            // processing
+            return res.json({
+                passbase: "pending"
+            });
+        }
     }
-});
+}); */
 
-router.get('/user/credentials', async (req, res) => {
+/**
+ * This API returns the verification status for each provider, but at the same time it also returns
+ * the whole list of credentials, that already existed, or that were just fetched/updated.
+ */
+router.get('/user/verificationstatus', async (req, res) => {
     let userDid = req.user.did;
 
-    // Methodology:
+    // Methodology to get/create new credentials:
     // - Load existing credentials from DB
     // - Check latest data from passbase for this user, in case new content appeared
     // - For each credential that seems to be missing, generate it and add it to the DB
@@ -133,8 +139,8 @@ router.get('/user/credentials', async (req, res) => {
         return apiError(res, userDataOrError);
 
     let user = userDataOrError.data!;
-    if (!user.passbaseUUID) {
-        res.status(403).send('User not found, or passbaseUUID not set');
+    if (!user) {
+        res.status(403).send('User not found');
         return;
     }
 
@@ -142,20 +148,32 @@ router.get('/user/credentials', async (req, res) => {
     if (dbCredentialsDataOrError.error)
         return apiError(res, dbCredentialsDataOrError);
 
+    let verificationStatus: VerificationStatus = {
+        passbase: {
+            status: PassbaseVerificationStatus.UNKNOWN
+        },
+        credentials: []
+    };
+
     let dbCredentials = dbCredentialsDataOrError.data!.map(c => VerifiableCredential.parse(c.vc as JSONObject));
     logger.debug("Current user credentials in DB:", dbCredentials);
 
-    let discoveredCredentials = await passbaseService.fetchNewUserCredentials(user, dbCredentials);
-
-    if (discoveredCredentials.length > 0) {
-        // Add new credentials to DB
-        await dbService.saveCredentials(userDid, discoveredCredentials);
+    // PASSBASE
+    let newPassbaseCredentials: VerifiableCredential[] = [];
+    if (user.passbaseUUID) {
+        newPassbaseCredentials = await passbaseService.fetchNewUserCredentials(user, dbCredentials);
+        if (newPassbaseCredentials.length > 0) {
+            // Add new passbase credentials to DB
+            await dbService.saveCredentials(userDid, newPassbaseCredentials);
+        }
     }
+    verificationStatus.passbase.status = user.passbaseVerificationStatus || PassbaseVerificationStatus.UNKNOWN;
 
-    let allCredentials = [...dbCredentials, ...discoveredCredentials];
-    let allSerializedCredentials = allCredentials.map(c => c.toJSON());
+    // FINALIZE
+    let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+    verificationStatus.credentials = allCredentials.map(c => c.toJSON());
 
-    res.json(allSerializedCredentials);
+    res.json(verificationStatus);
 });
 
 /**

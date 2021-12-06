@@ -3,6 +3,8 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk/typings';
+import { OverallStatus } from 'src/app/model/overallstatus';
+import { PassbaseVerificationStatus } from 'src/app/model/passbase/passbaseverificationstatus';
 import { VerificationStatus } from 'src/app/model/verificationstatus';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { ThemeService } from 'src/app/services/theme.service';
@@ -17,7 +19,7 @@ import { ThemeService } from 'src/app/services/theme.service';
 export class DashboardComponent {
   public fetchingVerificationStatus = true;
   public verificationStatus: VerificationStatus;
-  public fetchingCredentials = true;
+  public overallVerificationStatus: OverallStatus; // Overall status string for all KYC providers
   public availableCredentials: VerifiableCredential[] = [];
   public isDarkTheme; // TODO: NOT LIKE THIS, REWORK
 
@@ -33,20 +35,15 @@ export class DashboardComponent {
   async ngAfterViewInit() {
     // Fetch status
     this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
+    if (this.verificationStatus) {
+      this.availableCredentials = this.verificationStatus.credentials;
+    }
+    this.prepareOverallStatus();
+
     this.fetchingVerificationStatus = false
 
     //this.verificationStatus = VerificationStatus.VERIFIED
     //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
-
-    // Fetch user's credentials
-    this.availableCredentials = await this.credentialsService.fetchUserCredentials();
-    this.fetchingCredentials = false;
-
-    // If we have verifiable credentials, force status to "verified". The first time when both
-    // "status" and "credentials" apis are called at the same time, the server status is "pending"
-    // because credentials are not fetched yet. Can be improved
-    if (this.availableCredentials.length > 0)
-      this.verificationStatus = VerificationStatus.VERIFIED;
   }
 
   public getCredentialIcon(credential: VerifiableCredential) {
@@ -102,5 +99,29 @@ export class DashboardComponent {
    */
   public importCredential(credential: VerifiableCredential) {
     this.credentialsService.importCredential(credential);
+  }
+
+  public prepareOverallStatus() {
+    if (this.verificationStatus) {
+      // For now, only passbase is supported. So the passbase status is also the overall status.
+      switch (this.verificationStatus.passbase.status) {
+        case PassbaseVerificationStatus.APPROVED:
+          this.overallVerificationStatus = OverallStatus.VERIFIED;
+          break;
+        case PassbaseVerificationStatus.PENDING:
+        case PassbaseVerificationStatus.PROCESSING:
+          this.overallVerificationStatus = OverallStatus.PENDING;
+          break;
+        case PassbaseVerificationStatus.DECLINED:
+          this.overallVerificationStatus = OverallStatus.REJECTED;
+          break;
+        case PassbaseVerificationStatus.UNKNOWN:
+          this.overallVerificationStatus = OverallStatus.UNVERIFIED;
+          break;
+      }
+    }
+    else {
+      this.overallVerificationStatus = OverallStatus.UNVERIFIED;
+    }
   }
 }
