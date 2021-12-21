@@ -289,3 +289,11 @@ h6 {
 //     background-color: white;
 //   }
 // }
+
+// Fix for bootstrap and kyc-me overriding "a" links colors making wallet connect
+// qr modal not show the right link colors (pages, tabs - white on white).
+a:not([href]):not([class]),
+a:not([href]):not([class]):hover {
+  color: initial;
+  text-decoration: none;
+}
