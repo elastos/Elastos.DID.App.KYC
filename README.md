@@ -29,3 +29,13 @@ Additional steps for local development:
 - Set NG_APP_PASSBASE_PUBLIC_API_KEY
 - npm i -D
 - npm run build
+
+### Passbase metadata key generation
+
+Private key:
+
+```openssl genrsa -out ~/passbase-metadata-private-key.pem 4096```
+
+Public key:
+
+```openssl rsa -in ~/passbase-metadata-private-key.pem -out ~/passbase-metadata-public-key.pub -pubout```

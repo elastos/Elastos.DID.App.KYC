@@ -32,7 +32,7 @@ class PassbaseService {
    * Encrypts a JSON object representing metadata, into a base64 string for passbase api.
    */
   public encryptMetadata(metadata: unknown): string {
-    const pkey = createPrivateKey({ format: 'pem', key: readFileSync("./config/passbase/passbase-metadata-private-key.pem") });
+    const pkey = createPrivateKey({ format: 'pem', key: readFileSync(`./config/passbase/${SecretConfig.Passbase.metadataPrivateKey}`) });
     const encrypted_metadata = privateEncrypt(pkey, Buffer.from(JSON.stringify(metadata))).toString('base64');
     return encrypted_metadata;
   }
@@ -56,7 +56,7 @@ class PassbaseService {
       // IMPORTANT: Make sure that the DID in the metadata object matches current user's DID.
       // This means that an attacker hasn't tried to pass a fake UUID to get another user's info.
       if (!identity.metadata || !("did" in identity.metadata) || identity.metadata["did"] !== user.did) {
-        console.log(`Identity found for ${user.passbaseUUID} but authenticated user's DID ${user.did} doesn't match metadata DID`, identity.metadata);
+        console.error(`Identity found for ${user.passbaseUUID} but authenticated user's DID ${user.did} doesn't match metadata DID`, identity.metadata);
         return [];
       }
 
