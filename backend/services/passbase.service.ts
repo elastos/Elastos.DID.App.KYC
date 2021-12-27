@@ -95,19 +95,19 @@ class PassbaseService {
           - passport: document_number+ date_of_issue+ date_of_expiry+ document_origin_country+ authority
           - gender: sex*/
 
-          let nameCredential = await this.maybeGenerateNameCredential(passportEntries, existingCredentialsInDB);
+          let nameCredential = await this.maybeGenerateNameCredential(user.did, passportEntries, existingCredentialsInDB);
           if (nameCredential)
             generatedCredentials.push(nameCredential);
 
-          let nationalityCredential = await this.maybeGenerateNationalityCredential(passportEntries, existingCredentialsInDB);
+          let nationalityCredential = await this.maybeGenerateNationalityCredential(user.did, passportEntries, existingCredentialsInDB);
           if (nationalityCredential)
             generatedCredentials.push(nationalityCredential);
 
-          let genderCredential = await this.maybeGenerateGenderCredential(passportEntries, existingCredentialsInDB);
+          let genderCredential = await this.maybeGenerateGenderCredential(user.did, passportEntries, existingCredentialsInDB);
           if (genderCredential)
             generatedCredentials.push(genderCredential);
 
-          let birthDateCredential = await this.maybeGenerateBirthDateCredential(passportEntries, existingCredentialsInDB);
+          let birthDateCredential = await this.maybeGenerateBirthDateCredential(user.did, passportEntries, existingCredentialsInDB);
           if (birthDateCredential)
             generatedCredentials.push(birthDateCredential);
         }
@@ -127,7 +127,7 @@ class PassbaseService {
     }
   }
 
-  private async maybeGenerateNameCredential(passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+  private async maybeGenerateNameCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
     let credentialType = "NameCredential";
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
@@ -141,10 +141,10 @@ class PassbaseService {
       return null;
 
     // Credential does not exist, create it
-    return await this.createCredential(credentialType, credentialSubject, iconUrl, title, description);
+    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
-  private async maybeGenerateNationalityCredential(passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+  private async maybeGenerateNationalityCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
     let credentialType = "NationalityCredential";
     let credentialSubject = {
       nationality: passportEntries.nationality.toUpperCase()
@@ -157,10 +157,10 @@ class PassbaseService {
       return null;
 
     // Credential does not exist, create it
-    return await this.createCredential(credentialType, credentialSubject, iconUrl, title, description);
+    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
-  private async maybeGenerateGenderCredential(passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+  private async maybeGenerateGenderCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
     let credentialType = "GenderCredential";
     let credentialSubject = {
       gender: passportEntries.sex.toUpperCase()
@@ -173,10 +173,10 @@ class PassbaseService {
       return null;
 
     // Credential does not exist, create it
-    return await this.createCredential(credentialType, credentialSubject, iconUrl, title, description);
+    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
-  private async maybeGenerateBirthDateCredential(passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+  private async maybeGenerateBirthDateCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
     let credentialType = "BirthDateCredential";
     let credentialSubject = {
       dateOfBirth: passportEntries.date_of_birth.toUpperCase()
@@ -189,7 +189,7 @@ class PassbaseService {
       return null;
 
     // Credential does not exist, create it
-    return await this.createCredential(credentialType, credentialSubject, iconUrl, title, description);
+    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
   // Check if the same credential doesn't exist yet.
@@ -220,11 +220,11 @@ class PassbaseService {
     return false; // Nothing matches: credential doesn't exist yet
   }
 
-  private async createCredential(credentialType: string, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+  private async createCredential(targetDID: string, credentialType: string, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     let issuer = new Issuer(didService.getIssuerDID());
     //console.log("Issuer:", issuer);
 
-    let targetDID = DID.from("did:elastos:insTmxdDDuS9wHHfeYD1h5C2onEHh3D8Vq");
+    let targetDIDObj = DID.from(targetDID); // User that receives the credential
     //console.log("Target DID:", targetDID);
 
     let randomCredentialIdNumber = Math.floor((Math.random() * 10000000));
@@ -243,7 +243,7 @@ class PassbaseService {
      * DisplayableCredential: standard format to make it easy to display credentials in a human friendly way on UIs.
      * SensitiveCredential: standard format to warn users that they may be cautious about how they deal with such credentials, especially on UI, for instance to avoid publishing them on chain.
      */
-    let credential = await new VerifiableCredential.Builder(issuer, targetDID)
+    let credential = await new VerifiableCredential.Builder(issuer, targetDIDObj)
       .id(credentialId)
       .types(credentialType, "DisplayableCredential", "SensitiveCredential")
       .properties(fullSubject)
