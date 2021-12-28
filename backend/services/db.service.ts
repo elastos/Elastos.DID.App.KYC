@@ -108,6 +108,7 @@ class DBService {
     }
 
     public async setPassbaseVerificationStatus(did: string, status: PassbaseVerificationStatus): Promise<DataOrError<void>> {
+        logger.info(`Setting passbase verification status for DID ${did} to ${status}`);
         try {
             await this.client.connect();
             const usersCollection = this.client.db().collection('users');

@@ -47,7 +47,9 @@ class PassbaseService {
     try {
       let identity = await this.passbaseClient.getIdentityById(user.passbaseUUID);
       if (!identity) {
-        await dbService.setPassbaseVerificationStatus(user.did, PassbaseVerificationStatus.UNKNOWN);
+        // Update and save current user's passbase status
+        user.passbaseVerificationStatus = PassbaseVerificationStatus.UNKNOWN;
+        await dbService.setPassbaseVerificationStatus(user.did, user.passbaseVerificationStatus);
         return []; // Failed to find this user
       }
 
@@ -60,8 +62,10 @@ class PassbaseService {
         return [];
       }
 
+      // Update and save current user's passbase status
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await dbService.setPassbaseVerificationStatus(user.did, identity.status as any);
+      user.passbaseVerificationStatus = identity.status as any;
+      await dbService.setPassbaseVerificationStatus(user.did, user.passbaseVerificationStatus);
 
       if (identity.status !== "approved") {
         console.log(`Identity found for ${user.passbaseUUID} but not approved yet`);
@@ -128,6 +132,9 @@ class PassbaseService {
   }
 
   private async maybeGenerateNameCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+    if (!passportEntries.first_names || !passportEntries.last_name)
+      return null; // Passbase could not extract the name
+
     let credentialType = "NameCredential";
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
@@ -145,6 +152,9 @@ class PassbaseService {
   }
 
   private async maybeGenerateNationalityCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+    if (!passportEntries.nationality)
+      return null; // Passbase could not extract the nationality
+
     let credentialType = "NationalityCredential";
     let credentialSubject = {
       nationality: passportEntries.nationality.toUpperCase()
@@ -161,6 +171,9 @@ class PassbaseService {
   }
 
   private async maybeGenerateGenderCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+    if (!passportEntries.sex)
+      return null; // Passbase could not extract the gender
+
     let credentialType = "GenderCredential";
     let credentialSubject = {
       gender: passportEntries.sex.toUpperCase()
@@ -177,6 +190,9 @@ class PassbaseService {
   }
 
   private async maybeGenerateBirthDateCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
+    if (!passportEntries.date_of_birth)
+      return null; // Passbase could not extract the birth date
+
     let credentialType = "BirthDateCredential";
     let credentialSubject = {
       dateOfBirth: passportEntries.date_of_birth.toUpperCase()
