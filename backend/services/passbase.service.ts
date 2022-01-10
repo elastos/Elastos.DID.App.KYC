@@ -87,8 +87,8 @@ class PassbaseService {
           //console.log("PASSPORT RES POINTS", passportEntries);
 
           if (!passportEntries.mrtd_verified) {
-            console.warn(`Passport MRTD is not verified for user ${user.passbaseUUID}. Not issuing credentials`);
-            return [];
+            console.warn(`Note: passport MRTD is not verified for user ${user.passbaseUUID}.`);
+            // Just a warning, continue
           }
 
           // CREDENTIALS TO GEN:
@@ -138,7 +138,8 @@ class PassbaseService {
     let credentialType = "NameCredential";
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
-      firstNames: passportEntries.first_names.toUpperCase()
+      firstNames: passportEntries.first_names.toUpperCase(),
+      mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Full name";
@@ -157,7 +158,8 @@ class PassbaseService {
 
     let credentialType = "NationalityCredential";
     let credentialSubject = {
-      nationality: passportEntries.nationality.toUpperCase()
+      nationality: passportEntries.nationality.toUpperCase(),
+      mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Nationality";
@@ -176,7 +178,8 @@ class PassbaseService {
 
     let credentialType = "GenderCredential";
     let credentialSubject = {
-      gender: passportEntries.sex.toUpperCase()
+      gender: passportEntries.sex.toUpperCase(),
+      mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Gender";
@@ -195,7 +198,8 @@ class PassbaseService {
 
     let credentialType = "BirthDateCredential";
     let credentialSubject = {
-      dateOfBirth: passportEntries.date_of_birth.toUpperCase()
+      dateOfBirth: passportEntries.date_of_birth.toUpperCase(),
+      mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Date of birth";
