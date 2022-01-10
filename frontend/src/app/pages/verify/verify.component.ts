@@ -74,4 +74,8 @@ export class VerifyComponent {
       );
     }
   }
+
+  public backToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
 }

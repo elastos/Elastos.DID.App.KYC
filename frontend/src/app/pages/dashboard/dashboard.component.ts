@@ -82,6 +82,7 @@ export class DashboardComponent {
       case "lastName": return "Last name";
       case "nationality": return "Nationality";
       case "gender": return "Gender";
+      case "mrtdVerified": return "MRTD Verified";
       default: return key;
     }
   }
