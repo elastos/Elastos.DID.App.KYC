@@ -132,13 +132,15 @@ class PassbaseService {
   }
 
   private async maybeGenerateNameCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
-    if (!passportEntries.first_names || !passportEntries.last_name)
+    // We need at least something in last names. Normally, we get first names AND last name. But in some cases
+    // of long names, passbase can't split this well and returns everything in "last_name" without "first_names".
+    if (!passportEntries.last_name)
       return null; // Passbase could not extract the name
 
     let credentialType = "NameCredential";
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
-      firstNames: passportEntries.first_names.toUpperCase(),
+      ...("first_names" in passportEntries && { firstName: passportEntries.first_names.toUpperCase() }), // Add the field only if existing
       mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
