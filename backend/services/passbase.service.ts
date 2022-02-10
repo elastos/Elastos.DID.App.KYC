@@ -140,7 +140,7 @@ class PassbaseService {
     let credentialType = "NameCredential";
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
-      ...("first_names" in passportEntries && { firstName: passportEntries.first_names.toUpperCase() }), // Add the field only if existing
+      ...("first_names" in passportEntries && { firstNames: passportEntries.first_names.toUpperCase() }), // Add the field only if existing
       mrtdVerified: passportEntries.mrtd_verified || false
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
