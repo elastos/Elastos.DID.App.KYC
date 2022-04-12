@@ -3,6 +3,10 @@ import jwt from "jsonwebtoken";
 import { SecretConfig } from "../config/env-secret";
 import { dbService } from "../services/db.service";
 
+type DIDAuthTokenPayload = {
+    did: string;
+}
+
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
     if (req.path !== "/api/v1/login" && req.path != "/api/v1/check") {
@@ -13,7 +17,8 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
                 if (error || !decoded) {
                     return res.status(403).send('Token verification failed');
                 } else {
-                    let dataOrError = await dbService.findUserByDID(decoded.did);
+                    let tokenPayload = <DIDAuthTokenPayload>decoded;
+                    let dataOrError = await dbService.findUserByDID(tokenPayload.did);
                     if (dataOrError.error) {
                         return res.status(403).send('Can not find the token');
                     }
