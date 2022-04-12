@@ -5,6 +5,7 @@ import { DID } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import jwtDecode from 'jwt-decode';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../model/user';
+import { ConnectivityService } from './connectivity.service';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
 
 @Injectable({
@@ -14,7 +15,7 @@ export class AuthService {
   private postAuthRoute: string = null;
   public authenticatedUser = new BehaviorSubject<User>(null);
 
-  constructor(private jwtHelper: JwtHelperService, public router: Router) {
+  constructor(private jwtHelper: JwtHelperService, public router: Router, private connectivityService: ConnectivityService) {
     this.loadUser();
   }
 
@@ -66,6 +67,10 @@ export class AuthService {
   }
 
   public async signIn(): Promise<void> {
+    // Always disconnect from older WC session first to restart fresh, if needed
+    if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
+      await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+
     const didAccess = new DID.DIDAccess();
     let presentation;
 

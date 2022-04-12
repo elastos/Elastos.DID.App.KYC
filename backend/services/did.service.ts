@@ -1,4 +1,4 @@
-import { DIDBackend, DIDDocument, DIDStore, RootIdentity } from "@elastosfoundation/did-js-sdk";
+import { DIDBackend, DIDDocument, DIDStore, Features, RootIdentity } from "@elastosfoundation/did-js-sdk";
 import { MyDIDAdapter } from "../adapters/mydid.adapter";
 import { SecretConfig } from "../config/env-secret";
 
@@ -10,6 +10,9 @@ class DIDService {
   public async setup() {
     let storeId = "kyc-did-store";
     let passphrase = ""; // No mnemonic passphrase
+
+    // Use full DID types with contexts
+    Features.enableJsonLdContext(true);
 
     DIDBackend.initialize(new MyDIDAdapter());
 

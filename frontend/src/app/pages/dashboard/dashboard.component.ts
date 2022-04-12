@@ -3,6 +3,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk/typings';
+import moment from 'moment';
 import { OverallStatus } from 'src/app/model/overallstatus';
 import { PassbaseVerificationStatus } from 'src/app/model/passbase/passbaseverificationstatus';
 import { VerificationStatus } from 'src/app/model/verificationstatus';
@@ -90,9 +91,13 @@ export class DashboardComponent {
   public getCredentialProperties(credential: VerifiableCredential): { key: string, value: string }[] {
     let props = credential.getSubject().getProperties();
     // Exclude the DisplayableCredential special field
-    return Object.keys(props).filter(k => k !== "displayable").map(k => {
+    return Object.keys(props).filter(k => k !== "displayable" && k !== "mrtdVerified").map(k => {
       return { key: k, value: props[k] as string };
     });
+  }
+
+  public getDisplayableCreationDate(credential: VerifiableCredential): string {
+    return moment(credential.getIssuanceDate()).format("YYYY-MM-DD");
   }
 
   /**

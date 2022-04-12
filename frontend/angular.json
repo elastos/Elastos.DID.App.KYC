@@ -76,7 +76,8 @@
               "browserTarget": "CredentialTools:build:production"
             },
             "development": {
-              "browserTarget": "CredentialTools:build:development"
+              "browserTarget": "CredentialTools:build:development",
+              "port": 5712
             }
           },
           "defaultConfiguration": "development"

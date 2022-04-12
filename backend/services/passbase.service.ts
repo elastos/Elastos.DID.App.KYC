@@ -16,6 +16,11 @@ import { User } from "../model/user";
 import { dbService } from "./db.service";
 import { didService } from "./did.service";
 
+type FullCredentialType = {
+  context: string;
+  shortType: string;
+}
+
 class PassbaseService {
   private passbaseClient: PassbaseClient = null;
 
@@ -99,6 +104,10 @@ class PassbaseService {
           - passport: document_number+ date_of_issue+ date_of_expiry+ document_origin_country+ authority
           - gender: sex*/
 
+          // TMP BEN DEBUG
+          passportEntries.sex = "male";
+
+
           let nameCredential = await this.maybeGenerateNameCredential(user.did, passportEntries, existingCredentialsInDB);
           if (nameCredential)
             generatedCredentials.push(nameCredential);
@@ -121,12 +130,10 @@ class PassbaseService {
         }
       }
 
-      console.log("generatedCredentials", generatedCredentials)
-
       return generatedCredentials;
     }
     catch (e) {
-      console.warn("fetchNewUserCredentials(): Passbase error:", e);
+      console.warn("fetchNewUserCredentials(): Error:", e);
       return [];
     }
   }
@@ -137,7 +144,10 @@ class PassbaseService {
     if (!passportEntries.last_name)
       return null; // Passbase could not extract the name
 
-    let credentialType = "NameCredential";
+    let credentialType: FullCredentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/NameCredential",
+      shortType: "NameCredential"
+    };
     let credentialSubject = {
       lastName: passportEntries.last_name.toUpperCase(),
       ...("first_names" in passportEntries && { firstNames: passportEntries.first_names.toUpperCase() }), // Add the field only if existing
@@ -158,7 +168,10 @@ class PassbaseService {
     if (!passportEntries.nationality)
       return null; // Passbase could not extract the nationality
 
-    let credentialType = "NationalityCredential";
+    let credentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/NationalityCredential",
+      shortType: "NationalityCredential"
+    };
     let credentialSubject = {
       nationality: passportEntries.nationality.toUpperCase(),
       mrtdVerified: passportEntries.mrtd_verified || false
@@ -178,7 +191,10 @@ class PassbaseService {
     if (!passportEntries.sex)
       return null; // Passbase could not extract the gender
 
-    let credentialType = "GenderCredential";
+    let credentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/GenderCredential",
+      shortType: "GenderCredential"
+    };
     let credentialSubject = {
       gender: passportEntries.sex.toUpperCase(),
       mrtdVerified: passportEntries.mrtd_verified || false
@@ -198,7 +214,10 @@ class PassbaseService {
     if (!passportEntries.date_of_birth)
       return null; // Passbase could not extract the birth date
 
-    let credentialType = "BirthDateCredential";
+    let credentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/BirthDateCredential",
+      shortType: "BirthDateCredential"
+    };
     let credentialSubject = {
       dateOfBirth: passportEntries.date_of_birth.toUpperCase(),
       mrtdVerified: passportEntries.mrtd_verified || false
@@ -216,7 +235,7 @@ class PassbaseService {
 
   // Check if the same credential doesn't exist yet.
   // Same = same type + same subject fields
-  private credentialAlreadyExists(credentialType: string, subject: unknown, existingCredentialsInDB: VerifiableCredential[]): boolean {
+  private credentialAlreadyExists(credentialType: FullCredentialType, subject: unknown, existingCredentialsInDB: VerifiableCredential[]): boolean {
     // Remove the special displayable credential properties
     let filteredSubject = Object.assign({}, subject) as JSONObject;
     delete filteredSubject["displayable"];
@@ -228,7 +247,7 @@ class PassbaseService {
     });
 
     for (let credential of verifiableCredentials) {
-      if (credential.getType().indexOf(credentialType) >= 0) {
+      if (credential.getType().indexOf(credentialType.shortType) >= 0) {
         // Same type - now check subject keys
         let credentialFilteredSubject = Object.assign({}, credential.getSubject().getProperties()) as JSONObject;
         delete credentialFilteredSubject["displayable"];
@@ -242,7 +261,7 @@ class PassbaseService {
     return false; // Nothing matches: credential doesn't exist yet
   }
 
-  private async createCredential(targetDID: string, credentialType: string, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+  private async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     let issuer = new Issuer(didService.getIssuerDID());
     //console.log("Issuer:", issuer);
 
@@ -250,7 +269,7 @@ class PassbaseService {
     //console.log("Target DID:", targetDID);
 
     let randomCredentialIdNumber = Math.floor((Math.random() * 10000000));
-    let credentialId = `${credentialType}${randomCredentialIdNumber}`;
+    let credentialId = `${credentialType.shortType}${randomCredentialIdNumber}`;
 
     // Append DisplayCredential info to the standard subject payload
     let fullSubject = Object.assign({}, subject, {
@@ -267,7 +286,11 @@ class PassbaseService {
      */
     let credential = await new VerifiableCredential.Builder(issuer, targetDIDObj)
       .id(credentialId)
-      .types(credentialType, "DisplayableCredential", "SensitiveCredential")
+      .types(
+        credentialType.context + "#" + credentialType.shortType,
+        "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+        "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+      )
       .properties(fullSubject)
       .expirationDate(moment().add(3, "years").toDate()) // 3 years validity
       .seal(didService.getStorePass());

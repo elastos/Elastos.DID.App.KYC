@@ -171,6 +171,10 @@ router.get('/user/verificationstatus', async (req, res) => {
 
     // FINALIZE
     let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+    // Sort by most recent first
+    allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+
     verificationStatus.credentials = allCredentials.map(c => c.toJSON());
 
     res.json(verificationStatus);
