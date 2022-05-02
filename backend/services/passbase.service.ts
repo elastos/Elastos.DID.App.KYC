@@ -96,18 +96,6 @@ class PassbaseService {
             // Just a warning, continue
           }
 
-          // CREDENTIALS TO GEN:
-          /*
-          - birth date : date_of_birth
-          - name: last_name+ first_names
-          - nationality: nationality
-          - passport: document_number+ date_of_issue+ date_of_expiry+ document_origin_country+ authority
-          - gender: sex*/
-
-          // TMP BEN DEBUG
-          passportEntries.sex = "male";
-
-
           let nameCredential = await this.maybeGenerateNameCredential(user.did, passportEntries, existingCredentialsInDB);
           if (nameCredential)
             generatedCredentials.push(nameCredential);
