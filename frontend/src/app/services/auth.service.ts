@@ -76,10 +76,11 @@ export class AuthService {
 
     console.log("Trying to sign in using the connectivity SDK");
     try {
-      presentation = await didAccess.getCredentials({
-        claims: {
-          email: false // optional email to automatically fill passbase form for convenience
-        }
+      presentation = await didAccess.requestCredentials({
+        claims: [
+          // optional email to automatically fill passbase form for convenience
+          DID.standardEmailClaim("Used during the KYC process", false)
+        ]
       });
     } catch (e) {
       // Possible exception while using wallet connect (i.e. not an identity wallet)

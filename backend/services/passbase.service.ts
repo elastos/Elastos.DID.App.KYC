@@ -10,16 +10,15 @@ import { readFileSync } from "fs";
 import moment from "moment";
 import { SecretConfig } from "../config/env-secret";
 import logger from "../logger";
+import { FullCredentialType } from "../model/fullcredentialtype";
+import { NationalIDCardResourceEntry } from "../model/passbase/idcardresourceentry";
 import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { PassportResourceEntry } from "../model/passbase/passportresourceentry";
 import { User } from "../model/user";
 import { dbService } from "./db.service";
 import { didService } from "./did.service";
-
-type FullCredentialType = {
-  context: string;
-  shortType: string;
-}
+import { PassbaseNationalIDCardGenerator } from "./generators/passbase/idcard.generator";
+import { PassbasePassportGenerator } from "./generators/passbase/passport.generator";
 
 class PassbaseService {
   private passbaseClient: PassbaseClient = null;
@@ -59,6 +58,7 @@ class PassbaseService {
       }
 
       //console.log("Identity:", identity);
+      //console.log("Identity datapoints:", identity.resources[0].datapoints);
 
       // IMPORTANT: Make sure that the DID in the metadata object matches current user's DID.
       // This means that an attacker hasn't tried to pass a fake UUID to get another user's info.
@@ -89,28 +89,13 @@ class PassbaseService {
       for (let resource of identity.resources) {
         if (resource.type === "PASSPORT") {
           let passportEntries: PassportResourceEntry = resource.datapoints as unknown as PassportResourceEntry;
-          //console.log("PASSPORT RES POINTS", passportEntries);
-
-          if (!passportEntries.mrtd_verified) {
-            console.warn(`Note: passport MRTD is not verified for user ${user.passbaseUUID}.`);
-            // Just a warning, continue
-          }
-
-          let nameCredential = await this.maybeGenerateNameCredential(user.did, passportEntries, existingCredentialsInDB);
-          if (nameCredential)
-            generatedCredentials.push(nameCredential);
-
-          let nationalityCredential = await this.maybeGenerateNationalityCredential(user.did, passportEntries, existingCredentialsInDB);
-          if (nationalityCredential)
-            generatedCredentials.push(nationalityCredential);
-
-          let genderCredential = await this.maybeGenerateGenderCredential(user.did, passportEntries, existingCredentialsInDB);
-          if (genderCredential)
-            generatedCredentials.push(genderCredential);
-
-          let birthDateCredential = await this.maybeGenerateBirthDateCredential(user.did, passportEntries, existingCredentialsInDB);
-          if (birthDateCredential)
-            generatedCredentials.push(birthDateCredential);
+          let passbasePassportGenerator = new PassbasePassportGenerator();
+          await passbasePassportGenerator.generateAll(user, passportEntries, generatedCredentials, existingCredentialsInDB);
+        }
+        else if (resource.type === "NATIONAL_ID_CARD") {
+          let idCardEntries: NationalIDCardResourceEntry = resource.datapoints as unknown as NationalIDCardResourceEntry;
+          let passbaseIDCardGenerator = new PassbaseNationalIDCardGenerator();
+          await passbaseIDCardGenerator.generateAll(user, idCardEntries, generatedCredentials, existingCredentialsInDB);
         }
         else {
           console.warn(`Unhandled passbase resource type ${resource.type} for user ${user.passbaseUUID}`);
@@ -126,104 +111,9 @@ class PassbaseService {
     }
   }
 
-  private async maybeGenerateNameCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
-    // We need at least something in last names. Normally, we get first names AND last name. But in some cases
-    // of long names, passbase can't split this well and returns everything in "last_name" without "first_names".
-    if (!passportEntries.last_name)
-      return null; // Passbase could not extract the name
-
-    let credentialType: FullCredentialType = {
-      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/NameCredential",
-      shortType: "NameCredential"
-    };
-    let credentialSubject = {
-      lastName: passportEntries.last_name.toUpperCase(),
-      ...("first_names" in passportEntries && { firstNames: passportEntries.first_names.toUpperCase() }), // Add the field only if existing
-      mrtdVerified: passportEntries.mrtd_verified || false
-    };
-    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
-    let title = "Full name";
-    let description = "${lastName} ${firstNames}";
-
-    if (this.credentialAlreadyExists(credentialType, credentialSubject, existingCredentialsInDB))
-      return null;
-
-    // Credential does not exist, create it
-    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
-  }
-
-  private async maybeGenerateNationalityCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
-    if (!passportEntries.nationality)
-      return null; // Passbase could not extract the nationality
-
-    let credentialType = {
-      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/NationalityCredential",
-      shortType: "NationalityCredential"
-    };
-    let credentialSubject = {
-      nationality: passportEntries.nationality.toUpperCase(),
-      mrtdVerified: passportEntries.mrtd_verified || false
-    };
-    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
-    let title = "Nationality";
-    let description = "${nationality}";
-
-    if (this.credentialAlreadyExists(credentialType, credentialSubject, existingCredentialsInDB))
-      return null;
-
-    // Credential does not exist, create it
-    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
-  }
-
-  private async maybeGenerateGenderCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
-    if (!passportEntries.sex)
-      return null; // Passbase could not extract the gender
-
-    let credentialType = {
-      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/GenderCredential",
-      shortType: "GenderCredential"
-    };
-    let credentialSubject = {
-      gender: passportEntries.sex.toUpperCase(),
-      mrtdVerified: passportEntries.mrtd_verified || false
-    };
-    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
-    let title = "Gender";
-    let description = "${gender}";
-
-    if (this.credentialAlreadyExists(credentialType, credentialSubject, existingCredentialsInDB))
-      return null;
-
-    // Credential does not exist, create it
-    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
-  }
-
-  private async maybeGenerateBirthDateCredential(targetDID: string, passportEntries: PassportResourceEntry, existingCredentialsInDB: VerifiableCredential[]): Promise<VerifiableCredential> {
-    if (!passportEntries.date_of_birth)
-      return null; // Passbase could not extract the birth date
-
-    let credentialType = {
-      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/BirthDateCredential",
-      shortType: "BirthDateCredential"
-    };
-    let credentialSubject = {
-      dateOfBirth: passportEntries.date_of_birth.toUpperCase(),
-      mrtdVerified: passportEntries.mrtd_verified || false
-    };
-    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
-    let title = "Date of birth";
-    let description = "${dateOfBirth}";
-
-    if (this.credentialAlreadyExists(credentialType, credentialSubject, existingCredentialsInDB))
-      return null;
-
-    // Credential does not exist, create it
-    return await this.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
-  }
-
   // Check if the same credential doesn't exist yet.
   // Same = same type + same subject fields
-  private credentialAlreadyExists(credentialType: FullCredentialType, subject: unknown, existingCredentialsInDB: VerifiableCredential[]): boolean {
+  public credentialAlreadyExists(credentialType: FullCredentialType, subject: unknown, existingCredentialsInDB: VerifiableCredential[]): boolean {
     // Remove the special displayable credential properties
     let filteredSubject = Object.assign({}, subject) as JSONObject;
     delete filteredSubject["displayable"];
@@ -249,7 +139,7 @@ class PassbaseService {
     return false; // Nothing matches: credential doesn't exist yet
   }
 
-  private async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+  public async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     let issuer = new Issuer(didService.getIssuerDID());
     //console.log("Issuer:", issuer);
 
