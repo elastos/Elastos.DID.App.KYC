@@ -13,14 +13,14 @@
 
 Additional steps for local development:
 
-- We need to configure a https server for express (front-end needs ssl to use wallet connect, and ssl front-end needs ssl backend).
+- We need to configure an HTTPS server for express (front-end needs SSL to use wallet connect, and SSL front-end needs SSL backend).
 - brew install mkcert nss
 - mkcert -install
 - mkcert YOUR_LOCAL_IP
 - rename YOUR_LOCAL_IP*.pem to dev-certificate*.pem
 - (Mac) in Keychain, find the certificate (youruser@yourmachine) and in "trust": "Always trust"
-- Configure config/env-secret.ts to use the https mode
-- From chrome mobile, browse one api url and accept the security exception (https://YOUR_LOCAL_IP:3040/api/v1)
+- Configure config/env-secret.ts to use the HTTPS mode
+- From chrome mobile, browse one API URL and accept the security exception (https://YOUR_LOCAL_IP:3040/api/v1)
 
 ### Front-end
 
