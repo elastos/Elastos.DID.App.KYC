@@ -11,6 +11,7 @@ import { dbService } from '../services/db.service';
 // eslint-disable-next-line import/namespace
 import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
+import { ekycService } from '../services/ekyc.service';
 
 let router = Router();
 
@@ -213,6 +214,24 @@ router.post('/user/passbase/uuid', async (req, res) => {
         return apiError(res, dataOrError);
 
     res.json();
+});
+
+router.post('/user/ekyc/idocr/process', async (req, res) => {
+    let metaInfo = req.body;
+    console.log("metaInfo is ", metaInfo);
+
+    if (!metaInfo) {
+        return res.json({ code: 403, message: 'Missing metaInfo' });
+    }
+
+    try {
+        const response = await ekycService.processIdOcr(metaInfo);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
 });
 
 export default router;

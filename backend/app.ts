@@ -13,6 +13,7 @@ import { authMiddleware } from "./middlewares/auth.middleware";
 import router from "./routes/routes";
 import { didService } from "./services/did.service";
 import { passbaseService } from "./services/passbase.service";
+import { ekycService } from "./services/ekyc.service";
 
 class KYCApp {
     public async start() {
@@ -34,6 +35,8 @@ class KYCApp {
 
         // Setup Passbase
         passbaseService.setup();
+
+        ekycService.setup();
 
         let dbg = debug('kyc-service:server');
 
