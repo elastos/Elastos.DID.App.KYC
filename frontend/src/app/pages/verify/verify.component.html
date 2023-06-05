@@ -46,13 +46,24 @@
       </p>
     </div>
     <!-- Verify buttons -->
-    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+    <!-- <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">Passbase</div>
       <div class="passbase-container">
         <mat-progress-spinner diameter="20" color="color" mode="indeterminate"></mat-progress-spinner>
         <div #passbaseButton class="passbase-button"></div>
       </div>
+    </div> -->
+
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartVerify"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processIDOCR()" *ngIf="!isStartVerify">
+          process ID_OCR
+        </button>
+      </div>
     </div>
+
     <!-- Verification complete -->
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center flex-columns" *ngIf="verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">Great, you're done! Please wait a few hours and come back to this

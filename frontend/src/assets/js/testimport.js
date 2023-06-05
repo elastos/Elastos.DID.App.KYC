@@ -1,0 +1,1 @@
+function test_init(){console.log("test_init")}

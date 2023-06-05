@@ -6,11 +6,11 @@ import {
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
-import { logger } from '@elastosfoundation/elastos-connectivity-sdk-js';
-import Passbase from '@passbase/button';
 import { AuthService } from 'src/app/services/auth.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
+import { EkycService } from 'src/app/services/ekyc.service';
 import { ThemeService } from 'src/app/services/theme.service';
+import * as api from 'src/assets/js/jsvm_all.js';
 
 @Component({
   selector: 'app-verify',
@@ -20,7 +20,7 @@ import { ThemeService } from 'src/app/services/theme.service';
 })
 export class VerifyComponent {
   @ViewChild('passbaseButton') passbaseButton: ElementRef;
-
+  public isStartVerify = false;
   public verificationInProgress = false;
   public verificationCompleted = false;
 
@@ -29,50 +29,66 @@ export class VerifyComponent {
     private authService: AuthService,
     private credentialsService: CredentialsService,
     private themeService: ThemeService,
+    private ekycService: EkycService,
     private router: Router
   ) { }
 
+  processIDOCR() {
+    var metainfo = api.getMetaInfo();
+    console.log("meta info is ", metainfo);
+
+    this.isStartVerify = true;
+    this.ekycService.processIDOCR(metainfo);
+
+    // window.location.href = "xxx";
+  }
+
+  //pop up aliyun ocr window
+  openBottomSheet(): void {
+    this._bottomSheet.open(VerifyComponent);
+  }
+
   async ngAfterViewInit() {
-    let passbaseMetadata = await this.credentialsService.fetchUserPassbaseMetadata();
+    // let passbaseMetadata = await this.credentialsService.fetchUserPassbaseMetadata();
 
-    logger.log("Passbase metadata:", passbaseMetadata);
+    // logger.log("Passbase metadata:", passbaseMetadata);
 
-    if (passbaseMetadata) { // Make sure to have metadata or forbid verification
-      Passbase.renderButton(
-        this.passbaseButton.nativeElement,
-        process.env.NG_APP_PASSBASE_PUBLIC_API_KEY,
-        {
-          onStart: () => {
-            console.log('Passbase onstart');
-            this.verificationInProgress = true;
-          },
-          onError: (error, context) => {
-            console.log('Passbase onerror', error);
-            this.verificationInProgress = false;
-          },
-          // onSubmitted: received at the very end of the verification steps before clicking "finish"
-          onSubmitted: (identityAccessKey) => {
-            console.log('Passbase onSubmitted', identityAccessKey);
+    // if (passbaseMetadata) { // Make sure to have metadata or forbid verification
+    //   Passbase.renderButton(
+    //     this.passbaseButton.nativeElement,
+    //     process.env.NG_APP_PASSBASE_PUBLIC_API_KEY,
+    //     {
+    //       onStart: () => {
+    //         console.log('Passbase onstart');
+    //         this.verificationInProgress = true;
+    //       },
+    //       onError: (error, context) => {
+    //         console.log('Passbase onerror', error);
+    //         this.verificationInProgress = false;
+    //       },
+    //       // onSubmitted: received at the very end of the verification steps before clicking "finish"
+    //       onSubmitted: (identityAccessKey) => {
+    //         console.log('Passbase onSubmitted', identityAccessKey);
 
-            this.credentialsService.savePassbaseUUID(identityAccessKey);
-          },
-          // onFinish: received at the very end of the verification steps after clicking "finish"
-          onFinish: (identityAccessKey) => {
-            console.log('Passbase onFinish', identityAccessKey);
+    //         this.credentialsService.savePassbaseUUID(identityAccessKey);
+    //       },
+    //       // onFinish: received at the very end of the verification steps after clicking "finish"
+    //       onFinish: (identityAccessKey) => {
+    //         console.log('Passbase onFinish', identityAccessKey);
 
-            this.verificationInProgress = false;
-            this.verificationCompleted = true;
-          },
-          metaData: passbaseMetadata,
-          prefillAttributes: {
-            email: this.authService.getAuthUser().email, // pre-fill user's email for convenience, if provided
-          },
-          theme: {
-            darkMode: this.themeService.isDarkMode // TODO: not working (remains white) - passbase team is checking this
-          }
-        }
-      );
-    }
+    //         this.verificationInProgress = false;
+    //         this.verificationCompleted = true;
+    //       },
+    //       metaData: passbaseMetadata,
+    //       prefillAttributes: {
+    //         email: this.authService.getAuthUser().email, // pre-fill user's email for convenience, if provided
+    //       },
+    //       theme: {
+    //         darkMode: this.themeService.isDarkMode // TODO: not working (remains white) - passbase team is checking this
+    //       }
+    //     }
+    //   );
+    // }
   }
 
   public backToDashboard() {
