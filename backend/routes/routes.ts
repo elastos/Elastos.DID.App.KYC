@@ -217,6 +217,8 @@ router.post('/user/passbase/uuid', async (req, res) => {
 });
 
 router.post('/user/ekyc/idocr', async (req, res) => {
+    console.log("router user/ekyc/idocr");
+
     let metaInfo = req.body;
     console.log("metaInfo is ", metaInfo);
 
@@ -235,6 +237,8 @@ router.post('/user/ekyc/idocr', async (req, res) => {
 });
 
 router.post('/user/ekyc/ekyc', async (req, res) => {
+    console.log("router user/ekyc/ekyc");
+
     let metaInfo = req.body;
     console.log("metaInfo is ", metaInfo);
 
@@ -253,6 +257,8 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
 });
 
 router.post('/user/ekyc/faceverify', async (req, res) => {
+    console.log("router user/ekyc/faceverify");
+
     let faceverifyBody = req.body;
     console.log("faceverifyBody is ", faceverifyBody);
 
@@ -264,6 +270,7 @@ router.post('/user/ekyc/faceverify', async (req, res) => {
         const faceVerifyBodyObj = JSON.parse(faceverifyBody);
         const facePictureBase64 = faceVerifyBodyObj.facePictureBase64;
         const facePictureUrl = faceVerifyBodyObj.facePictureUrl;
+        const metaInfo = faceVerifyBodyObj.metaInfo;
         const response = await ekycService.processFaceVerify(metaInfo, facePictureBase64, facePictureUrl);
         console.log("response is ", response);
         res.json(response);
@@ -274,6 +281,8 @@ router.post('/user/ekyc/faceverify', async (req, res) => {
 });
 
 router.post('/user/ekyc/faceliveness', async (req, res) => {
+    console.log("router user/ekyc/faceliveness");
+
     let metaInfo = req.body;
     console.log("metaInfo is ", metaInfo);
 
@@ -292,6 +301,8 @@ router.post('/user/ekyc/faceliveness', async (req, res) => {
 });
 
 router.post('/user/ekyc/facecompare', async (req, res) => {
+    console.log("router user/ekyc/facecompare");
+
     let faceCompareBody = req.body;
     console.log("faceCompareBody is ", faceCompareBody);
 
@@ -317,6 +328,8 @@ router.post('/user/ekyc/facecompare', async (req, res) => {
 });
 
 router.post('/user/ekyc/checkresult', async (req, res) => {
+    console.log("router user/ekyc/checkresult");
+
     let transactionId = req.body;
     console.log("metaInfo is ", transactionId);
 

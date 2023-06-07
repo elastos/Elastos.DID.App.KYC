@@ -55,11 +55,51 @@
     </div> -->
 
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
-      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC</div>
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_IDOCR</div>
       <div class="passbase-container">
-        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartVerify"></mat-progress-spinner>
-        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processIDOCR()" *ngIf="!isStartVerify">
-          process ID_OCR
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartProcessIDOCR"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processIDOCR()" *ngIf="!isStartProcessIDOCR">
+          ID_OCR
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_EKYC</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processEKYC()" *ngIf="!isStartPrcocessEKYC">
+          EKYC
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_FaceVerify</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartProcessFaceVerify"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processFaceVerify()" *ngIf="!isStartProcessFaceVerify">
+          FaceVerify
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_FaceLiveness</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartProcessFaceLiveness"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processFaceLiveness()" *ngIf="!isStartProcessFaceLiveness">
+          FaceLiveness
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_CheckResult</div>
+      <div class="passbase-container">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartCheckResult"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="checkResult()" *ngIf="!isStartCheckResult">
+          CheckResult
         </button>
       </div>
     </div>

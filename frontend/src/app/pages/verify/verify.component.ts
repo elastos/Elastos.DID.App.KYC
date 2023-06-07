@@ -20,7 +20,12 @@ import * as api from 'src/assets/js/jsvm_all.js';
 })
 export class VerifyComponent {
   @ViewChild('passbaseButton') passbaseButton: ElementRef;
-  public isStartVerify = false;
+  public isStartProcessIDOCR = false;
+  public isStartPrcocessEKYC = false;
+  public isStartProcessFaceVerify = false;
+  public isStartProcessFaceLiveness = false;
+  public isStartCheckResult = false;
+
   public verificationInProgress = false;
   public verificationCompleted = false;
 
@@ -34,13 +39,52 @@ export class VerifyComponent {
   ) { }
 
   processIDOCR() {
-    var metainfo = api.getMetaInfo();
+    this.isStartProcessIDOCR = true;
+
+    const metainfo = api.getMetaInfo();
     console.log("meta info is ", metainfo);
 
-    this.isStartVerify = true;
     this.ekycService.processIDOCR(metainfo);
-
     // window.location.href = "xxx";
+  }
+
+  processEKYC() {
+    this.isStartPrcocessEKYC = true;
+
+    const metainfo = api.getMetaInfo();
+    console.log("meta info is ", metainfo);
+
+    this.ekycService.processEKYC(metainfo);
+  }
+
+  processFaceVerify() {
+    this.isStartProcessFaceVerify = true;
+
+    const metainfo = api.getMetaInfo();
+    console.log("meta info is ", metainfo);
+
+    const facePictureBase64: string = "";
+    const facePictureUrl: string = "";
+
+    this.ekycService.processFaceVerify(metainfo, facePictureBase64, facePictureUrl);
+  }
+
+  processFaceLiveness() {
+    this.isStartProcessFaceLiveness = true;
+
+    const metainfo = api.getMetaInfo();
+    console.log("meta info is ", metainfo);
+
+    this.ekycService.processFaceLiveness(metainfo);
+  }
+
+  checkResult() {
+    this.isStartCheckResult = true;
+    const transactionId = "";
+
+    console.log("transactionId is ", transactionId);
+
+    this.ekycService.checkResult(transactionId);
   }
 
   //pop up aliyun ocr window
