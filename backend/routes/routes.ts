@@ -216,7 +216,7 @@ router.post('/user/passbase/uuid', async (req, res) => {
     res.json();
 });
 
-router.post('/user/ekyc/idocr/process', async (req, res) => {
+router.post('/user/ekyc/idocr', async (req, res) => {
     let metaInfo = req.body;
     console.log("metaInfo is ", metaInfo);
 
@@ -226,6 +226,106 @@ router.post('/user/ekyc/idocr/process', async (req, res) => {
 
     try {
         const response = await ekycService.processIdOcr(metaInfo);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/ekyc', async (req, res) => {
+    let metaInfo = req.body;
+    console.log("metaInfo is ", metaInfo);
+
+    if (!metaInfo) {
+        return res.json({ code: 403, message: 'Missing metaInfo' });
+    }
+
+    try {
+        const response = await ekycService.processEkyc(metaInfo);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/faceverify', async (req, res) => {
+    let faceverifyBody = req.body;
+    console.log("faceverifyBody is ", faceverifyBody);
+
+    if (!faceverifyBody) {
+        return res.json({ code: 403, message: 'Missing metaInfo' });
+    }
+
+    try {
+        const faceVerifyBodyObj = JSON.parse(faceverifyBody);
+        const facePictureBase64 = faceVerifyBodyObj.facePictureBase64;
+        const facePictureUrl = faceVerifyBodyObj.facePictureUrl;
+        const response = await ekycService.processFaceVerify(metaInfo, facePictureBase64, facePictureUrl);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/faceliveness', async (req, res) => {
+    let metaInfo = req.body;
+    console.log("metaInfo is ", metaInfo);
+
+    if (!metaInfo) {
+        return res.json({ code: 403, message: 'Missing metaInfo' });
+    }
+
+    try {
+        const response = await ekycService.processFaceLiveness(metaInfo);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/facecompare', async (req, res) => {
+    let faceCompareBody = req.body;
+    console.log("faceCompareBody is ", faceCompareBody);
+
+    if (!faceCompareBody) {
+        return res.json({ code: 403, message: 'faceCompareBody metaInfo' });
+    }
+
+    try {
+        const faceCompareJson = JSON.parse(faceCompareBody);
+
+        const sourceFacePictureBase64: string = faceCompareJson.sourceFacePictureBase64;
+        const sourceFacePictureUrl: string = faceCompareJson.sourceFacePictureUrl;
+        const targetFacePictureBase64: string = faceCompareJson.targetFacePictureBase64;
+        const targetFacePictureUrl: string = faceCompareJson.targetFacePictureUrl;
+
+        const response = await ekycService.faceCompare(sourceFacePictureBase64, sourceFacePictureUrl, targetFacePictureBase64, targetFacePictureUrl);
+        console.log("response is ", response);
+        res.json(response);
+    }
+    catch (e) {
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/checkresult', async (req, res) => {
+    let transactionId = req.body;
+    console.log("metaInfo is ", transactionId);
+
+    if (!transactionId) {
+        return res.json({ code: 403, message: 'Missing transactionId' });
+    }
+
+    try {
+        const response = await ekycService.checkResult(transactionId);
         console.log("response is ", response);
         res.json(response);
     }

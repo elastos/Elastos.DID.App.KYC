@@ -16,7 +16,7 @@ export class EkycService {
   public async processIDOCR(metaInfo: string) {
     if (metaInfo) {
       try {
-        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/idocr/process`, {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/idocr`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -26,12 +26,11 @@ export class EkycService {
         });
 
         if (response.ok) {
-          console.log("processIDOCR: response ok");
+          console.log("Process ID_OCR: response ok");
           console.log("response is ", response);
 
           //TODO
           // this.router.navigate([response.redirectUrl]);
-
         } else {
           console.error(response);
         }
@@ -39,5 +38,175 @@ export class EkycService {
         console.error(error);
       }
     }
+  }
+
+  public async processEKYC(metaInfo: string) {
+    if (metaInfo) {
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/ekyc`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "token": this.authService.getAuthToken()
+          },
+          body: JSON.stringify(metaInfo)
+        });
+
+        if (response.ok) {
+          console.log("Process EKYC: response ok");
+          console.log("response is ", response);
+
+          //TODO
+          // this.router.navigate([response.redirectUrl]);
+        } else {
+          console.error(response);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  public async processFaceVerify(metaInfo: string, facePictureBase64: string, facePictureUrl: string) {
+    if (!metaInfo) {
+      console.error("metaInfo error", metaInfo);
+    }
+
+    if (!facePictureBase64 && !facePictureUrl) {
+      console.error("facePictureBase64 or facePictureUrl error", facePictureBase64, facePictureUrl);
+    }
+
+    try {
+      const faceVerifyBody = {
+        metaInfo: metaInfo,
+        facePictureBase64: facePictureBase64,
+        facePictureUrl: facePictureUrl
+      }
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/faceverify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "token": this.authService.getAuthToken()
+        },
+        body: JSON.stringify(faceVerifyBody)
+      });
+
+      if (response.ok) {
+        console.log("Process face verify: response ok");
+        console.log("response is ", response);
+
+        //TODO
+        // this.router.navigate([response.redirectUrl]);
+      } else {
+        console.error(response);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+
+  public async processFaceLiveness(metaInfo: string) {
+    if (!metaInfo) {
+      console.error("metaInfo error");
+    }
+
+    try {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/faceliveness`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "token": this.authService.getAuthToken()
+        },
+        body: JSON.stringify(metaInfo)
+      });
+
+      if (response.ok) {
+        console.log("Process face livenness: response ok");
+        console.log("response is ", response);
+
+        //TODO
+        // this.router.navigate([response.redirectUrl]);
+      } else {
+        console.error(response);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async processFaceCompare(sourceFacePictureBase64: string, sourceFacePictureUrl: string, targetFacePictureBase64: string, targetFacePictureUrl: string) {
+    if (!sourceFacePictureBase64 && !sourceFacePictureUrl && !targetFacePictureBase64 && !targetFacePictureUrl) {
+      console.error("processFaceCompare: Invalid input");
+      return;
+    }
+    try {
+      const faceCompareBody = {
+        sourceFacePictureBase64: sourceFacePictureBase64,
+        sourceFacePictureUrl: sourceFacePictureUrl,
+        targetFacePictureBase64: targetFacePictureBase64,
+        targetFacePictureUrl: targetFacePictureUrl
+      }
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/facecompare`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "token": this.authService.getAuthToken()
+        },
+        body: JSON.stringify(faceCompareBody)
+      });
+
+      if (response.ok) {
+        console.log("Process face compare: response ok");
+        console.log("response is ", response);
+
+        //TODO
+        // this.router.navigate([response.redirectUrl]);
+      } else {
+        console.error(response);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  public async checkResult(transactionId: string) {
+    if (transactionId) {
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/checkresult`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "token": this.authService.getAuthToken()
+          },
+          body: JSON.stringify(transactionId)
+        });
+
+        if (response.ok) {
+          console.log("Check result: response ok");
+          console.log("response is ", response);
+
+          //TODO
+          // this.router.navigate([response.redirectUrl]);
+        } else {
+          console.error(response);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  public handleIDOCRResult() {
+    // Initialize the url object
+    var url = new URL(window.location.href);
+    // Parsing response
+    var response = JSON.parse(url.searchParams.get('response'));
+    console.log("response result is ", response);
+    // response = {
+    //     resultCode: '',
+    //     resultMessage: '',
+    //     ocrResult: {code: '',reason: '', extInfo: {certifyId: ''}},
+    // }
   }
 }
