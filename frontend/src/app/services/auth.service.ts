@@ -89,7 +89,6 @@ export class AuthService {
       return;
     }
 
-
     if (presentation) {
       const did = presentation.getHolder().getMethodSpecificId();
 

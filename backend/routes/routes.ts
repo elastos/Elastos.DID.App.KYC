@@ -23,7 +23,7 @@ router.get('/check', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     let presentationStr = req.body;
-
+    console.log("presentationStr", presentationStr);
     if (!presentationStr) {
         return res.json({ code: 403, message: 'Missing presentation' });
     }
@@ -31,11 +31,13 @@ router.post('/login', async (req, res) => {
     try {
         let vp = VerifiablePresentation.parse(presentationStr);
         let valid = await vp.isValid();
+        console.log("valid", valid);
         if (!valid) {
             return res.json({ code: 403, message: 'Invalid presentation' });
         }
 
         let did = vp.getHolder().toString();
+        console.log("did", did);
         if (!did) {
             return res.json({ code: 400, message: 'Unable to extract owner DID from the presentation' })
         }
@@ -51,6 +53,8 @@ router.post('/login', async (req, res) => {
 
         let existingUser = existingUserDataOrError.data;
         let user: User;
+
+        console.log("existingUser", existingUser);
         if (existingUser) {
             // Nothing to do yet
             logger.info("Existing user is signing in", existingUser);
@@ -73,8 +77,9 @@ router.post('/login', async (req, res) => {
                 return;
             }
         }
-
+        console.log("====");
         let token = jwt.sign(user, SecretConfig.Auth.jwtSecret, { expiresIn: 60 * 60 * 24 * 7 });
+        console.log("token", token);
         res.json(token);
     }
     catch (e) {
@@ -228,10 +233,18 @@ router.post('/user/ekyc/idocr', async (req, res) => {
 
     try {
         const response = await ekycService.processIdOcr(metaInfo);
+
+        // Get result
         console.log("response is ", response);
+
+        console.log("requestId is ", response.body.requestId);
+        console.log("transactionId is ", response.body.result.transactionId);
+        console.log("transactionUrl is ", response.body.result.transactionUrl);
+
         res.json(response);
     }
     catch (e) {
+        console.log("error is ", e);
         return res.status(500).json("Server error");
     }
 });
@@ -247,9 +260,9 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
     }
 
     try {
-        const response = await ekycService.processEkyc(metaInfo);
-        console.log("response is ", response);
-        res.json(response);
+        const result = await ekycService.processEkyc(metaInfo);
+        console.log("router result is ", result);
+        res.json(result);
     }
     catch (e) {
         return res.status(500).json("Server error");
@@ -327,22 +340,30 @@ router.post('/user/ekyc/facecompare', async (req, res) => {
     }
 });
 
+//TOBE CHECKED
 router.post('/user/ekyc/checkresult', async (req, res) => {
     console.log("router user/ekyc/checkresult");
 
-    let transactionId = req.body;
-    console.log("metaInfo is ", transactionId);
+    let transactionBodyJSON = req.body;
+    // console.log("transactionBody is ", transactionBodyJSON);
 
-    if (!transactionId) {
-        return res.json({ code: 403, message: 'Missing transactionId' });
+    if (!transactionBodyJSON) {
+        return res.json({ code: 403, message: 'transactionBody error' });
     }
 
     try {
+        console.log("transactionBodyJSON = ", transactionBodyJSON);
+        const transactionBody = JSON.parse(transactionBodyJSON);
+        console.log("transactionBody is ", transactionBody);
+        const transactionId: string = transactionBody.transactionId;
+        console.log("transactionId is ", transactionId);
+
         const response = await ekycService.checkResult(transactionId);
         console.log("response is ", response);
         res.json(response);
     }
     catch (e) {
+        console.log("error is ", e);
         return res.status(500).json("Server error");
     }
 });

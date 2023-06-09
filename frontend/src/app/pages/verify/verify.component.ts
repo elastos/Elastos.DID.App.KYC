@@ -45,19 +45,32 @@ export class VerifyComponent {
     console.log("meta info is ", metainfo);
 
     this.ekycService.processIDOCR(metainfo);
-    // window.location.href = "xxx";
   }
 
-  processEKYC() {
+  async processEKYC() {
     this.isStartPrcocessEKYC = true;
 
     const metainfo = api.getMetaInfo();
     console.log("meta info is ", metainfo);
 
-    this.ekycService.processEKYC(metainfo);
+    try {
+      const response = await this.ekycService.processEKYC(metainfo);
+      const resultObj = await response.json()
+      const requestId = resultObj.requestId
+      const transactionId = resultObj.transactionId
+      const transactionUrl = resultObj.transactionUrl
+
+      console.log("requestId is ", requestId);
+      console.log("transactionId is ", transactionId);
+      console.log("transactionUrl is ", transactionUrl);
+
+      window.location.href = transactionUrl;
+    } catch (error) {
+      console.error("process ekyc error is ", error);
+    }
   }
 
-  processFaceVerify() {
+  async processFaceVerify() {
     this.isStartProcessFaceVerify = true;
 
     const metainfo = api.getMetaInfo();
@@ -66,25 +79,56 @@ export class VerifyComponent {
     const facePictureBase64: string = "";
     const facePictureUrl: string = "";
 
-    this.ekycService.processFaceVerify(metainfo, facePictureBase64, facePictureUrl);
+    const response = await this.ekycService.processFaceVerify(metainfo, facePictureBase64, facePictureUrl);
+    const resultObj = await response.json();
+
+    const requestId = resultObj.requestId
+    const transactionId = resultObj.transactionId
+    const transactionUrl = resultObj.transactionUrl
+
+    console.log("requestId is ", requestId);
+    console.log("transactionId is ", transactionId);
+    console.log("transactionUrl is ", transactionUrl);
   }
 
-  processFaceLiveness() {
+  async processFaceLiveness() {
     this.isStartProcessFaceLiveness = true;
 
     const metainfo = api.getMetaInfo();
     console.log("meta info is ", metainfo);
 
-    this.ekycService.processFaceLiveness(metainfo);
+    try {
+      const response = await this.ekycService.processFaceLiveness(metainfo);
+      const resultObj = await response.json()
+      const requestId = resultObj.requestId
+      const transactionId = resultObj.transactionId
+      const transactionUrl = resultObj.transactionUrl
+
+      console.log("requestId is ", requestId);
+      console.log("transactionId is ", transactionId);
+      console.log("transactionUrl is ", transactionUrl);
+
+      window.location.href = transactionUrl;
+    } catch (error) {
+      console.error("process ekyc error is ", error);
+    }
+
+
+
+
+
+
   }
 
   checkResult() {
     this.isStartCheckResult = true;
-    const transactionId = "";
+    const transactionId = "hks0124bab3199430ceeed6c5db8b56a";
 
     console.log("transactionId is ", transactionId);
-
-    this.ekycService.checkResult(transactionId);
+    const transactionBody = {
+      transactionId: transactionId
+    }
+    this.ekycService.checkResult(transactionBody);
   }
 
   //pop up aliyun ocr window

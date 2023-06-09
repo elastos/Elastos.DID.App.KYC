@@ -1,6 +1,6 @@
 import { SecretConfig } from "../config/env-secret";
 import { createRequire } from "module";
-import { EKYCProductCode } from "../model/ekyc/ekycproductcode";
+import { DocType, EKYCProductCode } from "../model/ekyc/ekycproductcode";
 import { ErrorType } from "../model/dataorerror";
 const require = createRequire(import.meta.url);
 
@@ -8,69 +8,243 @@ const { Config } = require("@alicloud/openapi-client");
 const CloudAuth = require("@alicloud/cloudauth-intl20220809");
 const Client = CloudAuth.default;
 
-
 class EkycService {
   public async setup() {
   }
 
-  public async processIdOcr(metaInfo: string) {
-    const productCode = EKYCProductCode.ID_OCR;
-    const returnUrl = SecretConfig.EKYC.returnUrl;
-    const merchantBizId = SecretConfig.EKYC.merchantBizId;
-    const merchantUserId = SecretConfig.EKYC.merchantUserId;
+  public async processIdOcr(metaInfo: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const productCode = EKYCProductCode.ID_OCR;
+      const returnUrl = SecretConfig.EKYC.returnUrl;
+      const merchantBizId = SecretConfig.EKYC.merchantBizId;
+      const merchantUserId = SecretConfig.EKYC.merchantUserId;
+      const docType = DocType.Passport;
 
-    const response = await this.initial(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, "", "");
+      try {
+        const response = await this.initialIDOCRAndEKYC(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, docType);
 
-    // Get result
-    console.log("requestId is ", response.body.requestId);
-    console.log("transactionId is ", response.body.result.transactionId);
-    console.log("transactionUrl is ", response.body.result.transactionUrl);
+        if (!response) {
+          reject("response is null");
+          return;
+        }
+        // Get result
+        console.log("requestId is ", response.body.requestId);
+        console.log("transactionId is ", response.body.result.transactionId);
+        console.log("transactionUrl is ", response.body.result.transactionUrl);
+        resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
+      } catch (error) {
+        reject(error);
+      }
+    });
+
   }
 
-  public async processEkyc(metaInfo: string) {
-    const productCode = EKYCProductCode.EKYC;
-    const returnUrl = SecretConfig.EKYC.returnUrl;
-    const merchantBizId = SecretConfig.EKYC.merchantBizId;
-    const merchantUserId = SecretConfig.EKYC.merchantUserId;
+  public async processEkyc(metaInfo: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const productCode = EKYCProductCode.EKYC;
+      const returnUrl = SecretConfig.EKYC.returnUrl;
+      const merchantBizId = SecretConfig.EKYC.merchantBizId;
+      const merchantUserId = SecretConfig.EKYC.merchantUserId;
+      const docType = DocType.Passport;
 
-    const response = await this.initial(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, "", "");
+      try {
+        const response = await this.initialIDOCRAndEKYC(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, docType);
 
-    // Get result
-    console.log("requestId is ", response.body.requestId);
-    console.log("transactionId is ", response.body.result.transactionId);
-    console.log("transactionUrl is ", response.body.result.transactionUrl);
+        if (!response) {
+          reject("response is null");
+          return;
+        }
+        // Get result
+        console.log("requestId is ", response.body.requestId);
+        console.log("transactionId is ", response.body.result.transactionId);
+        console.log("transactionUrl is ", response.body.result.transactionUrl);
+        resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  public async processFaceVerify(metaInfo: string, facePictureBase64: string, facePictureUrl: string) {
-    const productCode = EKYCProductCode.FACE_VERIFY;
-    const returnUrl = SecretConfig.EKYC.returnUrl;
-    const merchantBizId = SecretConfig.EKYC.merchantBizId;
-    const merchantUserId = SecretConfig.EKYC.merchantUserId;
+  public async processFaceVerify(metaInfo: string, facePictureBase64: string, facePictureUrl: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const productCode = EKYCProductCode.FACE_VERIFY;
+      const returnUrl = SecretConfig.EKYC.returnUrl;
+      const merchantBizId = SecretConfig.EKYC.merchantBizId;
+      const merchantUserId = SecretConfig.EKYC.merchantUserId;
 
-    const response = await this.initial(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId,
-      facePictureBase64, facePictureUrl);
+      try {
+        const response = await this.initialFaceVerify(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId,
+          facePictureBase64, facePictureUrl);
+        if (!response) {
+          reject("response is null");
+          return;
+        }
 
-    // Get result
-    console.log("requestId is ", response.body.requestId);
-    console.log("transactionId is ", response.body.result.transactionId);
-    console.log("transactionUrl is ", response.body.result.transactionUrl);
+        resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
+
+        // Get result
+        console.log("requestId is ", response.body.requestId);
+        console.log("transactionId is ", response.body.result.transactionId);
+        console.log("transactionUrl is ", response.body.result.transactionUrl);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  public async processFaceLiveness(metaInfo: string) {
-    const productCode = EKYCProductCode.FACE_LIVENESS;
-    const returnUrl = SecretConfig.EKYC.returnUrl;
-    const merchantBizId = SecretConfig.EKYC.merchantBizId;
-    const merchantUserId = SecretConfig.EKYC.merchantUserId;
+  public async processFaceLiveness(metaInfo: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const productCode = EKYCProductCode.FACE_LIVENESS;
+      const returnUrl = SecretConfig.EKYC.returnUrl;
+      const merchantBizId = SecretConfig.EKYC.merchantBizId;
+      const merchantUserId = SecretConfig.EKYC.merchantUserId;
 
-    const response = await this.initial(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, "", "");
-
-    // Get result
-    console.log("requestId is ", response.body.requestId);
-    console.log("transactionId is ", response.body.result.transactionId);
-    console.log("transactionUrl is ", response.body.result.transactionUrl);
+      try {
+        const response = await this.initialFaceLiveness(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId);
+        if (!response) {
+          reject("response is null");
+          return;
+        }
+        // Get result
+        console.log("requestId is ", response.body.requestId);
+        console.log("transactionId is ", response.body.result.transactionId);
+        console.log("transactionUrl is ", response.body.result.transactionUrl);
+        resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  public initial(productCode: string, metaInfo: string, returnUrl: string, merchantBizId: string,
+
+  /**
+   * Initial ID_OCR and EKYC 
+   * @param productCode * @param productCode {string} Product code of identity proofing. Set to eKYC in this mode.
+   *              For example, the product code of the ID card OCR service is ID_OCR.
+   * @param metaInfo {string} The meta information about the SDK and the user's device.
+   *            When App SDK mode is used, its value comes from the Alibaba Cloud SDK in the JSON string format, for example:
+   *            "{\"apdidToken\":\"69b74bfe-bf7f-4d3b-ac59-907ee09e7955\",\"appName\":\"com.alibabacloud.atomic.client\",
+   *              \"appVersion\":\"1.0.9\",\"bioMetaInfo\":\"3.46.0:2916352,0\",\"deviceModel\":\"MI 6\",\"deviceType\":\"android\",\"osVersion\":\"9\",\"zimVer\":\"1.0.0\"}"
+   * @param returnUrl {string} The destination address of your business page bounce.
+   * @param merchantBizId {string} A unique business ID for tracing purpose. For example，the sequence ID from the merchant's business-related database.
+   * @param merchantUserId {string} Merchant user ID, or other identifiers that can be used to identify a specific user, for example, 
+   *             mobile phone number, email address and so on. It is strongly recommended to pre-desensitize the value of the userId field, for example, by hashing the value.
+   * @returns response
+   */
+  private initialIDOCRAndEKYC(productCode: string, metaInfo: string, returnUrl: string, merchantBizId: string,
+    merchantUserId: string, docType: string) {
+    return new Promise<any>(async (resolve, reject) => {
+      const config = new Config({
+        accessKeyId: SecretConfig.EKYC.accessKeyId,
+        accessKeySecret: SecretConfig.EKYC.accessKeySecret,
+        endpoint: SecretConfig.EKYC.endpoint
+      });
+
+      console.log("config is ", config);
+      const client = new Client(config);
+
+      // Build request
+      let request = null
+      if (productCode == EKYCProductCode.FACE_VERIFY) {
+        request = new CloudAuth.InitializeRequest({
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId
+        });
+      } else {
+        request = new CloudAuth.InitializeRequest({
+          doctype: docType,
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          returnUrl: returnUrl,
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId,
+        });
+      }
+
+      console.log("request is ", request);
+      // Invoke API
+      const response = await client.initialize(request);
+
+      console.log("initial response is ", response);
+      if (!response) {
+        reject(response);
+        return;
+      }
+
+      resolve(response);
+    });
+  }
+
+  /**
+   * @param productCode
+   * @param merchantBizId
+   * @param metaInfo
+   * @param merchantUserId
+   * @param returnUrl
+   */
+  private initialFaceLiveness(productCode: string, metaInfo: string, returnUrl: string, merchantBizId: string,
+    merchantUserId: string) {
+    return new Promise<any>(async (resolve, reject) => {
+
+      const config = new Config({
+        accessKeyId: SecretConfig.EKYC.accessKeyId,
+        accessKeySecret: SecretConfig.EKYC.accessKeySecret,
+        endpoint: SecretConfig.EKYC.endpoint
+      });
+
+      console.log("config is ", config);
+      const client = new Client(config);
+
+      let request = null
+      if (productCode == EKYCProductCode.FACE_VERIFY) {
+        request = new CloudAuth.InitializeRequest({
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId
+        });
+      } else {
+        request = new CloudAuth.InitializeRequest({
+          doctype: DocType.Passport,
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          returnUrl: returnUrl,
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId,
+        });
+      }
+
+      console.log("request is ", request);
+      // Invoke API
+      const response = await client.initialize(request);
+
+      console.log("initial response is ", response);
+      if (!response) {
+        reject(response);
+        return;
+      }
+
+      resolve(response);
+    });
+  }
+
+  /**
+   * @param productCode {string} Product code of identity proofing. Set to eKYC in this mode.
+   *              For example, the product code of the ID card OCR service is ID_OCR.
+   * @param metaInfo {string} The meta information about the SDK and the user's device.
+   *            When App SDK mode is used, its value comes from the Alibaba Cloud SDK in the JSON string format, for example:
+   *            "{\"apdidToken\":\"69b74bfe-bf7f-4d3b-ac59-907ee09e7955\",\"appName\":\"com.alibabacloud.atomic.client\",
+   *              \"appVersion\":\"1.0.9\",\"bioMetaInfo\":\"3.46.0:2916352,0\",\"deviceModel\":\"MI 6\",\"deviceType\":\"android\",\"osVersion\":\"9\",\"zimVer\":\"1.0.0\"}"
+   * @param returnUrl {string} The destination address of your business page bounce.
+   * @param merchantBizId {string} A unique business ID for tracing purpose. For example，the sequence ID from the merchant's business-related database.
+   * @param merchantUserId {string} Merchant user ID, or other identifiers that can be used to identify a specific user, for example, 
+   *             mobile phone number, email address and so on. It is strongly recommended to pre-desensitize the value of the userId field, for example, by hashing the value.
+   * @param facePictureBase64 {string} The base64-encoded image of the user's face.
+   * @param facePictureUrl {string} The URL of the user's face image.
+   */
+  private initialFaceVerify(productCode: string, metaInfo: string, returnUrl: string, merchantBizId: string,
     merchantUserId: string, facePictureBase64: string, facePictureUrl: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
 
@@ -79,23 +253,10 @@ class EkycService {
         accessKeySecret: SecretConfig.EKYC.accessKeySecret,
         endpoint: SecretConfig.EKYC.endpoint
       });
+
+      console.log("config is ", config);
       const client = new Client(config);
 
-      // Build request
-      /**
-       * @param productCode {string} Product code of identity proofing. Set to eKYC in this mode.
-       *              For example, the product code of the ID card OCR service is ID_OCR.
-       * @param metaInfo {string} The meta information about the SDK and the user's device.
-       *            When App SDK mode is used, its value comes from the Alibaba Cloud SDK in the JSON string format, for example:
-       *            "{\"apdidToken\":\"69b74bfe-bf7f-4d3b-ac59-907ee09e7955\",\"appName\":\"com.alibabacloud.atomic.client\",
-       *              \"appVersion\":\"1.0.9\",\"bioMetaInfo\":\"3.46.0:2916352,0\",\"deviceModel\":\"MI 6\",\"deviceType\":\"android\",\"osVersion\":\"9\",\"zimVer\":\"1.0.0\"}"
-       * @param returnUrl {string} The destination address of your business page bounce.
-       * @param merchantBizId {string} A unique business ID for tracing purpose. For example，the sequence ID from the merchant's business-related database.
-       * @param merchantUserId {string} Merchant user ID, or other identifiers that can be used to identify a specific user, for example, 
-       *             mobile phone number, email address and so on. It is strongly recommended to pre-desensitize the value of the userId field, for example, by hashing the value.
-       * @param facePictureBase64 {string} The base64-encoded image of the user's face.
-       * @param facePictureUrl {string} The URL of the user's face image.
-       */
       let request = null
       if (productCode == EKYCProductCode.FACE_VERIFY) {
         request = new CloudAuth.InitializeRequest({
@@ -108,22 +269,87 @@ class EkycService {
         });
       } else {
         request = new CloudAuth.InitializeRequest({
+          doctype: DocType.Passport,
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           returnUrl: returnUrl,
           merchantBizId: merchantBizId,
-          merchantUserId: merchantUserId
+          merchantUserId: merchantUserId,
         });
       }
 
       console.log("request is ", request);
       // Invoke API
       const response = await client.initialize(request);
+
+      console.log("initial response is ", response);
       if (!response) {
-        resolve(response);
-      } else {
         reject(response);
+        return;
       }
+      resolve(response);
+    });
+
+  }
+
+  //
+  /**
+   * Initial ID_OCR and EKYC 
+   * @param productCode * @param productCode {string} Product code of identity proofing. Set to eKYC in this mode.
+   *              For example, the product code of the ID card OCR service is ID_OCR.
+   * @param metaInfo {string} The meta information about the SDK and the user's device.
+   *            When App SDK mode is used, its value comes from the Alibaba Cloud SDK in the JSON string format, for example:
+   *            "{\"apdidToken\":\"69b74bfe-bf7f-4d3b-ac59-907ee09e7955\",\"appName\":\"com.alibabacloud.atomic.client\",
+   *              \"appVersion\":\"1.0.9\",\"bioMetaInfo\":\"3.46.0:2916352,0\",\"deviceModel\":\"MI 6\",\"deviceType\":\"android\",\"osVersion\":\"9\",\"zimVer\":\"1.0.0\"}"
+   * @param returnUrl {string} The destination address of your business page bounce.
+   * @param merchantBizId {string} A unique business ID for tracing purpose. For example，the sequence ID from the merchant's business-related database.
+   * @param merchantUserId {string} Merchant user ID, or other identifiers that can be used to identify a specific user, for example, 
+   *             mobile phone number, email address and so on. It is strongly recommended to pre-desensitize the value of the userId field, for example, by hashing the value.
+   * @returns response
+   */
+  public initial(productCode: string, metaInfo: string, returnUrl: string,
+    merchantBizId: string, merchantUserId: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const config = new Config({
+        accessKeyId: SecretConfig.EKYC.accessKeyId,
+        accessKeySecret: SecretConfig.EKYC.accessKeySecret,
+        endpoint: SecretConfig.EKYC.endpoint
+      });
+
+      console.log("config is ", config);
+      const client = new Client(config);
+
+      // Build request
+      let request = null
+      if (productCode == EKYCProductCode.FACE_VERIFY) {
+        request = new CloudAuth.InitializeRequest({
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId
+        });
+      } else {
+        request = new CloudAuth.InitializeRequest({
+          doctype: DocType.Passport,
+          productCode: productCode,
+          metaInfo: JSON.stringify(metaInfo),
+          returnUrl: returnUrl,
+          merchantBizId: merchantBizId,
+          merchantUserId: merchantUserId,
+        });
+      }
+
+      console.log("request is ", request);
+      // Invoke API
+      const response = await client.initialize(request);
+
+      console.log("initial response is ", response);
+      if (!response) {
+        reject(response);
+        return;
+      }
+
+      resolve(response);
     });
   }
 
@@ -143,14 +369,17 @@ class EkycService {
           transactionId: transactionId
         });
 
-        // Invoke API
-        const response = await client.getVerifyToken(request);
 
+        console.log("config is ", config);
+        console.log("request is ", request);
+        // Invoke API
+        const response = await client.checkResult(request);
+        console.log("checkResult response is ", response);
         if (!response) {
-          resolve(response);
-        } else {
           reject(response);
+          return;
         }
+        resolve(response);
       } catch (error) {
         console.log('Check result error: ', error);
         reject(error);
@@ -173,10 +402,10 @@ class EkycService {
          * @param result.extIdInfo {string} Detailed information about face liveness process.Optional. JSON string of ExtFaceInfo.  
          */
         if (!response) {
-          resolve(response);
-        } else {
           reject(response);
+          return;
         }
+        resolve(response);
       } catch (error) {
         return { errorType: ErrorType.SERVER_ERROR, error: "server error" };
       }
@@ -217,10 +446,10 @@ class EkycService {
                 }
          */
         if (!response) {
-          resolve(response);
-        } else {
           reject(response);
+          return;
         }
+        resolve(response);
       } catch (error) {
         return { errorType: ErrorType.SERVER_ERROR, error: "server error" };
       }
@@ -242,10 +471,10 @@ class EkycService {
          * @param result.extIdInfo {string} Detailed information about face liveness process.Optional. JSON string of ExtFaceInfo.  
          */
         if (!response) {
-          resolve(response);
-        } else {
           reject(response);
+          return;
         }
+        resolve(response);
       } catch (error) {
         return { errorType: ErrorType.SERVER_ERROR, error: "server error" };
       }
@@ -282,10 +511,10 @@ class EkycService {
       console.log(response.body.result.passed);
       console.log(response.body.result.subCode);
       if (!response) {
-        resolve(response);
-      } else {
         reject(response);
+        return;
       }
+      resolve(response);
     });
   }
 }
