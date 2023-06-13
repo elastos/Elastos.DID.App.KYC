@@ -5,7 +5,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { EkycService } from 'src/app/services/ekyc.service';
@@ -35,8 +35,32 @@ export class VerifyComponent {
     private credentialsService: CredentialsService,
     private themeService: ThemeService,
     private ekycService: EkycService,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) { }
+
+  ngOnInit() {
+    this.activatedRoute.queryParams.subscribe(async (params) => {
+      try {
+        console.log("params is ", params);
+
+        const respose = params.response;
+        console.log("respose is ", respose);
+
+        const json = JSON.parse(respose);
+        console.log("json is ", json);
+
+        const transactionBody = {
+          "transactionId": json.extInfo.certifyId
+        }
+        const response = await this.ekycService.checkResult(transactionBody);
+        console.log("check result response is ", response);
+
+      } catch (error) {
+        console.error("error is ", error);
+      }
+    });
+  }
 
   processIDOCR() {
     this.isStartProcessIDOCR = true;
@@ -122,11 +146,11 @@ export class VerifyComponent {
 
   checkResult() {
     this.isStartCheckResult = true;
-    const transactionId = "hks0124bab3199430ceeed6c5db8b56a";
+    const transactionId = "hks88a8d6f44899e5813af7b6d27d6bb";
 
-    console.log("transactionId is ", transactionId);
+    console.log("CheckResult request transactionId is ", transactionId);
     const transactionBody = {
-      transactionId: transactionId
+      "transactionId": transactionId
     }
     this.ekycService.checkResult(transactionBody);
   }

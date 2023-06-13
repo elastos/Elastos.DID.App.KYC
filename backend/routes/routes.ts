@@ -340,23 +340,15 @@ router.post('/user/ekyc/facecompare', async (req, res) => {
     }
 });
 
-//TOBE CHECKED
 router.post('/user/ekyc/checkresult', async (req, res) => {
-    console.log("router user/ekyc/checkresult");
-
-    let transactionBodyJSON = req.body;
-    // console.log("transactionBody is ", transactionBodyJSON);
-
-    if (!transactionBodyJSON) {
+    const transactionBody = req.body;
+    if (!transactionBody) {
         return res.json({ code: 403, message: 'transactionBody error' });
     }
 
     try {
-        console.log("transactionBodyJSON = ", transactionBodyJSON);
-        const transactionBody = JSON.parse(transactionBodyJSON);
-        console.log("transactionBody is ", transactionBody);
         const transactionId: string = transactionBody.transactionId;
-        console.log("transactionId is ", transactionId);
+        console.log("Request transactionId is ", transactionId);
 
         const response = await ekycService.checkResult(transactionId);
         console.log("response is ", response);

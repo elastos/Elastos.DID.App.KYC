@@ -36,7 +36,6 @@ class EkycService {
         reject(error);
       }
     });
-
   }
 
   public async processEkyc(metaInfo: string): Promise<any> {
@@ -150,16 +149,17 @@ class EkycService {
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           merchantBizId: merchantBizId,
-          merchantUserId: merchantUserId
+          merchantUserId: merchantUserId,
         });
       } else {
         request = new CloudAuth.InitializeRequest({
-          doctype: docType,
+          docType: docType,
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           returnUrl: returnUrl,
           merchantBizId: merchantBizId,
           merchantUserId: merchantUserId,
+          idSpoof: false
         });
       }
 
@@ -207,7 +207,7 @@ class EkycService {
         });
       } else {
         request = new CloudAuth.InitializeRequest({
-          doctype: DocType.Passport,
+          docType: DocType.Passport,
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           returnUrl: returnUrl,
@@ -269,7 +269,7 @@ class EkycService {
         });
       } else {
         request = new CloudAuth.InitializeRequest({
-          doctype: DocType.Passport,
+          docType: DocType.Passport,
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           returnUrl: returnUrl,
@@ -330,7 +330,7 @@ class EkycService {
         });
       } else {
         request = new CloudAuth.InitializeRequest({
-          doctype: DocType.Passport,
+          docType: DocType.Passport,
           productCode: productCode,
           metaInfo: JSON.stringify(metaInfo),
           returnUrl: returnUrl,
