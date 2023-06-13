@@ -352,7 +352,7 @@ router.post('/user/ekyc/checkresult', async (req, res) => {
 
         const response = await ekycService.checkResult(transactionId);
         console.log("response is ", response);
-        res.json(response);
+        res.json(response.body);
     }
     catch (e) {
         console.log("error is ", e);

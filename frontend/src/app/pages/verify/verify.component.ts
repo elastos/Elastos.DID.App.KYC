@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router, ActivatedRoute } from '@angular/router';
+import { EKYCReturnCode } from 'src/app/model/ekyc/ekycreturncode';
 import { AuthService } from 'src/app/services/auth.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { EkycService } from 'src/app/services/ekyc.service';
@@ -53,9 +54,16 @@ export class VerifyComponent {
         const transactionBody = {
           "transactionId": json.extInfo.certifyId
         }
+
+
+
         const response = await this.ekycService.checkResult(transactionBody);
         console.log("check result response is ", response);
 
+
+        if (json.resultCode == EKYCReturnCode.Success && response) {
+          this.verificationCompleted = true;
+        }
       } catch (error) {
         console.error("error is ", error);
       }

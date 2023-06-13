@@ -201,7 +201,9 @@ export class EkycService {
           reject(response);
           return;
         }
-        console.log("response ok ", response);
+        let result = await response.json() as string;
+        console.log("response result ", result);
+
         resolve(response);
       } catch (error) {
         console.error(error);
