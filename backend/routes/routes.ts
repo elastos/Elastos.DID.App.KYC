@@ -12,6 +12,7 @@ import { dbService } from '../services/db.service';
 import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
+import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
 
 let router = Router();
 
@@ -353,6 +354,64 @@ router.post('/user/ekyc/checkresult', async (req, res) => {
         const response = await ekycService.checkResult(transactionId);
         console.log("response is ", response);
         res.json(response.body);
+    }
+    catch (e) {
+        console.log("error is ", e);
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/ekyccredential', async (req, res) => {
+    let userDid = req.user.did;
+
+    const transactionBody = req.body;
+    if (!transactionBody) {
+        return res.json({ code: 403, message: 'transactionBody error' });
+    }
+
+    try {
+        const transactionId: string = transactionBody.transactionId;
+        console.log("Request transactionId is ", transactionId);
+
+        const checkResultResponse = await ekycService.checkResult(transactionId);
+        console.log("response is ", checkResultResponse);
+        // res.json(response.body);
+
+        const ekycResponse: EkycResponse = checkResultResponse.body;
+        const ekycRawResult: EkycRawResult = ekycResponse.result;
+        const ekycResult: EKYCResult = {
+            extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
+            extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
+            passed: ekycRawResult.passed,
+            subCode: ekycRawResult.subCode
+        }
+        const ocrIdInfo = ekycResult.extIdInfo.ocrIdInfo;
+
+        console.log("ekycResult is ", ekycResult);
+        console.log("ocrIdInfo is ", ocrIdInfo);
+
+        let verificationStatus: VerificationStatus = {
+            passbase: {
+                status: PassbaseVerificationStatus.UNKNOWN
+            },
+            credentials: []
+        };
+
+        let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserCredentials(userDid, ekycResult);
+
+
+        verificationStatus.passbase.status = PassbaseVerificationStatus.APPROVED;
+
+        // FINALIZE
+        // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+        // Sort by most recent first
+        // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+
+        verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
+
+        console.log("verificationStatus is ", verificationStatus);
+        res.json(verificationStatus);
     }
     catch (e) {
         console.log("error is ", e);

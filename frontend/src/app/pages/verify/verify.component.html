@@ -55,11 +55,11 @@
     </div> -->
 
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
-      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC_EKYC</div>
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">EKYC</div>
       <div class="passbase-container">
         <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
         <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processEKYC()" *ngIf="!isStartPrcocessEKYC">
-          EKYC
+          Verify
         </button>
       </div>
     </div>

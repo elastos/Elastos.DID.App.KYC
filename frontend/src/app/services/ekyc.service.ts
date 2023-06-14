@@ -181,7 +181,7 @@ export class EkycService {
   public async checkResult(transactionId: any): Promise<Response> {
     return new Promise(async (resolve, reject) => {
       if (!transactionId) {
-        console.error("metaInfo is null");
+        console.error("transactionId is null");
       }
 
       try {

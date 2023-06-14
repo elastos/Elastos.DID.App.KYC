@@ -1,7 +1,15 @@
+import { DID, Issuer, JSONObject, VerifiableCredential } from "@elastosfoundation/did-js-sdk";
 import { SecretConfig } from "../config/env-secret";
 import { createRequire } from "module";
 import { DocType, EKYCProductCode } from "../model/ekyc/ekycproductcode";
 import { ErrorType } from "../model/dataorerror";
+import { FullCredentialType } from "../model/fullcredentialtype";
+import { didService } from "./did.service";
+import moment from "moment";
+import { EKYCResult } from "../model/ekyc/ekycresult";
+import { User } from "../model/user";
+import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
+
 const require = createRequire(import.meta.url);
 
 const { Config } = require("@alicloud/openapi-client");
@@ -516,6 +524,62 @@ class EkycService {
       }
       resolve(response);
     });
+  }
+
+  public async generateNewUserCredentials(did: string, ekycResult: EKYCResult): Promise<VerifiableCredential[]> {
+    if (!ekycResult || !ekycResult.extIdInfo || !ekycResult.extIdInfo.ocrIdInfo) {
+      return [];
+    }
+
+    try {
+      const ekycOcrInfo = ekycResult.extIdInfo.ocrIdInfo;
+
+      let generatedCredentials: VerifiableCredential[] = [];
+      let ekycPassportGenerator = new EkycPassportGenerator();
+      await ekycPassportGenerator.generateAll(did, ekycResult.extIdInfo.ocrIdInfo, generatedCredentials);
+      return generatedCredentials;
+    }
+    catch (e) {
+      console.warn("fetchNewUserCredentials(): Error:", e);
+      return [];
+    }
+  }
+
+  public async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+    let issuer = new Issuer(didService.getIssuerDID());
+    //console.log("Issuer:", issuer);
+
+    let targetDIDObj = DID.from(targetDID); // User that receives the credential
+    //console.log("Target DID:", targetDID);
+
+    let randomCredentialIdNumber = Math.floor((Math.random() * 10000000));
+    let credentialId = `${credentialType.shortType}${randomCredentialIdNumber}`;
+
+    // Append DisplayCredential info to the standard subject payload
+    let fullSubject = Object.assign({}, subject, {
+      displayable: {
+        icon: iconUrl,
+        title,
+        description
+      }
+    });
+
+    /**
+     * DisplayableCredential: standard format to make it easy to display credentials in a human friendly way on UIs.
+     * SensitiveCredential: standard format to warn users that they may be cautious about how they deal with such credentials, especially on UI, for instance to avoid publishing them on chain.
+     */
+    let credential = await new VerifiableCredential.Builder(issuer, targetDIDObj)
+      .id(credentialId)
+      .types(
+        credentialType.context + "#" + credentialType.shortType,
+        "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+        "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+      )
+      .properties(fullSubject)
+      .expirationDate(moment().add(3, "years").toDate()) // 3 years validity
+      .seal(didService.getStorePass());
+
+    return credential;
   }
 }
 

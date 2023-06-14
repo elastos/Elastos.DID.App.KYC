@@ -43,27 +43,24 @@ export class VerifyComponent {
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe(async (params) => {
       try {
-        console.log("params is ", params);
+        if (!params) {
+          console.log("params is null");
+          return;
+        }
 
+        console.log("params is ", params);
         const respose = params.response;
         console.log("respose is ", respose);
 
         const json = JSON.parse(respose);
         console.log("json is ", json);
 
-        const transactionBody = {
-          "transactionId": json.extInfo.certifyId
-        }
+        const transactionId = json.extInfo.certifyId;
 
-
-
-        const response = await this.ekycService.checkResult(transactionBody);
+        const response = await this.credentialsService.fetchEkycCredential(transactionId);
         console.log("check result response is ", response);
 
-
-        if (json.resultCode == EKYCReturnCode.Success && response) {
-          this.verificationCompleted = true;
-        }
+        this.verificationCompleted = true;
       } catch (error) {
         console.error("error is ", error);
       }

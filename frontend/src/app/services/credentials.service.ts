@@ -26,6 +26,8 @@ import { VerifiableCredential } from '@elastosfoundation/did-js-sdk';
 import { DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
 import { RawVerificationStatus, VerificationStatus } from '../model/verificationstatus';
 import { AuthService } from './auth.service';
+import { PassbaseVerificationStatus } from '../model/passbase/passbaseverificationstatus';
+
 
 @Injectable({
   providedIn: 'root'
@@ -77,6 +79,50 @@ export class CredentialsService {
       console.log(error);
       return null;
     }
+  }
+
+  public async fetchEkycCredential(transactionId: string): Promise<VerificationStatus> {
+    return new Promise(async (resolve, reject) => {
+      if (!transactionId) {
+        console.error("transactionId is null");
+      }
+
+      const transactionObj = {
+        "transactionId": transactionId
+      }
+
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/ekyccredential`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "token": this.authService.getAuthToken()
+          },
+          body: JSON.stringify(transactionObj)
+        });
+
+        if (!response.ok) {
+          console.error("response error", response);
+          reject(response);
+          return;
+        }
+
+        let status = await response.json() as RawVerificationStatus;
+        console.log("Received verification status", status);
+
+        const result = {
+          passbase: {
+            status: PassbaseVerificationStatus.APPROVED,
+          },
+          credentials: status.credentials.map(c => VerifiableCredential.parse(c))
+        }
+
+        resolve(result);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
   }
 
   public async fetchUserVerificationStatus(): Promise<VerificationStatus> {
