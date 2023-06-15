@@ -375,7 +375,6 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
         console.log("response is ", checkResultResponse);
-        // res.json(response.body);
 
         const ekycResponse: EkycResponse = checkResultResponse.body;
         const ekycRawResult: EkycRawResult = ekycResponse.result;
@@ -407,11 +406,8 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
         // Sort by most recent first
         // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
-
         verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
-
-        console.log("verificationStatus is ", verificationStatus);
-        res.json(verificationStatus);
+        res.json(JSON.stringify(verificationStatus));
     }
     catch (e) {
         console.log("error is ", e);

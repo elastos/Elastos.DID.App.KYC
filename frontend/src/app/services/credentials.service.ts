@@ -81,7 +81,7 @@ export class CredentialsService {
     }
   }
 
-  public async fetchEkycCredential(transactionId: string): Promise<VerificationStatus> {
+  public async fetchEkycCredential(transactionId: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
       if (!transactionId) {
         console.error("transactionId is null");
@@ -107,22 +107,12 @@ export class CredentialsService {
           return;
         }
 
-        let status = await response.json() as RawVerificationStatus;
-        console.log("Received verification status", status);
-
-        const result = {
-          passbase: {
-            status: PassbaseVerificationStatus.APPROVED,
-          },
-          credentials: status.credentials.map(c => VerifiableCredential.parse(c))
-        }
-
+        let result = await response.json()
         resolve(result);
       } catch (error) {
         console.error(error);
       }
     });
-
   }
 
   public async fetchUserVerificationStatus(): Promise<VerificationStatus> {

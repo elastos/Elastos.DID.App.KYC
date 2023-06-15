@@ -7,8 +7,10 @@ import moment from 'moment';
 import { OverallStatus } from 'src/app/model/overallstatus';
 import { PassbaseVerificationStatus } from 'src/app/model/passbase/passbaseverificationstatus';
 import { VerificationStatus } from 'src/app/model/verificationstatus';
+import { CacheService } from 'src/app/services/cache.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { ThemeService } from 'src/app/services/theme.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,20 +31,20 @@ export class DashboardComponent {
     private _snackBar: MatSnackBar,
     private credentialsService: CredentialsService,
     private themeService: ThemeService,
-    private router: Router) {
+    private router: Router,
+    private authService: AuthService) {
     this.isDarkTheme = this.themeService.isDarkMode;
   }
 
-  async ngAfterViewInit() {
+  ngAfterViewInit() {
     // Fetch status
-    this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
+    // this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
+    this.verificationStatus = CacheService.getVerificationStatus(this.authService.signedInDID());
     if (this.verificationStatus) {
       this.availableCredentials = this.verificationStatus.credentials;
     }
     this.prepareOverallStatus();
-
     this.fetchingVerificationStatus = false
-
     //this.verificationStatus = VerificationStatus.VERIFIED
     //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
   }

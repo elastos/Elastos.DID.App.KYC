@@ -8,6 +8,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EKYCReturnCode } from 'src/app/model/ekyc/ekycreturncode';
 import { AuthService } from 'src/app/services/auth.service';
+import { CacheService } from 'src/app/services/cache.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { EkycService } from 'src/app/services/ekyc.service';
 import { ThemeService } from 'src/app/services/theme.service';
@@ -60,6 +61,7 @@ export class VerifyComponent {
         const response = await this.credentialsService.fetchEkycCredential(transactionId);
         console.log("check result response is ", response);
 
+        CacheService.setVerificationStatus(this.authService.signedInDID(), response);
         this.verificationCompleted = true;
       } catch (error) {
         console.error("error is ", error);
