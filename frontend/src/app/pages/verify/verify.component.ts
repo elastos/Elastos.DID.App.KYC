@@ -49,19 +49,22 @@ export class VerifyComponent {
           return;
         }
 
-        console.log("params is ", params);
-        const respose = params.response;
-        console.log("respose is ", respose);
+        const returnURLRespose = params.response;
+        const responseObj = JSON.parse(returnURLRespose);
+        const resultCode = responseObj.resultCode;
 
-        const json = JSON.parse(respose);
-        console.log("json is ", json);
+        if (resultCode != EKYCReturnCode.Success) {
+          console.log("result code is not success");
+          alert("Error: " + this.handleErrorMsg(resultCode));
+          return;
+        }
 
-        const transactionId = json.extInfo.certifyId;
+        const transactionId = responseObj.extInfo.certifyId;
 
-        const response = await this.credentialsService.fetchEkycCredential(transactionId);
-        console.log("check result response is ", response);
+        const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
+        console.log("check result response is ", credentialResponse);
 
-        CacheService.setVerificationStatus(this.authService.signedInDID(), response);
+        CacheService.setVerificationStatus(this.authService.signedInDID(), credentialResponse);
         this.verificationCompleted = true;
       } catch (error) {
         console.error("error is ", error);
@@ -212,5 +215,42 @@ export class VerifyComponent {
 
   public backToDashboard() {
     this.router.navigate(['/dashboard']);
+  }
+
+  handleErrorMsg(errorCode: string) {
+    let errorMessage = "";
+    switch (errorCode) {
+      case EKYCReturnCode.Success:
+        errorMessage = "Success";
+        break;
+      case EKYCReturnCode.SystemError:
+        errorMessage = "SystemError";
+        break;
+      case EKYCReturnCode.FlowError:
+        errorMessage = "The process is missing or abnormal, no process is available";
+        break;
+      case EKYCReturnCode.InitError:
+        errorMessage = "Client initialization exception";
+        break;
+      case EKYCReturnCode.CameraError:
+        errorMessage = "Evoking camera exception";
+        break;
+      case EKYCReturnCode.ProductCodeError:
+        errorMessage = "Product code return error";
+        break;
+      case EKYCReturnCode.RetryLimitError:
+        errorMessage = "The number of retry exceeds the upper limit.";
+        break;
+      case EKYCReturnCode.UserQuit:
+        errorMessage = "User voluntarily logs out";
+        break;
+      case EKYCReturnCode.SystemException:
+        errorMessage = "System exception";
+        break;
+      case EKYCReturnCode.eKYCFail:
+        errorMessage = "Authentication failed";
+        break;
+    }
+    return errorMessage;
   }
 }
