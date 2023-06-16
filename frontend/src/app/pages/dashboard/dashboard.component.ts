@@ -39,14 +39,19 @@ export class DashboardComponent {
   ngAfterViewInit() {
     // Fetch status
     // this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
-    this.verificationStatus = CacheService.getVerificationStatus(this.authService.signedInDID());
-    if (this.verificationStatus) {
-      this.availableCredentials = this.verificationStatus.credentials;
-    }
-    this.prepareOverallStatus();
-    this.fetchingVerificationStatus = false
-    //this.verificationStatus = VerificationStatus.VERIFIED
-    //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
+    setTimeout(() => {
+      this.verificationStatus = CacheService.getVerificationStatus(this.authService.signedInDID());
+      console.log("Verification status: ", this.verificationStatus);
+      if (this.verificationStatus) {
+        this.availableCredentials = this.verificationStatus.credentials;
+      }
+      this.prepareOverallStatus();
+
+      this.fetchingVerificationStatus = false
+      console.log("fetchingVerificationStatus status: ", this.fetchingVerificationStatus);
+      //this.verificationStatus = VerificationStatus.VERIFIED
+      //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
+    }, 500);
   }
 
   public getCredentialIcon(credential: VerifiableCredential) {
