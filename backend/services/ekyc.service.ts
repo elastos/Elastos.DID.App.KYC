@@ -576,7 +576,7 @@ class EkycService {
         "https://ns.elastos.org/credentials/v1#SensitiveCredential"
       )
       .properties(fullSubject)
-      .expirationDate(moment().add(3, "years").toDate()) // 3 years validity
+      .expirationDate(moment().add(6, "months").toDate()) // 6 months validity
       .seal(didService.getStorePass());
 
     return credential;
