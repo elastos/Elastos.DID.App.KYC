@@ -107,6 +107,6 @@ export class EkycPassportGenerator {
     let description = "${dateOfBirth}";
 
     // Create Credential
-    return await passbaseService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 }
