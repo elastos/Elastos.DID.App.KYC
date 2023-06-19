@@ -39,8 +39,8 @@ export class EkycPassportGenerator {
     };
 
     let credentialSubject = {
-      lastName: ocrIdInfo.givenname.toUpperCase(),
-      ...("surname" in ocrIdInfo && { firstNames: ocrIdInfo.surname.toUpperCase() }), // Add the field only if existing
+      lastName: ocrIdInfo.surname.toUpperCase(),
+      ...("givenname" in ocrIdInfo && { firstNames: ocrIdInfo.givenname.toUpperCase() }), // Add the field only if existing
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Full name";
