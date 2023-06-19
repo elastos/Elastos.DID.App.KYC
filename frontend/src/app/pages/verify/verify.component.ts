@@ -31,6 +31,8 @@ export class VerifyComponent {
   public verificationInProgress = false;
   public verificationCompleted = false;
 
+  public enableVerify = true;
+
   constructor(
     private _bottomSheet: MatBottomSheet,
     private authService: AuthService,
@@ -42,13 +44,18 @@ export class VerifyComponent {
   ) { }
 
   ngOnInit() {
+    const metainfo = this.getMetaInfo();
+    if (!this.checkIsH5(metainfo)) {
+      this.enableVerify = false;
+    }
+
     this.activatedRoute.queryParams.subscribe(async (params) => {
       try {
-        if (!params) {
-          console.log("params is null");
+        if (!params || !params.response) {
           return;
         }
 
+        this.isStartPrcocessEKYC = true;
         const returnURLRespose = params.response;
         const responseObj = JSON.parse(returnURLRespose);
         const resultCode = responseObj.resultCode;
@@ -60,7 +67,6 @@ export class VerifyComponent {
         }
 
         const transactionId = responseObj.extInfo.certifyId;
-
         const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
         console.log("check result response is ", credentialResponse);
 
@@ -83,9 +89,7 @@ export class VerifyComponent {
 
   async processEKYC() {
     this.isStartPrcocessEKYC = true;
-
-    const metainfo = api.getMetaInfo();
-    console.log("meta info is ", metainfo);
+    const metainfo = this.getMetaInfo();
 
     try {
       const response = await this.ekycService.processEKYC(metainfo);
@@ -103,6 +107,24 @@ export class VerifyComponent {
       console.error("process ekyc error is ", error);
     }
   }
+
+  getMetaInfo() {
+    const metainfo = api.getMetaInfo();
+    console.log("meta info is ", metainfo);
+    return metainfo;
+  }
+
+  checkIsH5(metainfo: any): boolean {
+    const deviceType = metainfo.deviceType;
+    console.log("deviceType is ", deviceType);
+
+    if (deviceType.toLowerCase() == "h5") {
+      return true;
+    }
+
+    return false;
+  }
+
 
   async processFaceVerify() {
     this.isStartProcessFaceVerify = true;
@@ -146,12 +168,6 @@ export class VerifyComponent {
     } catch (error) {
       console.error("process ekyc error is ", error);
     }
-
-
-
-
-
-
   }
 
   checkResult() {
