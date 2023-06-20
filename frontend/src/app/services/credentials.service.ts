@@ -86,9 +86,10 @@ export class CredentialsService {
       if (!transactionId) {
         console.error("transactionId is null");
       }
-
+      const userDid = this.authService.signedInDID();
       const transactionObj = {
-        "transactionId": transactionId
+        "transactionId": transactionId,
+        "merchantUserId": userDid
       }
 
       try {

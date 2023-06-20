@@ -378,6 +378,8 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
     try {
         const transactionId: string = transactionBody.transactionId;
         console.log("Request transactionId is ", transactionId);
+        const merchantUserId = transactionBody.merchantUserId;
+        console.log("Request merchantUserId is ", merchantUserId);
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
         console.log("response is ", checkResultResponse);

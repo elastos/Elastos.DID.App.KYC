@@ -63,6 +63,7 @@ export class VerifyComponent {
         if (resultCode != EKYCReturnCode.Success) {
           console.log("result code is not success");
           alert("Error: " + this.handleErrorMsg(resultCode));
+          this.isStartPrcocessEKYC = false;
           return;
         }
 
