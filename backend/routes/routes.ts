@@ -252,16 +252,22 @@ router.post('/user/ekyc/idocr', async (req, res) => {
 
 router.post('/user/ekyc/ekyc', async (req, res) => {
     console.log("router user/ekyc/ekyc");
+    const requestBody = req.body;
+    let metaInfo = requestBody.metaInfo;
+    let merchantUserId = requestBody.merchantUserId;
 
-    let metaInfo = req.body;
     console.log("metaInfo is ", metaInfo);
+    console.log("merchantUserId is ", merchantUserId);
 
-    if (!metaInfo) {
+    if (!metaInfo)
         return res.json({ code: 403, message: 'Missing metaInfo' });
-    }
+
+    if (!merchantUserId)
+        return res.json({ code: 403, message: 'Missing merchantUserId' });
+
 
     try {
-        const result = await ekycService.processEkyc(metaInfo);
+        const result = await ekycService.processEkyc(metaInfo, merchantUserId);
         console.log("router result is ", result);
         res.json(result);
     }

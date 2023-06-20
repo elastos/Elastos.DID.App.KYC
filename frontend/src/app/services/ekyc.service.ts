@@ -51,6 +51,13 @@ export class EkycService {
         console.error("metaInfo is null");
       }
 
+      const userDid = this.authService.signedInDID();
+      const requestBody = {
+        metaInfo: metaInfo,
+        merchantUserId: userDid
+      }
+      console.log("requestBody is ", requestBody);
+
       try {
         let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/ekyc`, {
           method: "POST",
@@ -58,7 +65,7 @@ export class EkycService {
             "Content-Type": "application/json",
             "token": this.authService.getAuthToken()
           },
-          body: JSON.stringify(metaInfo)
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {

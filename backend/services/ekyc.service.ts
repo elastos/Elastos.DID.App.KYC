@@ -46,12 +46,11 @@ class EkycService {
     });
   }
 
-  public async processEkyc(metaInfo: string): Promise<any> {
+  public async processEkyc(metaInfo: string, merchantUserId: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const productCode = EKYCProductCode.EKYC;
       const returnUrl = SecretConfig.EKYC.returnUrl;
       const merchantBizId = SecretConfig.EKYC.merchantBizId;
-      const merchantUserId = SecretConfig.EKYC.merchantUserId;
       const docType = DocType.Passport;
 
       try {
