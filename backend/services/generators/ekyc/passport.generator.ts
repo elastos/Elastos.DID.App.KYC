@@ -95,12 +95,13 @@ export class EkycPassportGenerator {
     if (!ocrIdInfo.birthDate)
       return null;
 
+    const formateDate = this.formatDate(ocrIdInfo.birthDate.toUpperCase());
     let credentialType = {
       context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/BirthDateCredential",
       shortType: "BirthDateCredential"
     };
     let credentialSubject = {
-      dateOfBirth: ocrIdInfo.birthDate.toUpperCase(),
+      dateOfBirth: formateDate,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/birthdate.png`;
     let title = "Date of birth";
@@ -109,4 +110,19 @@ export class EkycPassportGenerator {
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
+
+  /**
+   * formate time: dd-mm-yyyy => yyyy-mm-dd
+   */
+  public formatDate(date: string): string {
+    if (!date)
+      return null;
+
+    let parts = date.split("-");
+    if (parts.length != 3)
+      return null;
+
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+
 }
