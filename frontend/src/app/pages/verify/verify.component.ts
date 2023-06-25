@@ -61,7 +61,7 @@ export class VerifyComponent {
         const responseObj = JSON.parse(returnURLRespose);
         const resultCode = responseObj.resultCode;
 
-        if (resultCode != EKYCReturnCode.Success) {
+        if (resultCode != EKYCReturnCode.SUCCESS) {
           this.handleError(resultCode);
           return;
         }
@@ -277,35 +277,78 @@ export class VerifyComponent {
   handleErrorMsg(errorCode: string) {
     let errorMessage = "";
     switch (errorCode) {
-      case EKYCReturnCode.Success:
-        errorMessage = "Success";
+      // case EKYCReturnCode.Success:
+      //   errorMessage = "Success";
+      //   break;
+      // case EKYCReturnCode.SystemError:
+      //   errorMessage = "SystemError";
+      //   break;
+      // case EKYCReturnCode.FlowError:
+      //   errorMessage = "The process is missing or abnormal, no process is available";
+      //   break;
+      // case EKYCReturnCode.InitError:
+      //   errorMessage = "Client initialization exception";
+      //   break;
+      // case EKYCReturnCode.CameraError:
+      //   errorMessage = "Evoking camera exception";
+      //   break;
+      // case EKYCReturnCode.ProductCodeError:
+      //   errorMessage = "Product code return error";
+      //   break;
+      // case EKYCReturnCode.RetryLimitError:
+      //   errorMessage = "The number of retry exceeds the upper limit.";
+      //   break;
+      // case EKYCReturnCode.UserQuit:
+      //   errorMessage = "User voluntarily logs out";
+      //   break;
+      // case EKYCReturnCode.SystemException:
+      //   errorMessage = "System exception";
+      //   break;
+      // case EKYCReturnCode.eKYCFail:
+      //   errorMessage = "Authentication failed";
+      //   break;
+
+      case EKYCReturnCode.SUCCESS:
+        errorMessage = "Verify success. Please request more details by using CheckResult API.";
         break;
-      case EKYCReturnCode.SystemError:
-        errorMessage = "SystemError";
+      case EKYCReturnCode.VERIFY_FAILED:
+        errorMessage = "Verify failed. Please request more details by using CheckResult API.";
         break;
-      case EKYCReturnCode.FlowError:
-        errorMessage = "The process is missing or abnormal, no process is available";
+      case EKYCReturnCode.SYSTEM_ERROR:
+        errorMessage = "System error.";
         break;
-      case EKYCReturnCode.InitError:
-        errorMessage = "Client initialization exception";
+      case EKYCReturnCode.SDK_INIT_ERROR:
+        errorMessage = "Sdk initialization error, please confirm that the time on the mobile phone is correct.";
         break;
-      case EKYCReturnCode.CameraError:
-        errorMessage = "Evoking camera exception";
+      case EKYCReturnCode.CAMERA_INIT_ERROR:
+        errorMessage = "Camera initialization error.";
         break;
-      case EKYCReturnCode.ProductCodeError:
-        errorMessage = "Product code return error";
+      case EKYCReturnCode.NETWORK_ERROR:
+        errorMessage = "Network error.";
         break;
-      case EKYCReturnCode.RetryLimitError:
-        errorMessage = "The number of retry exceeds the upper limit.";
+      case EKYCReturnCode.USER_CANCELED:
+        errorMessage = "User canceled.";
         break;
-      case EKYCReturnCode.UserQuit:
-        errorMessage = "User voluntarily logs out";
+      case EKYCReturnCode.INVALID_TRANSACTION_ID:
+        errorMessage = "Invalid transactionId.";
         break;
-      case EKYCReturnCode.SystemException:
-        errorMessage = "System exception";
+      case EKYCReturnCode.TIMESTAMP_ERROR:
+        errorMessage = "Timestamp error.";
         break;
-      case EKYCReturnCode.eKYCFail:
-        errorMessage = "Authentication failed";
+      case EKYCReturnCode.WRONG_DOCUMENT_TYPE:
+        errorMessage = "Wrong document type.";
+        break;
+      case EKYCReturnCode.KEY_INFO_MISSING:
+        errorMessage = "The key information identified by OCR is missing or the format validation fails.";
+        break;
+      case EKYCReturnCode.BAD_IMAGE_QUALITY:
+        errorMessage = "Bad image quality.";
+        break;
+      case EKYCReturnCode.ERROR_COUNT_EXCEEDED:
+        errorMessage = "Error count exceeded.";
+        break;
+      default:
+        errorMessage = "Unknown error";
         break;
     }
     return errorMessage;
