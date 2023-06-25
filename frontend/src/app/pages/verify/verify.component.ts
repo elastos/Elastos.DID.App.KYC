@@ -82,6 +82,7 @@ export class VerifyComponent {
         console.log("data", credentialResponseObj.data);
         CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
         this.verificationCompleted = true;
+        window.location.replace("/verifysuccess");
       } catch (error: any) {
         alert("The server encountered a temporary error and could not complete your request. ");
         this.isStartPrcocessEKYC = false;

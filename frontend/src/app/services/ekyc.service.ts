@@ -6,7 +6,6 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class EkycService {
-
   constructor(
     private router: Router,
     private authService: AuthService
