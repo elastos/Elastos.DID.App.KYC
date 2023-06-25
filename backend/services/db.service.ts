@@ -6,7 +6,7 @@ import { Credential } from "../model/credential";
 import { DataOrError, ErrorType } from "../model/dataorerror";
 import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { User } from "../model/user";
-import { TransactionMap } from "../model/ekyc/transactionMap";
+import { TransactionMap } from "../model/ekyc/transactionmap";
 
 class DBService {
     private client: MongoClient;
