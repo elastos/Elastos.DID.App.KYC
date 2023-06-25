@@ -6,6 +6,7 @@ import { Credential } from "../model/credential";
 import { DataOrError, ErrorType } from "../model/dataorerror";
 import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { User } from "../model/user";
+import { TransactionMap } from "../model/ekyc/transactionMap";
 
 class DBService {
     private client: MongoClient;
@@ -162,6 +163,42 @@ class DBService {
             await this.client.close();
         }
     }
+
+    public async saveTransactionUserMapping(transactionId: string, did: string): Promise<DataOrError<void>> {
+        try {
+            await this.client.connect();
+            const transactionsCollection = this.client.db().collection('transactions');
+
+            const transactionMap: TransactionMap = {
+                transactionId: transactionId,
+                did: did
+            };
+            await transactionsCollection.insertOne(transactionMap);
+            return {};
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async getTransactionUserMapping(transactionId: string): Promise<DataOrError<string>> {
+        try {
+            await this.client.connect();
+            const transactionsCollection = this.client.db().collection('transactions');
+            const transactionMap = (await transactionsCollection.find({ transactionId: transactionId }).project<TransactionMap>({ _id: 0 }).limit(1).toArray())[0];
+            console.log("transactionMap ===>", transactionMap);
+            return { data: transactionMap.did };
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+
 }
 
 export const dbService = new DBService();

@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router, ActivatedRoute } from '@angular/router';
+import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { EKYCReturnCode } from 'src/app/model/ekyc/ekycreturncode';
 import { AuthService } from 'src/app/services/auth.service';
 import { CacheService } from 'src/app/services/cache.service';
@@ -61,30 +62,53 @@ export class VerifyComponent {
         const resultCode = responseObj.resultCode;
 
         if (resultCode != EKYCReturnCode.Success) {
-          console.log("result code is not success");
-          alert("Error: " + this.handleErrorMsg(resultCode));
-          this.isStartPrcocessEKYC = false;
+          this.handleError(resultCode);
           return;
         }
 
         const transactionId = responseObj.extInfo.certifyId;
         const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
         console.log("check result response is ", credentialResponse);
+        const credentialResponseObj = JSON.parse(credentialResponse)
+        console.log("credentialObj is ", credentialResponseObj);
 
-        CacheService.setVerificationStatus(this.authService.signedInDID(), credentialResponse);
+        console.log("code", credentialResponseObj.code);
+
+        if (credentialResponseObj.code != EKYCResponseType.SUCCESS) {
+          this.handleDIDNotMatched(credentialResponseObj.code)
+          return;
+        }
+
+        console.log("data", credentialResponseObj.data);
+        CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
         this.verificationCompleted = true;
-      } catch (error) {
+      } catch (error: any) {
+        alert("The server encountered a temporary error and could not complete your request. ");
+        this.isStartPrcocessEKYC = false;
         console.error("error is ", error);
+        window.location.replace("/verify");
       }
     });
   }
 
+  handleDIDNotMatched(responseCode: string) {
+    console.log("responseCode", responseCode);
+    window.location.replace("/verify");
+    alert("Error: " + "Did not matched");
+    this.isStartPrcocessEKYC = false;
+  }
+
+  handleError(resultCode: string) {
+    console.log("result code is not success");
+    alert("Error: " + this.handleErrorMsg(resultCode));
+    this.isStartPrcocessEKYC = false;
+    window.location.replace("/verify");
+  }
+
   processIDOCR() {
     this.isStartProcessIDOCR = true;
-
     const metainfo = api.getMetaInfo();
     console.log("meta info is ", metainfo);
-
     this.ekycService.processIDOCR(metainfo);
   }
 
@@ -94,10 +118,25 @@ export class VerifyComponent {
 
     try {
       const response = await this.ekycService.processEKYC(metainfo);
-      const resultObj = await response.json()
-      const requestId = resultObj.requestId
-      const transactionId = resultObj.transactionId
-      const transactionUrl = resultObj.transactionUrl
+      const result = await response.json()
+
+
+      console.log("check result response is ", result);
+      const responseObj = JSON.parse(result)
+      console.log("responseObj is ", responseObj);
+
+      console.log("code", responseObj.code);
+
+      if (responseObj.code != EKYCResponseType.SUCCESS) {
+        this.handleDIDNotMatched(responseObj.code)
+        return;
+      }
+
+      const responseData = responseObj.data;
+
+      const requestId = responseData.requestId
+      const transactionId = responseData.transactionId
+      const transactionUrl = responseData.transactionUrl
 
       console.log("requestId is ", requestId);
       console.log("transactionId is ", transactionId);

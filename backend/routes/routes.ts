@@ -13,6 +13,7 @@ import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
 import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
+import { EKYCResponseType } from '../model/ekycresponsetype';
 
 let router = Router();
 
@@ -265,11 +266,30 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
     if (!merchantUserId)
         return res.json({ code: 403, message: 'Missing merchantUserId' });
 
-
     try {
+        console.log("req.user.did = ", req.user.did);
+        console.log("merchantUserId = ", merchantUserId);
+
+        if (merchantUserId != req.user.did) {
+            console.log("did don't match");
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
         const result = await ekycService.processEkyc(metaInfo, merchantUserId);
+        console.log("saveTransactionUserMapping ", result.transactionId, merchantUserId);
+        dbService.saveTransactionUserMapping(result.transactionId, merchantUserId);
+
         console.log("router result is ", result);
-        res.json(result);
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: result
+        }
+        res.json(JSON.stringify(response));
     }
     catch (e) {
         return res.status(500).json("Server error");
@@ -368,8 +388,6 @@ router.post('/user/ekyc/checkresult', async (req, res) => {
 });
 
 router.post('/user/ekyc/ekyccredential', async (req, res) => {
-    let userDid = req.user.did;
-
     const transactionBody = req.body;
     if (!transactionBody) {
         return res.json({ code: 403, message: 'transactionBody error' });
@@ -380,6 +398,28 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         console.log("Request transactionId is ", transactionId);
         const merchantUserId = transactionBody.merchantUserId;
         console.log("Request merchantUserId is ", merchantUserId);
+
+        console.log("req.user.did = ", req.user.did);
+
+        const dbTransactionsDataOrError = await dbService.getTransactionUserMapping(transactionId);
+        console.log("getFinish");
+
+        if (dbTransactionsDataOrError.error)
+            return apiError(res, dbTransactionsDataOrError);
+        const userDid = dbTransactionsDataOrError.data;
+
+        console.log("transactionMapping ===>", userDid);
+
+
+        if (merchantUserId != req.user.did || merchantUserId != userDid) {
+            console.log("did don't match");
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
         console.log("response is ", checkResultResponse);
@@ -409,13 +449,21 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
         verificationStatus.passbase.status = PassbaseVerificationStatus.APPROVED;
 
+
+
         // FINALIZE
         // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
 
         // Sort by most recent first
         // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
         verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
-        res.json(JSON.stringify(verificationStatus));
+
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: verificationStatus
+        }
+
+        res.json(JSON.stringify(response));
     }
     catch (e) {
         console.log("error is ", e);
