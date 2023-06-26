@@ -25,7 +25,7 @@ export class DashboardComponent {
   public overallVerificationStatus: OverallStatus; // Overall status string for all KYC providers
   public availableCredentials: VerifiableCredential[] = [];
   public isDarkTheme; // TODO: NOT LIKE THIS, REWORK
-  public isProcess = false;
+  public isProcess: { [key: string]: boolean } = {};
 
   constructor(
     private _bottomSheet: MatBottomSheet,
@@ -40,7 +40,6 @@ export class DashboardComponent {
   ngAfterViewInit() {
     // Fetch status
     // this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
-    this.isProcess = false;
     setTimeout(() => {
       this.verificationStatus = CacheService.getVerificationStatus(this.authService.signedInDID());
       console.log("Verification status: ", this.verificationStatus);
@@ -113,10 +112,14 @@ export class DashboardComponent {
    * Send the credential to the identity wallet for import
    */
   public importCredential(credential: VerifiableCredential) {
-    this.isProcess = true;
-    this.credentialsService.importCredential(credential).then(() => {
-      this.isProcess = false;
-    });
+    this.isProcess[credential.getId().getFragment()] = true;
+    this.credentialsService.importCredential(credential)
+      .then(() => {
+        this.isProcess[credential.getId().getFragment()] = false;
+      })
+      .catch(err => {
+        this.isProcess[credential.getId().getFragment()] = false;
+      });
   }
 
   public prepareOverallStatus() {

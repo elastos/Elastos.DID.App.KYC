@@ -85,7 +85,7 @@
           </div>
           <!-- Import action -->
           <button class="blue-btn fs-12 px-2 py-0 inline-fit-content fw-unset c-white"
-            (click)="importCredential(credential)" [disabled]="isProcess">
+            (click)="importCredential(credential)" [disabled]="isProcess[credential.getId().getFragment()]">
             Import to Identity wallet
           </button>
           <!-- Info -->
