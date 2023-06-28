@@ -7,11 +7,14 @@ import { BrowserModule } from '@angular/platform-browser';
 import { CloudsComponent } from './clouds/clouds.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { AppRoutingModule } from './../app-routing.module';
+import { MatDialogModule } from '@angular/material/dialog';
+import { PromoteComponent } from './promote/promote.component';
 
 @NgModule({
   declarations: [
     ToolbarComponent,
-    CloudsComponent
+    CloudsComponent,
+    PromoteComponent
   ],
   imports: [
     AppRoutingModule,
@@ -19,11 +22,13 @@ import { AppRoutingModule } from './../app-routing.module';
     MatInputModule,
     MatButtonModule,
     FormsModule,
-    MatIconModule
+    MatIconModule,
+    MatDialogModule
   ],
   exports: [
     ToolbarComponent,
-    CloudsComponent
+    CloudsComponent,
+    PromoteComponent
   ],
   providers: [],
 })

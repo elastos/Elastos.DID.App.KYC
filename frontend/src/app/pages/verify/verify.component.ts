@@ -5,6 +5,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { EKYCReturnCode } from 'src/app/model/ekyc/ekycreturncode';
@@ -13,6 +14,9 @@ import { CacheService } from 'src/app/services/cache.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { EkycService } from 'src/app/services/ekyc.service';
 import { ThemeService } from 'src/app/services/theme.service';
+import { PromoteComponent } from 'src/app/components/promote/promote.component';
+import { PromoteService } from 'src/app/services/promote.service';
+
 import * as api from 'src/assets/js/jsvm_all.js';
 
 @Component({
@@ -41,8 +45,22 @@ export class VerifyComponent {
     private themeService: ThemeService,
     private ekycService: EkycService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private promoteService: PromoteService,
+    private dialog: MatDialog
   ) { }
+
+  openDialog(title: string, content: string) {
+    this.promoteService.setPromoteTitle(title);
+    this.promoteService.setPromoteContent(content);
+    const dialogRef = this.dialog.open(PromoteComponent, { role: "alertdialog", disableClose: true });
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result)
+        return;
+      this.isStartPrcocessEKYC = false;
+      window.location.replace("/verify");
+    });
+  }
 
   ngOnInit() {
     const metainfo = this.getMetaInfo();
@@ -84,26 +102,23 @@ export class VerifyComponent {
         this.verificationCompleted = true;
         window.location.replace("/verifysuccess");
       } catch (error: any) {
-        alert("The server encountered a temporary error and could not complete your request. ");
-        this.isStartPrcocessEKYC = false;
+        this.openDialog("Tips", "The server encountered a temporary error and could not complete your request. ");
+        // alert("The server encountered a temporary error and could not complete your request. ");
         console.error("error is ", error);
-        window.location.replace("/verify");
       }
     });
   }
 
   handleDIDNotMatched(responseCode: string) {
     console.log("responseCode", responseCode);
-    window.location.replace("/verify");
-    alert("Error: " + "Did not matched");
-    this.isStartPrcocessEKYC = false;
+    // alert("Error: " + "Did not matched");
+    this.openDialog("Tips", "Did not matched");
   }
 
   handleError(resultCode: string) {
     console.log("result code is not success");
-    alert("Error: " + this.handleErrorMsg(resultCode));
-    this.isStartPrcocessEKYC = false;
-    window.location.replace("/verify");
+    // alert("Error: " + this.handleErrorMsg(resultCode));
+    this.openDialog("Tips", this.handleErrorMsg(resultCode));
   }
 
   processIDOCR() {
@@ -222,7 +237,6 @@ export class VerifyComponent {
     this.ekycService.checkResult(transactionBody);
   }
 
-  //pop up aliyun ocr window
   openBottomSheet(): void {
     this._bottomSheet.open(VerifyComponent);
   }
