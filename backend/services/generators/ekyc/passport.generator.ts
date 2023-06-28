@@ -1,9 +1,9 @@
 import { VerifiableCredential } from "@elastosfoundation/did-js-sdk";
 import { SecretConfig } from "../../../config/env-secret";
 import { FullCredentialType } from "../../../model/fullcredentialtype";
-import { passbaseService } from "../../passbase.service";
 import { ekycService } from "../../ekyc.service";
 import { OCRIdInfo } from "../../../model/ekyc/ekycresult";
+import { CommonUtils, commonUtils } from "../../../utils/commonutils";
 
 export class EkycPassportGenerator {
   public async generateAll(did: string, ocrIdInfo: OCRIdInfo, generatedCredentials: VerifiableCredential[]): Promise<void> {
@@ -27,6 +27,14 @@ export class EkycPassportGenerator {
     let birthDateCredential = await this.generateBirthDateCredential(did, ocrIdInfo);
     if (birthDateCredential)
       generatedCredentials.push(birthDateCredential);
+
+    let passportNumberCredential = await this.generatePassportNumberCredential(did, ocrIdInfo);
+    if (passportNumberCredential)
+      generatedCredentials.push(passportNumberCredential);
+
+    let passportNumberHashCredential = await this.generatePassPortNumberHashCredential(did, ocrIdInfo);
+    if (passportNumberHashCredential)
+      generatedCredentials.push(passportNumberHashCredential);
   }
 
   private async generateNameCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
@@ -106,6 +114,51 @@ export class EkycPassportGenerator {
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/birthdate.png`;
     let title = "Date of birth";
     let description = "${dateOfBirth}";
+
+    // Create Credential
+    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+  }
+
+  /**
+   * PassportNumberCredential
+   */
+  private async generatePassportNumberCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+    if (!ocrIdInfo.passportNo)
+      return null;
+
+    let credentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/PassportNumberCredential",
+      shortType: "PassportNumberCredential"
+    };
+    let credentialSubject = {
+      passportNo: ocrIdInfo.passportNo.toUpperCase(),
+    };
+    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/passportno.png`;
+    let title = "PassportNumber";
+    let description = "${passportNo}";
+
+    // Create Credential
+    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+  }
+
+  /**
+   * PassportNumberHashCredential
+   */
+  private async generatePassPortNumberHashCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+    if (!ocrIdInfo.passportNo || !ocrIdInfo.givenname || !ocrIdInfo.surname)
+      return null;
+
+    const passportNoHash = CommonUtils.SHA256(ocrIdInfo.passportNo.toUpperCase() + ocrIdInfo.givenname.toUpperCase() + ocrIdInfo.surname.toUpperCase());
+    let credentialType = {
+      context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/PassportNumberHashCredential",
+      shortType: "PassportNumberHashCredential"
+    };
+    let credentialSubject = {
+      passportNoHash: passportNoHash,
+    };
+    let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/passportnohash.png`;
+    let title = "PassportNumberHash";
+    let description = "${passportNoHash}";
 
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
