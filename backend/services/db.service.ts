@@ -18,8 +18,6 @@ class DBService {
         else
             mongoConnectionUrl = `mongodb://${SecretConfig.Mongo.host}:${SecretConfig.Mongo.port}/${SecretConfig.Mongo.dbName}`;
 
-        console.log("mongoConnectionUrl", mongoConnectionUrl);
-
         this.client = new MongoClient(mongoConnectionUrl, {
             //useNewUrlParser: true, useUnifiedTopology: true
         });
@@ -188,7 +186,6 @@ class DBService {
             await this.client.connect();
             const transactionsCollection = this.client.db().collection('transactions');
             const transactionMap = (await transactionsCollection.find({ transactionId: transactionId }).project<TransactionMap>({ _id: 0 }).limit(1).toArray())[0];
-            console.log("transactionMap ===>", transactionMap);
             return { data: transactionMap.did };
         } catch (err) {
             logger.error(err);

@@ -25,7 +25,6 @@ router.get('/check', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     let presentationStr = req.body;
-    console.log("presentationStr", presentationStr);
     if (!presentationStr) {
         return res.json({ code: 403, message: 'Missing presentation' });
     }
@@ -33,13 +32,11 @@ router.post('/login', async (req, res) => {
     try {
         let vp = VerifiablePresentation.parse(presentationStr);
         let valid = await vp.isValid();
-        console.log("valid", valid);
         if (!valid) {
             return res.json({ code: 403, message: 'Invalid presentation' });
         }
 
         let did = vp.getHolder().toString();
-        console.log("did", did);
         if (!did) {
             return res.json({ code: 400, message: 'Unable to extract owner DID from the presentation' })
         }
@@ -56,7 +53,6 @@ router.post('/login', async (req, res) => {
         let existingUser = existingUserDataOrError.data;
         let user: User;
 
-        console.log("existingUser", existingUser);
         if (existingUser) {
             // Nothing to do yet
             logger.info("Existing user is signing in", existingUser);
@@ -79,9 +75,7 @@ router.post('/login', async (req, res) => {
                 return;
             }
         }
-        console.log("====");
         let token = jwt.sign(user, SecretConfig.Auth.jwtSecret, { expiresIn: 60 * 60 * 24 * 7 });
-        console.log("token", token);
         res.json(token);
     }
     catch (e) {
@@ -224,10 +218,7 @@ router.post('/user/passbase/uuid', async (req, res) => {
 });
 
 router.post('/user/ekyc/idocr', async (req, res) => {
-    console.log("router user/ekyc/idocr");
-
     let metaInfo = req.body;
-    console.log("metaInfo is ", metaInfo);
 
     if (!metaInfo) {
         return res.json({ code: 403, message: 'Missing metaInfo' });
@@ -235,30 +226,18 @@ router.post('/user/ekyc/idocr', async (req, res) => {
 
     try {
         const response = await ekycService.processIdOcr(metaInfo);
-
-        // Get result
-        console.log("response is ", response);
-
-        console.log("requestId is ", response.body.requestId);
-        console.log("transactionId is ", response.body.result.transactionId);
-        console.log("transactionUrl is ", response.body.result.transactionUrl);
-
         res.json(response);
     }
     catch (e) {
-        console.log("error is ", e);
         return res.status(500).json("Server error");
     }
 });
 
 router.post('/user/ekyc/ekyc', async (req, res) => {
-    console.log("router user/ekyc/ekyc");
     const requestBody = req.body;
     let metaInfo = requestBody.metaInfo;
     let merchantUserId = requestBody.merchantUserId;
-
-    console.log("metaInfo is ", metaInfo);
-    console.log("merchantUserId is ", merchantUserId);
+    console.log("ekyc request params are ", metaInfo, merchantUserId);
 
     if (!metaInfo)
         return res.json({ code: 403, message: 'Missing metaInfo' });
@@ -267,11 +246,7 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
         return res.json({ code: 403, message: 'Missing merchantUserId' });
 
     try {
-        console.log("req.user.did = ", req.user.did);
-        console.log("merchantUserId = ", merchantUserId);
-
         if (merchantUserId != req.user.did) {
-            console.log("did don't match");
             const response = {
                 code: EKYCResponseType.DID_NOT_MATCH,
                 data: ""
@@ -283,8 +258,6 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
         const result = await ekycService.processEkyc(metaInfo, merchantUserId);
         console.log("saveTransactionUserMapping ", result.transactionId, merchantUserId);
         dbService.saveTransactionUserMapping(result.transactionId, merchantUserId);
-
-        console.log("router result is ", result);
         const response = {
             code: EKYCResponseType.SUCCESS,
             data: result
@@ -292,15 +265,13 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
         res.json(JSON.stringify(response));
     }
     catch (e) {
+        console.log("ekyc request error, error is", e);
         return res.status(500).json("Server error");
     }
 });
 
 router.post('/user/ekyc/faceverify', async (req, res) => {
-    console.log("router user/ekyc/faceverify");
-
     let faceverifyBody = req.body;
-    console.log("faceverifyBody is ", faceverifyBody);
 
     if (!faceverifyBody) {
         return res.json({ code: 403, message: 'Missing metaInfo' });
@@ -312,7 +283,6 @@ router.post('/user/ekyc/faceverify', async (req, res) => {
         const facePictureUrl = faceVerifyBodyObj.facePictureUrl;
         const metaInfo = faceVerifyBodyObj.metaInfo;
         const response = await ekycService.processFaceVerify(metaInfo, facePictureBase64, facePictureUrl);
-        console.log("response is ", response);
         res.json(response);
     }
     catch (e) {
@@ -321,10 +291,7 @@ router.post('/user/ekyc/faceverify', async (req, res) => {
 });
 
 router.post('/user/ekyc/faceliveness', async (req, res) => {
-    console.log("router user/ekyc/faceliveness");
-
     let metaInfo = req.body;
-    console.log("metaInfo is ", metaInfo);
 
     if (!metaInfo) {
         return res.json({ code: 403, message: 'Missing metaInfo' });
@@ -332,7 +299,6 @@ router.post('/user/ekyc/faceliveness', async (req, res) => {
 
     try {
         const response = await ekycService.processFaceLiveness(metaInfo);
-        console.log("response is ", response);
         res.json(response);
     }
     catch (e) {
@@ -341,10 +307,7 @@ router.post('/user/ekyc/faceliveness', async (req, res) => {
 });
 
 router.post('/user/ekyc/facecompare', async (req, res) => {
-    console.log("router user/ekyc/facecompare");
-
     let faceCompareBody = req.body;
-    console.log("faceCompareBody is ", faceCompareBody);
 
     if (!faceCompareBody) {
         return res.json({ code: 403, message: 'faceCompareBody metaInfo' });
@@ -359,7 +322,6 @@ router.post('/user/ekyc/facecompare', async (req, res) => {
         const targetFacePictureUrl: string = faceCompareJson.targetFacePictureUrl;
 
         const response = await ekycService.faceCompare(sourceFacePictureBase64, sourceFacePictureUrl, targetFacePictureBase64, targetFacePictureUrl);
-        console.log("response is ", response);
         res.json(response);
     }
     catch (e) {
@@ -375,14 +337,11 @@ router.post('/user/ekyc/checkresult', async (req, res) => {
 
     try {
         const transactionId: string = transactionBody.transactionId;
-        console.log("Request transactionId is ", transactionId);
-
         const response = await ekycService.checkResult(transactionId);
-        console.log("response is ", response);
         res.json(response.body);
     }
     catch (e) {
-        console.log("error is ", e);
+        console.error("Check error is ", e);
         return res.status(500).json("Server error");
     }
 });
@@ -395,24 +354,17 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
     try {
         const transactionId: string = transactionBody.transactionId;
-        console.log("Request transactionId is ", transactionId);
         const merchantUserId = transactionBody.merchantUserId;
-        console.log("Request merchantUserId is ", merchantUserId);
-
-        console.log("req.user.did = ", req.user.did);
-
+        console.log("credential request params are ", transactionId, merchantUserId);
         const dbTransactionsDataOrError = await dbService.getTransactionUserMapping(transactionId);
-        console.log("getFinish");
 
         if (dbTransactionsDataOrError.error)
             return apiError(res, dbTransactionsDataOrError);
         const userDid = dbTransactionsDataOrError.data;
-
-        console.log("transactionMapping ===>", userDid);
-
+        console.log("userDid is ", userDid);
 
         if (merchantUserId != req.user.did || merchantUserId != userDid) {
-            console.log("did don't match");
+            console.log("did don't match", merchantUserId, req.user.did, userDid);
             const response = {
                 code: EKYCResponseType.DID_NOT_MATCH,
                 data: ""
@@ -422,7 +374,6 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
-        console.log("response is ", checkResultResponse);
 
         const ekycResponse: EkycResponse = checkResultResponse.body;
         const ekycRawResult: EkycRawResult = ekycResponse.result;
@@ -432,10 +383,6 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
             passed: ekycRawResult.passed,
             subCode: ekycRawResult.subCode
         }
-        const ocrIdInfo = ekycResult.extIdInfo.ocrIdInfo;
-
-        console.log("ekycResult is ", ekycResult);
-        console.log("ocrIdInfo is ", ocrIdInfo);
 
         let verificationStatus: VerificationStatus = {
             passbase: {
@@ -446,10 +393,7 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
         let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserCredentials(userDid, ekycResult);
 
-
         verificationStatus.passbase.status = PassbaseVerificationStatus.APPROVED;
-
-
 
         // FINALIZE
         // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
@@ -466,7 +410,7 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         res.json(JSON.stringify(response));
     }
     catch (e) {
-        console.log("error is ", e);
+        console.log("credential request error, error is ", e);
         return res.status(500).json("Server error");
     }
 });

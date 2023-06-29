@@ -7,7 +7,6 @@ import { FullCredentialType } from "../model/fullcredentialtype";
 import { didService } from "./did.service";
 import moment from "moment";
 import { EKYCResult } from "../model/ekyc/ekycresult";
-import { User } from "../model/user";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 
 const require = createRequire(import.meta.url);
@@ -35,10 +34,6 @@ class EkycService {
           reject("response is null");
           return;
         }
-        // Get result
-        console.log("requestId is ", response.body.requestId);
-        console.log("transactionId is ", response.body.result.transactionId);
-        console.log("transactionUrl is ", response.body.result.transactionUrl);
         resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
       } catch (error) {
         reject(error);
@@ -60,10 +55,6 @@ class EkycService {
           reject("response is null");
           return;
         }
-        // Get result
-        console.log("requestId is ", response.body.requestId);
-        console.log("transactionId is ", response.body.result.transactionId);
-        console.log("transactionUrl is ", response.body.result.transactionUrl);
         resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
       } catch (error) {
         reject(error);
@@ -85,13 +76,7 @@ class EkycService {
           reject("response is null");
           return;
         }
-
         resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
-
-        // Get result
-        console.log("requestId is ", response.body.requestId);
-        console.log("transactionId is ", response.body.result.transactionId);
-        console.log("transactionUrl is ", response.body.result.transactionUrl);
       } catch (error) {
         reject(error);
       }
@@ -111,10 +96,6 @@ class EkycService {
           reject("response is null");
           return;
         }
-        // Get result
-        console.log("requestId is ", response.body.requestId);
-        console.log("transactionId is ", response.body.result.transactionId);
-        console.log("transactionUrl is ", response.body.result.transactionUrl);
         resolve({ requestId: response.body.requestId, transactionId: response.body.result.transactionId, transactionUrl: response.body.result.transactionUrl });
       } catch (error) {
         reject(error);
@@ -146,7 +127,6 @@ class EkycService {
         endpoint: SecretConfig.EKYC.endpoint
       });
 
-      console.log("config is ", config);
       const client = new Client(config);
 
       // Build request
@@ -170,11 +150,8 @@ class EkycService {
         });
       }
 
-      console.log("request is ", request);
       // Invoke API
       const response = await client.initialize(request);
-
-      console.log("initial response is ", response);
       if (!response) {
         reject(response);
         return;
@@ -201,7 +178,6 @@ class EkycService {
         endpoint: SecretConfig.EKYC.endpoint
       });
 
-      console.log("config is ", config);
       const client = new Client(config);
 
       let request = null
@@ -223,11 +199,9 @@ class EkycService {
         });
       }
 
-      console.log("request is ", request);
       // Invoke API
       const response = await client.initialize(request);
 
-      console.log("initial response is ", response);
       if (!response) {
         reject(response);
         return;
@@ -261,7 +235,6 @@ class EkycService {
         endpoint: SecretConfig.EKYC.endpoint
       });
 
-      console.log("config is ", config);
       const client = new Client(config);
 
       let request = null
@@ -285,11 +258,9 @@ class EkycService {
         });
       }
 
-      console.log("request is ", request);
       // Invoke API
       const response = await client.initialize(request);
 
-      console.log("initial response is ", response);
       if (!response) {
         reject(response);
         return;
@@ -323,7 +294,6 @@ class EkycService {
         endpoint: SecretConfig.EKYC.endpoint
       });
 
-      console.log("config is ", config);
       const client = new Client(config);
 
       // Build request
@@ -346,11 +316,9 @@ class EkycService {
         });
       }
 
-      console.log("request is ", request);
       // Invoke API
       const response = await client.initialize(request);
 
-      console.log("initial response is ", response);
       if (!response) {
         reject(response);
         return;
@@ -376,12 +344,9 @@ class EkycService {
           transactionId: transactionId
         });
 
-
-        console.log("config is ", config);
-        console.log("request is ", request);
         // Invoke API
         const response = await client.checkResult(request);
-        console.log("checkResult response is ", response);
+
         if (!response) {
           reject(response);
           return;
@@ -512,11 +477,6 @@ class EkycService {
       // Invoke API
       const response = await client.faceCompare(request);
 
-      // Get result
-      console.log(response.body.requestId);
-      console.log(response.body.result.transactionId);
-      console.log(response.body.result.passed);
-      console.log(response.body.result.subCode);
       if (!response) {
         reject(response);
         return;
@@ -546,10 +506,8 @@ class EkycService {
 
   public async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     let issuer = new Issuer(didService.getIssuerDID());
-    //console.log("Issuer:", issuer);
 
     let targetDIDObj = DID.from(targetDID); // User that receives the credential
-    //console.log("Target DID:", targetDID);
 
     let randomCredentialIdNumber = Math.floor((Math.random() * 10000000));
     let credentialId = `${credentialType.shortType}${randomCredentialIdNumber}`;
