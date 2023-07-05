@@ -47,8 +47,8 @@ export class EkycPassportGenerator {
     };
 
     let credentialSubject = {
-      lastName: ocrIdInfo.surname.toUpperCase(),
-      ...("givenname" in ocrIdInfo && { firstNames: ocrIdInfo.givenname.toUpperCase() }), // Add the field only if existing
+      lastName: ocrIdInfo.surname,
+      ...("givenname" in ocrIdInfo && { firstNames: ocrIdInfo.givenname }), // Add the field only if existing
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/name.png`;
     let title = "Full name";
@@ -68,7 +68,7 @@ export class EkycPassportGenerator {
       shortType: "NationalityCredential"
     };
     let credentialSubject = {
-      nationality: ocrIdInfo.nationality.toUpperCase(),
+      nationality: ocrIdInfo.nationality,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/nationality.png`;
     let title = "Nationality";
@@ -88,7 +88,7 @@ export class EkycPassportGenerator {
       shortType: "GenderCredential"
     };
     let credentialSubject = {
-      gender: ocrIdInfo.sex.toUpperCase(),
+      gender: ocrIdInfo.sex,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/gender.png`;
     let title = "Gender";
@@ -103,7 +103,7 @@ export class EkycPassportGenerator {
     if (!ocrIdInfo.birthDate)
       return null;
 
-    const formateDate = this.formatDate(ocrIdInfo.birthDate.toUpperCase());
+    const formateDate = this.formatDate(ocrIdInfo.birthDate);
     let credentialType = {
       context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/BirthDateCredential",
       shortType: "BirthDateCredential"
@@ -131,11 +131,11 @@ export class EkycPassportGenerator {
       shortType: "PassportNumberCredential"
     };
     let credentialSubject = {
-      passportNo: ocrIdInfo.passportNo.toUpperCase(),
+      passportNumber: ocrIdInfo.passportNo,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/passportno.png`;
-    let title = "PassportNumber";
-    let description = "${passportNo}";
+    let title = "Passport number";
+    let description = "${passportNumber}";
 
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
@@ -148,17 +148,31 @@ export class EkycPassportGenerator {
     if (!ocrIdInfo.passportNo || !ocrIdInfo.givenname || !ocrIdInfo.surname)
       return null;
 
-    const passportNoHash = CommonUtils.SHA256(ocrIdInfo.passportNo.toUpperCase() + ocrIdInfo.givenname.toUpperCase() + ocrIdInfo.surname.toUpperCase());
+    const passportNoUtf8 = Buffer.from(ocrIdInfo.passportNo, 'utf-8').toString();
+    console.log("passportNoUtf8", passportNoUtf8);
+    const passportUTF8NFC = passportNoUtf8.normalize('NFC');
+
+    const givennameUtf8 = Buffer.from(ocrIdInfo.givenname, 'utf-8').toString();
+    console.log("givennameUtf8", givennameUtf8);
+    const givennameUtf8NFC = givennameUtf8.normalize('NFC');
+
+    const surnameUtf8 = Buffer.from(ocrIdInfo.surname, 'utf-8').toString();
+    console.log("surnameUtf8", surnameUtf8);
+    const surnameUtf8NFC = surnameUtf8.normalize('NFC');
+
+    const passportNoHash = CommonUtils.SHA256(passportUTF8NFC + givennameUtf8NFC + surnameUtf8NFC);
+
+    console.log("passportNoHash = ", passportNoHash);
     let credentialType = {
       context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/PassportNumberHashCredential",
       shortType: "PassportNumberHashCredential"
     };
     let credentialSubject = {
-      passportNoHash: passportNoHash,
+      passportNumberHash: passportNoHash,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/passportnohash.png`;
-    let title = "PassportNumberHash";
-    let description = "${passportNoHash}";
+    let title = "Passport number hash";
+    let description = "${passportNumberHash}";
 
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
@@ -177,5 +191,4 @@ export class EkycPassportGenerator {
 
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
-
 }
