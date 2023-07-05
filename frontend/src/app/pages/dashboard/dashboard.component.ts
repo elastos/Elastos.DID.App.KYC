@@ -92,6 +92,9 @@ export class DashboardComponent {
       case "nationality": return "Nationality";
       case "gender": return "Gender";
       case "mrtdVerified": return "MRTD Verified";
+      case "dateOfBirth": return "Data of birth"
+      case "passportNumber": return "Passport Number";
+      case "passportNumberHash": return "Passport Number Hash";
       default: return key;
     }
   }
@@ -121,6 +124,21 @@ export class DashboardComponent {
         this.isProcess[credential.getId().getFragment()] = false;
       });
   }
+
+  /**
+   * Send the credential to the identity wallet for import
+   */
+  public importCredentials(credentials: VerifiableCredential[]) {
+    this.isProcess["credentials"] = true;
+    this.credentialsService.importCredentials(credentials)
+      .then(() => {
+        this.isProcess["credentials"] = false;
+      })
+      .catch(err => {
+        this.isProcess["credentials"] = false;
+      });
+  }
+
 
   public prepareOverallStatus() {
     if (this.verificationStatus) {

@@ -1,7 +1,7 @@
 <Toolbar></Toolbar>
 
-<div class="container">
-  <div class="wrapper-box">
+<div class="container" >
+  <div class="wrapper-box" style="max-width: 100%;">
     <div class="d-flex justify-content-center my-2">
       <p class="heading c-4ab4f0 text-center">Dashboard</p>
     </div>
@@ -45,9 +45,19 @@
       </mat-progress-spinner>
       <p class="fw-500 fs-12 text-center op-5 dark-mode"
         *ngIf="!fetchingVerificationStatus && availableCredentials.length == 0">No credential yet.</p>
-    </div>
 
-    <div *ngIf="!fetchingVerificationStatus && availableCredentials.length > 0" class="credentials pb-3">
+      <button class="blue-btn fs-15 px-2 inline-fit-content fw-unset c-white"
+        *ngIf="!fetchingVerificationStatus && availableCredentials.length > 1" 
+        (click)="importCredentials(availableCredentials)" 
+        [disabled]="isProcess['credentials']"
+        style="padding: 5px;">
+        Import all credential to Identity wallet
+      </button>
+    </div>
+    
+
+
+    <div *ngIf="!fetchingVerificationStatus && availableCredentials.length > 0" class="credentials pb-3" >
       <div class="d-flex flex-column justify-content-center mb-3" *ngFor="let credential of availableCredentials">
         <div class="d-flex mx-4 align-content-center dark-img">
           <img src="../../../assets/half_round_white.svg" class="ml-2 mr-2 icon-width" alt="half Round Icon"
@@ -59,10 +69,10 @@
           <!-- Properties -->
           <div class="fs-12 row" *ngFor="let property of getCredentialProperties(credential)">
             <div class="col-4">
-              <p class="c-4ab4f0 fw-bold">{{getDisplayableCredentialPropertyKey(property.key)}}</p>
+              <p class="c-4ab4f0 fw-bold" style="word-wrap: break-word; ">{{getDisplayableCredentialPropertyKey(property.key)}}</p>
             </div>
             <div class="col-8">
-              <p class="c-000000 fw-500">{{property.value}}</p>
+              <p class="c-000000 fw-500" style="word-wrap: break-word; ">{{property.value}}</p>
             </div>
           </div>
           <!-- Signed by -->
@@ -92,7 +102,7 @@
           <div class="d-flex justify-content-center mt-2">
             <img src="../../../assets/square.svg" class="icon-img" alt="Square" *ngIf="!isDarkTheme">
             <img src="../../../assets/square_dark.svg" class="icon-img" alt="Square" *ngIf="isDarkTheme">
-            <p class="op-5 fw-500">
+            <p class="op-5 fw-500" style="word-wrap: break-word;">
               <i>
                 After importing a credential in
                 your identity wallet, you can use it

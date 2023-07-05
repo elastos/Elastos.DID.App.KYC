@@ -153,4 +153,16 @@ export class CredentialsService {
       });
     }
   }
+
+
+  public async importCredentials(credentials: VerifiableCredential[]) {
+    let didAccess = new ConnDID.DIDAccess();
+    let importedCredentials = await didAccess.importCredentials(credentials);
+
+    if (importedCredentials.length == 1) {
+      this._snackBar.open("Credential successfully imported to your wallet!", "Cool", {
+        duration: 3000
+      });
+    }
+  }
 }
