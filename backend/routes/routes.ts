@@ -43,8 +43,11 @@ router.post('/login', async (req, res) => {
 
         // First check if we know this user yet or not. If not, we will create an entry
         let existingUserDataOrError = await dbService.findUserByDID(did);
-        if (existingUserDataOrError.error)
+        if (existingUserDataOrError.error) {
+            console.log("User data error, ", existingUserDataOrError);
             return apiError(res, existingUserDataOrError);
+        }
+
 
         // Optional email
         let emailCredential = vp.getCredential(`email`);
@@ -71,8 +74,8 @@ router.post('/login', async (req, res) => {
             };
             let dataOrError = await dbService.addUser(user);
             if (dataOrError.error) {
+                console.log("Add user error, ", dataOrError);
                 return apiError(res, dataOrError);
-                return;
             }
         }
         let token = jwt.sign(user, SecretConfig.Auth.jwtSecret, { expiresIn: 60 * 60 * 24 * 7 });
@@ -82,8 +85,10 @@ router.post('/login', async (req, res) => {
         // Possibly invalid presentation
         if (e instanceof Exceptions.MalformedPresentationException)
             return res.status(403).json("Malformed presentation");
-        else
+        else {
+            console.log("Login error, ", e);
             return res.status(500).json("Server error");
+        }
     }
 })
 
