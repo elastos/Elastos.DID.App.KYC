@@ -504,7 +504,40 @@ class EkycService {
     }
   }
 
+  public async createPassportNumberHashCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+    const types = [
+      credentialType.context + "#" + credentialType.shortType,
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential",
+      "https://ns.elastos.org/credentials/profile/passportnumberhash/v1#PassportNumberHashCredential"
+    ]
+
+    return this.createBaseCredential(targetDID, credentialType, subject, iconUrl, title, description, types);
+  }
+
+  public async createPassportNumberCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+    const types = [
+      credentialType.context + "#" + credentialType.shortType,
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential",
+      "https://ns.elastos.org/credentials/profile/passportnumber/v1#PassportNumberCredential"
+    ]
+
+    return this.createBaseCredential(targetDID, credentialType, subject, iconUrl, title, description, types);
+  }
+
+
   public async createCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
+    const types = [
+      credentialType.context + "#" + credentialType.shortType,
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+    ]
+
+    return this.createBaseCredential(targetDID, credentialType, subject, iconUrl, title, description, types);
+  }
+
+  public async createBaseCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string, types: string[]): Promise<VerifiableCredential> {
     let issuer = new Issuer(didService.getIssuerDID());
 
     let targetDIDObj = DID.from(targetDID); // User that receives the credential
@@ -527,11 +560,7 @@ class EkycService {
      */
     let credential = await new VerifiableCredential.Builder(issuer, targetDIDObj)
       .id(credentialId)
-      .types(
-        credentialType.context + "#" + credentialType.shortType,
-        "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
-        "https://ns.elastos.org/credentials/v1#SensitiveCredential"
-      )
+      .types(...types)
       .properties(fullSubject)
       .expirationDate(moment().add(1, "years").toDate()) // 1 year validity
       .seal(didService.getStorePass());

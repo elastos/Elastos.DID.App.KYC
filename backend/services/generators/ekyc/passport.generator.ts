@@ -138,7 +138,7 @@ export class EkycPassportGenerator {
     let description = "${passportNumber}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    return await ekycService.createPassportNumberCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
   /**
@@ -175,7 +175,7 @@ export class EkycPassportGenerator {
     let description = "${passportNumberHash}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    return await ekycService.createPassportNumberHashCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
   /**
