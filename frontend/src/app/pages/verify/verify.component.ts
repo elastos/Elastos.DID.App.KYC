@@ -31,7 +31,6 @@ export class VerifyComponent {
   public isStartPrcocessEKYC = false;
   public isStartProcessFaceVerify = false;
   public isStartProcessFaceLiveness = false;
-  public isStartCheckResult = false;
 
   public verificationInProgress = false;
   public verificationCompleted = false;
@@ -78,26 +77,41 @@ export class VerifyComponent {
         const returnURLRespose = params.response;
         const responseObj = JSON.parse(returnURLRespose);
         const resultCode = responseObj.resultCode;
+        const transactionId = responseObj.extInfo.certifyId;
+
+        if (resultCode == EKYCReturnCode.VERIFY_FAILED) {
+          const result = await this.checkResult(transactionId)
+          const parsedResult = this.ekycService.parseResult(result);
+          if (!parsedResult) {
+            this.handleVerifyError();
+            return;
+          }
+
+          if (parsedResult.facePassed != "Y") {
+            this.handleFacelivenessError();
+            return;
+          }
+
+          if (parsedResult.ocrIdPassed != "Y") {
+            this.handleOCRError()
+            return;
+          }
+        }
 
         if (resultCode != EKYCReturnCode.SUCCESS) {
           this.handleError(resultCode);
           return;
         }
 
-        const transactionId = responseObj.extInfo.certifyId;
-        const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
-        console.log("check result response is ", credentialResponse);
-        const credentialResponseObj = JSON.parse(credentialResponse)
-        console.log("credentialObj is ", credentialResponseObj);
 
-        console.log("code", credentialResponseObj.code);
+        const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
+        const credentialResponseObj = JSON.parse(credentialResponse)
 
         if (credentialResponseObj.code != EKYCResponseType.SUCCESS) {
           this.handleDIDNotMatched(credentialResponseObj.code)
           return;
         }
 
-        console.log("data", credentialResponseObj.data);
         CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
         this.verificationCompleted = true;
         window.location.replace("/verifysuccess");
@@ -226,15 +240,12 @@ export class VerifyComponent {
     }
   }
 
-  checkResult() {
-    this.isStartCheckResult = true;
-    const transactionId = "hks88a8d6f44899e5813af7b6d27d6bb";
-
+  async checkResult(transactionId: string) {
     console.log("CheckResult request transactionId is ", transactionId);
     const transactionBody = {
       "transactionId": transactionId
     }
-    this.ekycService.checkResult(transactionBody);
+    return await this.ekycService.checkResult(transactionBody);
   }
 
   openBottomSheet(): void {
@@ -323,10 +334,10 @@ export class VerifyComponent {
       //   break;
 
       case EKYCReturnCode.SUCCESS:
-        errorMessage = "Verify success. Please request more details by using CheckResult API.";
+        errorMessage = "Verify success.";
         break;
       case EKYCReturnCode.VERIFY_FAILED:
-        errorMessage = "Verify failed. Please request more details by using CheckResult API.";
+        errorMessage = "Verify failed. ";
         break;
       case EKYCReturnCode.SYSTEM_ERROR:
         errorMessage = "System error.";
@@ -366,5 +377,17 @@ export class VerifyComponent {
         break;
     }
     return errorMessage;
+  }
+
+  handleOCRError() {
+    this.openDialog("Tips", "ID verification failed, please try again later.");
+  }
+
+  handleFacelivenessError() {
+    this.openDialog("Tips", "Facial liveness detection failed, please try again later.");
+  }
+
+  handleVerifyError() {
+    this.openDialog("Tips", "Verification failed, please try again later.");
   }
 }

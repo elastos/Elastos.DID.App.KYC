@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { EkycPassedStatus } from '../model/ekyc/ekycpassedstatus';
 
 @Injectable({
   providedIn: 'root'
@@ -184,7 +185,7 @@ export class EkycService {
     });
   }
 
-  public async checkResult(transactionId: any): Promise<Response> {
+  public async checkResult(transactionId: any): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (!transactionId) {
         console.error("transactionId is null");
@@ -207,15 +208,35 @@ export class EkycService {
           reject(response);
           return;
         }
-        let result = await response.json() as string;
-        console.log("response result ", result);
+        let result = await response.json();
 
-        resolve(response);
+        resolve(result);
       } catch (error) {
         console.error(error);
       }
     });
 
+  }
+
+  public parseResult(result: any): EkycPassedStatus {
+    try {
+      if (!result || !result.result || !result.result.extFaceInfo || !result.result.extIdInfo || !result.result.passed)
+        return null;
+
+      const extFaceInfo = JSON.parse(result.result.extFaceInfo)
+      const extIDInfo = JSON.parse(result.result.extIdInfo)
+
+      const passed = result.result.passed;
+
+      const ekycPassedStatus: EkycPassedStatus = {
+        passed: passed,
+        facePassed: extFaceInfo.facePassed,
+        ocrIdPassed: extIDInfo.ocrIdPassed
+      }
+      return ekycPassedStatus;
+    } catch (error) {
+      return null;
+    }
   }
 
   public handleIDOCRResult() {
