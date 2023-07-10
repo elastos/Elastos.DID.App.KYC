@@ -66,7 +66,7 @@ export class AuthService {
     this.postAuthRoute = postAuthRoute;
   }
 
-  public async signIn(): Promise<void> {
+  public async signIn(): Promise<string> {
     // Always disconnect from older WC session first to restart fresh, if needed
     if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
       await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
@@ -86,50 +86,61 @@ export class AuthService {
       // Possible exception while using wallet connect (i.e. not an identity wallet)
       // Kill the wallet connect session
       console.warn("Error while getting credentials", e);
-      return;
+      return "FAILED";
     }
 
-    if (presentation) {
-      const did = presentation.getHolder().getMethodSpecificId();
+    if (!presentation) {
+      console.warn("Presentation error,", presentation);
+      return "FAILED";
+    }
 
-      try {
-        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(presentation.toJSON())
-        });
+    // const did = presentation.getHolder().getMethodSpecificId();
+    try {
+      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(presentation.toJSON())
+      });
 
-        if (response.ok) {
-          const token = await response.json();
-
-          localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
-
-          this.authenticatedUser.next(jwtDecode(token));
-          console.log("Sign in: setting user to:", this.authenticatedUser.value);
-
-          if (this.postAuthRoute) {
-            this.router.navigate([this.postAuthRoute]);
-            this.postAuthRoute = null;
-          }
-          else {
-            this.router.navigate(['home']);
-          }
-        } else {
-          console.error(response);
-        }
-      } catch (error) {
-        console.error(error);
-        //showToast(`Failed to call the backend API. Check your connectivity and make sure ${api.url} is reachable`, "error");
+      if (!response.ok) {
+        console.error(response);
+        return "FAILED";
       }
+
+      const token = await response.json();
+
+      localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+
+      this.authenticatedUser.next(jwtDecode(token));
+      console.log("Sign in: setting user to:", this.authenticatedUser.value);
+
+      if (this.postAuthRoute) {
+        this.router.navigate([this.postAuthRoute]);
+        this.postAuthRoute = null;
+      }
+      else {
+        this.router.navigate(['home']);
+      }
+
+      return "SUCCESS";
+    } catch (error) {
+      console.error(error);
+      return "FAILED";
+      //showToast(`Failed to call the backend API. Check your connectivity and make sure ${api.url} is reachable`, "error");
     }
   }
 
   public signOut() {
     console.log("Signing out");
+    this.signOutWithoutNav();
+    this.router.navigate(['home']);
+  }
+
+  public signOutWithoutNav() {
+    console.log("Signing out without nav");
     this.authenticatedUser.next(null);
     localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    this.router.navigate(['home']);
   }
 }
