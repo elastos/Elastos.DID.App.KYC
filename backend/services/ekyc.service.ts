@@ -506,7 +506,6 @@ class EkycService {
 
   public async createPassportNumberHashCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     const types = [
-      credentialType.context + "#" + credentialType.shortType,
       "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
       "https://ns.elastos.org/credentials/v1#SensitiveCredential",
       "https://ns.elastos.org/credentials/profile/passportnumberhash/v1#PassportNumberHashCredential"
@@ -517,7 +516,6 @@ class EkycService {
 
   public async createPassportNumberCredential(targetDID: string, credentialType: FullCredentialType, subject: JSONObject, iconUrl: string, title: string, description: string): Promise<VerifiableCredential> {
     const types = [
-      credentialType.context + "#" + credentialType.shortType,
       "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
       "https://ns.elastos.org/credentials/v1#SensitiveCredential",
       "https://ns.elastos.org/credentials/profile/passportnumber/v1#PassportNumberCredential"
