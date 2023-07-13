@@ -64,11 +64,7 @@ export class LoginComponent {
         return;
 
       this.disconnectEssentialsWithoutNav();
-      this.reloadCurrentPage();
+      this.signingIn = false;
     });
-  }
-
-  private reloadCurrentPage() {
-    location.reload();
   }
 }
