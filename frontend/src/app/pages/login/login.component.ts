@@ -13,6 +13,7 @@ import { PromoteComponent } from 'src/app/components/promote/promote.component';
 })
 export class LoginComponent {
   public signingIn = false;
+  public isShowDisconnectButton = false;
 
   constructor(
     private authService: AuthService,
@@ -20,6 +21,14 @@ export class LoginComponent {
     private promoteService: PromoteService,
     private dialog: MatDialog
   ) { }
+
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      this.isShowDisconnectButton = true;
+    } else {
+      this.isShowDisconnectButton = false;
+    }
+  }
 
   public async signIn() {
     this.signingIn = true;
@@ -30,6 +39,7 @@ export class LoginComponent {
         return;
       }
       this.signingIn = false;
+      this.isShowDisconnectButton = true;
     }).catch((error) => {
       console.error(error);
     });
@@ -63,8 +73,11 @@ export class LoginComponent {
       if (!result)
         return;
 
-      this.disconnectEssentialsWithoutNav();
+      // if (this.canDisconnectWalletConnectEssentials())
+      //   this.disconnectEssentialsWithoutNav();
+      this.authService.signOutWithoutNav();
       this.signingIn = false;
+      this.isShowDisconnectButton = false;
     });
   }
 }

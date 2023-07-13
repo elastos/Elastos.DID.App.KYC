@@ -38,12 +38,12 @@
       </mat-progress-spinner>
     </div>
 
-    <div class="d-flex justify-content-center text-center mt-4 mx-3" *ngIf="canDisconnectWalletConnectEssentials()">
+    <div class="d-flex justify-content-center text-center mt-4 mx-3" *ngIf="isShowDisconnectButton">
       <p class="fw-500 fs-15 op-5 w-90">Disconnect previous Wallet Connect session from Elastos
         Essentials
       </p>
     </div>
-    <div class="d-flex justify-content-center text-center mt-2" *ngIf="canDisconnectWalletConnectEssentials()">
+    <div class="d-flex justify-content-center text-center mt-2" *ngIf="isShowDisconnectButton">
       <button class="blue-btn fs-12 px-2 py-1 c-4ab4f0 fw-unset" (click)="disconnectEssentials()">
         Disconnect
       </button>
