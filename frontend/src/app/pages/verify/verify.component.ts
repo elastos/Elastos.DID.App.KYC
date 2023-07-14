@@ -76,6 +76,7 @@ export class VerifyComponent {
         this.isStartPrcocessEKYC = true;
         const returnURLRespose = params.response;
         const responseObj = JSON.parse(returnURLRespose);
+
         const resultCode = responseObj.resultCode;
         const transactionId = responseObj.extInfo.certifyId;
 
@@ -114,7 +115,8 @@ export class VerifyComponent {
 
         CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
         this.verificationCompleted = true;
-        window.location.replace("/verifysuccess");
+        this.router.navigate(['/verifysuccess'], { skipLocationChange: true });
+
       } catch (error: any) {
         this.openDialog("Tips", "The server encountered a temporary error and could not complete your request. ");
         // alert("The server encountered a temporary error and could not complete your request. ");

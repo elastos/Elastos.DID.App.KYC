@@ -18,6 +18,9 @@ export class VerifySuccessComponent {
   ) { }
 
   ngOnInit() {
+    const pathName = window.location.pathname;
+    if (pathName == "/verifysuccess")
+      window.location.replace("/home")
   }
 
   //pop up aliyun ocr window
