@@ -70,7 +70,6 @@ export class VerifyComponent {
     this.activatedRoute.queryParams.subscribe(async (params) => {
       try {
         const cerifacations = CacheService.getVerificationStatus(this.authService.signedInDID());
-        console.log("cerifacations ====>" + cerifacations);
         if (cerifacations) {
           window.location.replace("/dashboard");
         }
@@ -389,7 +388,7 @@ export class VerifyComponent {
   }
 
   handleOCRError() {
-    this.openDialog("Tips", "ID verification failed, please try again later.");
+    this.openDialog("Tips", "ID verification failed. Please retake the ID card after changing the environment or light, and then continue the authentication.");
   }
 
   handleFacelivenessError() {
