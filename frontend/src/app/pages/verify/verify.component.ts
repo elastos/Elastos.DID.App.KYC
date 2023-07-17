@@ -90,17 +90,22 @@ export class VerifyComponent {
           const result = await this.checkResult(transactionId)
           const parsedResult = this.ekycService.parseResult(result);
           if (!parsedResult) {
-            this.handleVerifyError();
+            this.showVerifyErrorDialog();
+            return;
+          }
+          const errorMsg = this.handleSubCode(parsedResult.subCode);
+          if (errorMsg) {
+            this.showErrorDialog(errorMsg);
             return;
           }
 
           if (parsedResult.facePassed != "Y") {
-            this.handleFacelivenessError();
+            this.showFacelivenessErrorDialog();
             return;
           }
 
           if (parsedResult.ocrIdPassed != "Y") {
-            this.handleOCRError()
+            this.showOCRErrorDialog()
             return;
           }
         }
@@ -261,46 +266,6 @@ export class VerifyComponent {
   }
 
   async ngAfterViewInit() {
-    // let passbaseMetadata = await this.credentialsService.fetchUserPassbaseMetadata();
-
-    // logger.log("Passbase metadata:", passbaseMetadata);
-
-    // if (passbaseMetadata) { // Make sure to have metadata or forbid verification
-    //   Passbase.renderButton(
-    //     this.passbaseButton.nativeElement,
-    //     process.env.NG_APP_PASSBASE_PUBLIC_API_KEY,
-    //     {
-    //       onStart: () => {
-    //         console.log('Passbase onstart');
-    //         this.verificationInProgress = true;
-    //       },
-    //       onError: (error, context) => {
-    //         console.log('Passbase onerror', error);
-    //         this.verificationInProgress = false;
-    //       },
-    //       // onSubmitted: received at the very end of the verification steps before clicking "finish"
-    //       onSubmitted: (identityAccessKey) => {
-    //         console.log('Passbase onSubmitted', identityAccessKey);
-
-    //         this.credentialsService.savePassbaseUUID(identityAccessKey);
-    //       },
-    //       // onFinish: received at the very end of the verification steps after clicking "finish"
-    //       onFinish: (identityAccessKey) => {
-    //         console.log('Passbase onFinish', identityAccessKey);
-
-    //         this.verificationInProgress = false;
-    //         this.verificationCompleted = true;
-    //       },
-    //       metaData: passbaseMetadata,
-    //       prefillAttributes: {
-    //         email: this.authService.getAuthUser().email, // pre-fill user's email for convenience, if provided
-    //       },
-    //       theme: {
-    //         darkMode: this.themeService.isDarkMode // TODO: not working (remains white) - passbase team is checking this
-    //       }
-    //     }
-    //   );
-    // }
   }
 
   public backToDashboard() {
@@ -310,37 +275,6 @@ export class VerifyComponent {
   handleErrorMsg(errorCode: string) {
     let errorMessage = "";
     switch (errorCode) {
-      // case EKYCReturnCode.Success:
-      //   errorMessage = "Success";
-      //   break;
-      // case EKYCReturnCode.SystemError:
-      //   errorMessage = "SystemError";
-      //   break;
-      // case EKYCReturnCode.FlowError:
-      //   errorMessage = "The process is missing or abnormal, no process is available";
-      //   break;
-      // case EKYCReturnCode.InitError:
-      //   errorMessage = "Client initialization exception";
-      //   break;
-      // case EKYCReturnCode.CameraError:
-      //   errorMessage = "Evoking camera exception";
-      //   break;
-      // case EKYCReturnCode.ProductCodeError:
-      //   errorMessage = "Product code return error";
-      //   break;
-      // case EKYCReturnCode.RetryLimitError:
-      //   errorMessage = "The number of retry exceeds the upper limit.";
-      //   break;
-      // case EKYCReturnCode.UserQuit:
-      //   errorMessage = "User voluntarily logs out";
-      //   break;
-      // case EKYCReturnCode.SystemException:
-      //   errorMessage = "System exception";
-      //   break;
-      // case EKYCReturnCode.eKYCFail:
-      //   errorMessage = "Authentication failed";
-      //   break;
-
       case EKYCReturnCode.SUCCESS:
         errorMessage = "Verify success.";
         break;
@@ -387,15 +321,52 @@ export class VerifyComponent {
     return errorMessage;
   }
 
-  handleOCRError() {
+  handleSubCode(subCode: string) {
+    let errorMessage = "";
+    switch (subCode) {
+      case "200":
+        errorMessage = "Verify success.";
+        break;
+      case "201":
+        errorMessage = "Owner Name and ID number do not match in the authority database. The user information may be incorrect or false. Please try again.";
+        break;
+      case "202":
+        errorMessage = "No identity information can be found in the authority database. Please contact the project team for manual review.";
+        break;
+      case "204":
+        errorMessage = "The authentication failed. Similarity score is lower than threshold.  Please try again.";
+        break;
+      case "205":
+        errorMessage = "The authentication failed.Spoofing behavior is detected.";
+        break;
+      case "207":
+        errorMessage = "Face comparison with the authority database failed. Please try again.";
+        break;
+      case "209":
+        errorMessage = "Authority database exception. Please try again.";
+        break;
+      case "212":
+        errorMessage = "The result of certificate anti - counterfeiting detection indicates tampering, screen recapture or photo copy are detected. Please try again.";
+        break;
+      default:
+        break;
+    }
+    return errorMessage;
+  }
+
+  showOCRErrorDialog() {
     this.openDialog("Tips", "ID verification failed. Please retake the ID card after changing the environment or light, and then continue the authentication.");
   }
 
-  handleFacelivenessError() {
+  showFacelivenessErrorDialog() {
     this.openDialog("Tips", "Facial liveness detection failed, please try again later.");
   }
 
-  handleVerifyError() {
+  showVerifyErrorDialog() {
     this.openDialog("Tips", "Verification failed, please try again later.");
+  }
+
+  showErrorDialog(errorMsg: string) {
+    this.openDialog("Tips", errorMsg);
   }
 }

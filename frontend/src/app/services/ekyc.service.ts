@@ -227,11 +227,13 @@ export class EkycService {
       const extIDInfo = JSON.parse(result.result.extIdInfo)
 
       const passed = result.result.passed;
+      const subCode = result.result.subCode
 
       const ekycPassedStatus: EkycPassedStatus = {
         passed: passed,
         facePassed: extFaceInfo.facePassed,
-        ocrIdPassed: extIDInfo.ocrIdPassed
+        ocrIdPassed: extIDInfo.ocrIdPassed,
+        subCode: subCode
       }
       return ekycPassedStatus;
     } catch (error) {
