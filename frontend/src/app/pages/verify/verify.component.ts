@@ -57,7 +57,7 @@ export class VerifyComponent {
       if (!result)
         return;
       this.isStartPrcocessEKYC = false;
-      window.location.replace("/verify");
+      // window.location.replace("/verify");
     });
   }
 
@@ -69,6 +69,12 @@ export class VerifyComponent {
 
     this.activatedRoute.queryParams.subscribe(async (params) => {
       try {
+        const cerifacations = CacheService.getVerificationStatus(this.authService.signedInDID());
+        console.log("cerifacations ====>" + cerifacations);
+        if (cerifacations) {
+          window.location.replace("/dashboard");
+        }
+
         if (!params || !params.response) {
           return;
         }
@@ -79,6 +85,7 @@ export class VerifyComponent {
 
         const resultCode = responseObj.resultCode;
         const transactionId = responseObj.extInfo.certifyId;
+        window.history.replaceState({}, '', '/verify');
 
         if (resultCode == EKYCReturnCode.VERIFY_FAILED) {
           const result = await this.checkResult(transactionId)
