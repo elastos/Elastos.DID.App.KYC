@@ -22,6 +22,7 @@ export type EKYCResult = {
 export type ExtFaceInfo = {
     faceComparisonScore: number; // faceComparisonScore:    Specifies the score that indicates a result of comparing the live face (selfie) against the source face image. Required if the face verification process runs successfully. The value of this field is in the range of 0-100.
     facePassed: string; // Face Passed "N" or "Y"
+    faceOcclusion: string;//Face Occlusion
 }
 
 export type ExtIdInfo = {

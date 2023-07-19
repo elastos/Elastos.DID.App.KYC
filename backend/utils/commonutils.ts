@@ -205,6 +205,20 @@ export class CommonUtils {
     s = Utf8Encode(s);
     return binb2hex(core_sha256(str2binb(s), s.length * chrsz));
   }
+
+  /**
+   * formate time: dd-mm-yyyy => yyyy-mm-dd
+   */
+  public static formatDate(date: string): string {
+    if (!date)
+      return null;
+
+    let parts = date.split("-");
+    if (parts.length != 3)
+      return null;
+
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
 }
 
 export const commonUtils = new CommonUtils();

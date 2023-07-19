@@ -14,6 +14,7 @@ import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
 import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
 import { EKYCResponseType } from '../model/ekycresponsetype';
+import { CommonUtils } from '../utils/commonutils';
 
 let router = Router();
 
@@ -379,6 +380,7 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
+        console.log("debug checkResultResponse,", checkResultResponse);
 
         const ekycResponse: EkycResponse = checkResultResponse.body;
         const ekycRawResult: EkycRawResult = ekycResponse.result;
@@ -395,6 +397,34 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
             },
             credentials: []
         };
+
+        //Passport expiry detection
+        const currentTime = Date.now();
+        const expiryDate = new Date(CommonUtils.formatDate(ekycResult.extIdInfo.ocrIdInfo.expiryDate)).getTime();
+        if (expiryDate < currentTime) {
+            console.log("Detect passport expire");
+            const response = {
+                code: EKYCResponseType.PASSPORT_EXPIRE,
+                data: verificationStatus
+            }
+
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        //Face occlusion detection
+        if (ekycResult.extFaceInfo.faceOcclusion == "Y") {
+            console.log("Detect face occlusion");
+            const response = {
+                code: EKYCResponseType.FACE_OCCLUSION,
+                data: verificationStatus
+            }
+
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+
 
         let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserCredentials(userDid, ekycResult);
 

@@ -103,7 +103,7 @@ export class EkycPassportGenerator {
     if (!ocrIdInfo.birthDate)
       return null;
 
-    const formateDate = this.formatDate(ocrIdInfo.birthDate);
+    const formateDate = CommonUtils.formatDate(ocrIdInfo.birthDate);
     let credentialType = {
       context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/BirthDateCredential",
       shortType: "BirthDateCredential"
@@ -178,17 +178,5 @@ export class EkycPassportGenerator {
     return await ekycService.createPassportNumberHashCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
   }
 
-  /**
-   * formate time: dd-mm-yyyy => yyyy-mm-dd
-   */
-  public formatDate(date: string): string {
-    if (!date)
-      return null;
 
-    let parts = date.split("-");
-    if (parts.length != 3)
-      return null;
-
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  }
 }

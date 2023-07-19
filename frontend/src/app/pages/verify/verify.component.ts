@@ -119,8 +119,18 @@ export class VerifyComponent {
         const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
         const credentialResponseObj = JSON.parse(credentialResponse)
 
-        if (credentialResponseObj.code != EKYCResponseType.SUCCESS) {
-          this.handleDIDNotMatched(credentialResponseObj.code)
+        if (credentialResponseObj.code == EKYCResponseType.DID_NOT_MATCH) {
+          this.showDIDNotMatchedDialog(credentialResponseObj.code)
+          return;
+        }
+
+        if (credentialResponseObj.code == EKYCResponseType.FACE_OCCLUSION) {
+          this.showFaceOcclusionDialog(credentialResponseObj.code)
+          return;
+        }
+
+        if (credentialResponseObj.code == EKYCResponseType.PASSPORT_EXPIRE) {
+          this.showPassportExpireDialog(credentialResponseObj.code)
           return;
         }
 
@@ -136,10 +146,19 @@ export class VerifyComponent {
     });
   }
 
-  handleDIDNotMatched(responseCode: string) {
+  showDIDNotMatchedDialog(responseCode: string) {
     console.log("responseCode", responseCode);
-    // alert("Error: " + "Did not matched");
     this.openDialog("Tips", "Did not matched");
+  }
+
+  showFaceOcclusionDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Occluded face detected, please try again");
+  }
+
+  showPassportExpireDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Passport expired detected, please try again");
   }
 
   handleError(resultCode: string) {
@@ -171,7 +190,7 @@ export class VerifyComponent {
       console.log("code", responseObj.code);
 
       if (responseObj.code != EKYCResponseType.SUCCESS) {
-        this.handleDIDNotMatched(responseObj.code)
+        this.showDIDNotMatchedDialog(responseObj.code)
         return;
       }
 
