@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { JSONObject, VerifiableCredential } from '@elastosfoundation/did-js-sdk/typings';
 import moment from 'moment';
 import { OverallStatus } from 'src/app/model/overallstatus';
-import { PassbaseVerificationStatus } from 'src/app/model/passbase/passbaseverificationstatus';
 import { VerificationStatus } from 'src/app/model/verificationstatus';
 import { CacheService } from 'src/app/services/cache.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
@@ -38,20 +37,14 @@ export class DashboardComponent {
   }
 
   ngAfterViewInit() {
-    // Fetch status
-    // this.verificationStatus = await this.credentialsService.fetchUserVerificationStatus();
     setTimeout(() => {
       this.verificationStatus = CacheService.getVerificationStatus(this.authService.signedInDID());
-      console.log("Verification status: ", this.verificationStatus);
       if (this.verificationStatus) {
         this.availableCredentials = this.verificationStatus.credentials;
       }
       this.prepareOverallStatus();
 
       this.fetchingVerificationStatus = false
-      console.log("fetchingVerificationStatus status: ", this.fetchingVerificationStatus);
-      //this.verificationStatus = VerificationStatus.VERIFIED
-      //this.verificationStatus = VerificationStatus.PENDING; // DEBUG
     }, 500);
   }
 
@@ -139,28 +132,12 @@ export class DashboardComponent {
       });
   }
 
-
   public prepareOverallStatus() {
-    if (this.verificationStatus) {
-      // For now, only passbase is supported. So the passbase status is also the overall status.
-      switch (this.verificationStatus.passbase.status) {
-        case PassbaseVerificationStatus.APPROVED:
-          this.overallVerificationStatus = OverallStatus.VERIFIED;
-          break;
-        case PassbaseVerificationStatus.PENDING:
-        case PassbaseVerificationStatus.PROCESSING:
-          this.overallVerificationStatus = OverallStatus.PENDING;
-          break;
-        case PassbaseVerificationStatus.DECLINED:
-          this.overallVerificationStatus = OverallStatus.REJECTED;
-          break;
-        case PassbaseVerificationStatus.UNKNOWN:
-          this.overallVerificationStatus = OverallStatus.UNVERIFIED;
-          break;
-      }
-    }
-    else {
+    if (!this.verificationStatus) {
       this.overallVerificationStatus = OverallStatus.UNVERIFIED;
+      return;
     }
+    this.overallVerificationStatus = OverallStatus.VERIFIED;
   }
+
 }

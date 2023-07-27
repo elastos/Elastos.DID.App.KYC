@@ -26,7 +26,6 @@ import * as api from 'src/assets/js/jsvm_all.js';
   encapsulation: ViewEncapsulation.None,
 })
 export class VerifyComponent {
-  @ViewChild('passbaseButton') passbaseButton: ElementRef;
   public isStartProcessIDOCR = false;
   public isStartPrcocessEKYC = false;
   public isStartProcessFaceVerify = false;
@@ -181,13 +180,8 @@ export class VerifyComponent {
     try {
       const response = await this.ekycService.processEKYC(metainfo);
       const result = await response.json()
-
-
-      console.log("check result response is ", result);
+      console.log("ekyc result response is ", result);
       const responseObj = JSON.parse(result)
-      console.log("responseObj is ", responseObj);
-
-      console.log("code", responseObj.code);
 
       if (responseObj.code != EKYCResponseType.SUCCESS) {
         this.showDIDNotMatchedDialog(responseObj.code)

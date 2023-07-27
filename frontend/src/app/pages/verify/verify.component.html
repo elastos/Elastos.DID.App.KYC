@@ -1,24 +1,5 @@
 <Toolbar></Toolbar>
 
-<!-- <div class="content">
-  <h2>Identity Verification</h2>
-  <p>The following third party KYC (Know Your Customer) providers can process your identity. During the process you will
-    be required to do some actions such as scanning your face or your passport. Once the process is completed, DID
-    credentials will be generated and you can download them here. The process can take a few minutes.</p>
-
-  <div class="providers" *ngIf="!verificationCompleted">
-    <div class="passbase">
-      <b>Passbase:</b>
-      <div #passbaseButton></div>
-    </div>
-  </div>
-  <div class="verification-completed" *ngIf="verificationCompleted">
-    <b>Great, you're done!</b>. Please wait a few hours and come back to this
-    application to verify your verification progress, and import your credentials.
-  </div>
-</div> -->
-
-
 <div class="container">
   <div class="wrapper-box">
     <div class="d-flex justify-content-center mt-2">
@@ -45,20 +26,12 @@
         The process can take a few minutes.
       </p>
     </div>
-    <!-- Verify buttons -->
-    <!-- <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
-      <div class="fw-600 fs-15 c-4ab4f0 mr-1">Passbase</div>
-      <div class="passbase-container">
-        <mat-progress-spinner diameter="20" color="color" mode="indeterminate"></mat-progress-spinner>
-        <div #passbaseButton class="passbase-button"></div>
-      </div>
-    </div> -->
 
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center" *ngIf="!verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">eKYC
         <img src="../../../assets/alicloud.svg" style="height: 10px; margin-bottom: 2.5px;">
       </div>
-      <div class="passbase-container">
+      <div class="verify-container">
         <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
         <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processEKYC()" *ngIf="!isStartPrcocessEKYC && enableVerify">
           Verify

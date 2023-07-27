@@ -24,10 +24,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { VerifiableCredential } from '@elastosfoundation/did-js-sdk';
 import { DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
-import { RawVerificationStatus, VerificationStatus } from '../model/verificationstatus';
 import { AuthService } from './auth.service';
-import { PassbaseVerificationStatus } from '../model/passbase/passbaseverificationstatus';
-
 
 @Injectable({
   providedIn: 'root'
@@ -38,48 +35,50 @@ export class CredentialsService {
   /**
    * Attach a passbase UUID to a user's DID in the backend
    */
-  public async savePassbaseUUID(passbaseUUID: string) {
-    try {
-      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/uuid`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "token": this.authService.getAuthToken()
-        },
-        body: JSON.stringify({ passbaseUUID })
-      });
-      if (response.ok) {
-        console.log("Passbase UUID saved");
-      } else {
-        console.error("Failed to save passbase UUID!", response.statusText);
-      }
-    } catch (error) {
-      console.error("Failed to save passbase UUID!", error);
-    }
-  }
+  //deprecated passbase
+  // public async savePassbaseUUID(passbaseUUID: string) {
+  //   try {
+  //     let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/uuid`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "token": this.authService.getAuthToken()
+  //       },
+  //       body: JSON.stringify({ passbaseUUID })
+  //     });
+  //     if (response.ok) {
+  //       console.log("Passbase UUID saved");
+  //     } else {
+  //       console.error("Failed to save passbase UUID!", response.statusText);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to save passbase UUID!", error);
+  //   }
+  // }
 
-  public async fetchUserPassbaseMetadata(): Promise<string> {
-    try {
-      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/metadata`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "token": this.authService.getAuthToken()
-        }
-      });
-      if (response.ok) {
-        let metadata = await response.json() as string;
-        console.log("Received passbase metadata", metadata);
-        return metadata;
-      } else {
-        console.error(response.statusText);
-        return null;
-      }
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }
+  // deprecated passbase
+  // public async fetchUserPassbaseMetadata(): Promise<string> {
+  //   try {
+  //     let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/passbase/metadata`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "token": this.authService.getAuthToken()
+  //       }
+  //     });
+  //     if (response.ok) {
+  //       let metadata = await response.json() as string;
+  //       console.log("Received passbase metadata", metadata);
+  //       return metadata;
+  //     } else {
+  //       console.error(response.statusText);
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     return null;
+  //   }
+  // }
 
   public async fetchEkycCredential(transactionId: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
@@ -116,32 +115,33 @@ export class CredentialsService {
     });
   }
 
-  public async fetchUserVerificationStatus(): Promise<VerificationStatus> {
-    try {
-      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/verificationstatus`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "token": this.authService.getAuthToken()
-        }
-      });
-      if (response.ok) {
-        let status = await response.json() as RawVerificationStatus;
-        console.log("Received verification status", status);
+  //deprecated passbase
+  // public async fetchUserVerificationStatus(): Promise<VerificationStatus> {
+  //   try {
+  //     let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/verificationstatus`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "token": this.authService.getAuthToken()
+  //       }
+  //     });
+  //     if (response.ok) {
+  //       let status = await response.json() as RawVerificationStatus;
+  //       console.log("Received verification status", status);
 
-        return {
-          passbase: status.passbase,
-          credentials: status.credentials.map(c => VerifiableCredential.parse(c))
-        }
-      } else {
-        console.error(response.statusText);
-        return null;
-      }
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }
+  //       return {
+  //         passbase: status.passbase,
+  //         credentials: status.credentials.map(c => VerifiableCredential.parse(c))
+  //       }
+  //     } else {
+  //       console.error(response.statusText);
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     return null;
+  //   }
+  // }
 
   public async importCredential(credential: VerifiableCredential) {
     let didAccess = new ConnDID.DIDAccess();
@@ -153,7 +153,6 @@ export class CredentialsService {
       });
     }
   }
-
 
   public async importCredentials(credentials: VerifiableCredential[]) {
     let didAccess = new ConnDID.DIDAccess();

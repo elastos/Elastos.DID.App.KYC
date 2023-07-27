@@ -15,6 +15,9 @@ import { ekycService } from '../services/ekyc.service';
 import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
 import { EKYCResponseType } from '../model/ekycresponsetype';
 import { CommonUtils } from '../utils/commonutils';
+import { ProviderType } from '../model/providertype';
+import { OverallStatus } from '../model/overallstatus';
+import { ProviderVerificationStatus } from '../model/providerverificationstatus';
 
 let router = Router();
 
@@ -134,59 +137,60 @@ router.post('/login', async (req, res) => {
  * This API returns the verification status for each provider, but at the same time it also returns
  * the whole list of credentials, that already existed, or that were just fetched/updated.
  */
-router.get('/user/verificationstatus', async (req, res) => {
-    let userDid = req.user.did;
+// deprecated passbase
+// router.get('/user/verificationstatus', async (req, res) => {
+//     let userDid = req.user.did;
 
-    // Methodology to get/create new credentials:
-    // - Load existing credentials from DB
-    // - Check latest data from passbase for this user, in case new content appeared
-    // - For each credential that seems to be missing, generate it and add it to the DB
-    // - Return everything to this api
-    let userDataOrError = await dbService.findUserByDID(userDid);
-    if (userDataOrError.error)
-        return apiError(res, userDataOrError);
+//     // Methodology to get/create new credentials:
+//     // - Load existing credentials from DB
+//     // - Check latest data from passbase for this user, in case new content appeared
+//     // - For each credential that seems to be missing, generate it and add it to the DB
+//     // - Return everything to this api
+//     let userDataOrError = await dbService.findUserByDID(userDid);
+//     if (userDataOrError.error)
+//         return apiError(res, userDataOrError);
 
-    let user = userDataOrError.data!;
-    if (!user) {
-        res.status(403).send('User not found');
-        return;
-    }
+//     let user = userDataOrError.data!;
+//     if (!user) {
+//         res.status(403).send('User not found');
+//         return;
+//     }
 
-    let dbCredentialsDataOrError = await dbService.getUserCredentials(userDid);
-    if (dbCredentialsDataOrError.error)
-        return apiError(res, dbCredentialsDataOrError);
+//     let dbCredentialsDataOrError = await dbService.getUserCredentials(userDid);
+//     if (dbCredentialsDataOrError.error)
+//         return apiError(res, dbCredentialsDataOrError);
 
-    let verificationStatus: VerificationStatus = {
-        passbase: {
-            status: PassbaseVerificationStatus.UNKNOWN
-        },
-        credentials: []
-    };
+//     let verificationStatus: VerificationStatus = {
+//         passbase: {
+//             status: PassbaseVerificationStatus.UNKNOWN
+//         },
+//         credentials: []
+//     };
 
-    let dbCredentials = dbCredentialsDataOrError.data!.map(c => VerifiableCredential.parse(c.vc as JSONObject));
-    logger.debug("Current user credentials in DB:", dbCredentials);
+//     let dbCredentials = dbCredentialsDataOrError.data!.map(c => VerifiableCredential.parse(c.vc as JSONObject));
+//     logger.debug("Current user credentials in DB:", dbCredentials);
 
-    // PASSBASE
-    let newPassbaseCredentials: VerifiableCredential[] = [];
-    if (user.passbaseUUID) {
-        newPassbaseCredentials = await passbaseService.fetchNewUserCredentials(user, dbCredentials);
-        if (newPassbaseCredentials.length > 0) {
-            // Add new passbase credentials to DB
-            await dbService.saveCredentials(userDid, newPassbaseCredentials);
-        }
-    }
-    verificationStatus.passbase.status = user.passbaseVerificationStatus || PassbaseVerificationStatus.UNKNOWN;
+//     // PASSBASE
+//     let newPassbaseCredentials: VerifiableCredential[] = [];
+//     if (user.passbaseUUID) {
+//         newPassbaseCredentials = await passbaseService.fetchNewUserCredentials(user, dbCredentials);
+//         if (newPassbaseCredentials.length > 0) {
+//             // Add new passbase credentials to DB
+//             await dbService.saveCredentials(userDid, newPassbaseCredentials);
+//         }
+//     }
+//     verificationStatus.passbase.status = user.passbaseVerificationStatus || PassbaseVerificationStatus.UNKNOWN;
 
-    // FINALIZE
-    let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+//     // FINALIZE
+//     let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
 
-    // Sort by most recent first
-    allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+//     // Sort by most recent first
+//     allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
 
-    verificationStatus.credentials = allCredentials.map(c => c.toJSON());
+//     verificationStatus.credentials = allCredentials.map(c => c.toJSON());
 
-    res.json(verificationStatus);
-});
+//     res.json(verificationStatus);
+// });
 
 /**
  * Returns a base64 encoded metadata, encrypted with a secret key provided by passbase,
@@ -380,7 +384,6 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
-        console.log("debug checkResultResponse,", checkResultResponse);
 
         const ekycResponse: EkycResponse = checkResultResponse.body;
         const ekycRawResult: EkycRawResult = ekycResponse.result;
@@ -392,13 +395,17 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         let verificationStatus: VerificationStatus = {
-            passbase: {
-                status: PassbaseVerificationStatus.UNKNOWN
+            // passbase: {
+            //     status: PassbaseVerificationStatus.UNKNOWN
+            // },
+            extInfo: {
+                type: ProviderType.EKYC,
+                status: ProviderVerificationStatus.APPROVED
             },
             credentials: []
         };
 
-        //Passport expiry detection
+        // Passport expiry detection
         const currentTime = Date.now();
         const expiryDate = new Date(CommonUtils.formatDate(ekycResult.extIdInfo.ocrIdInfo.expiryDate)).getTime();
         if (expiryDate < currentTime) {
@@ -424,11 +431,7 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
             return;
         }
 
-
-
         let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserCredentials(userDid, ekycResult);
-
-        verificationStatus.passbase.status = PassbaseVerificationStatus.APPROVED;
 
         // FINALIZE
         // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
@@ -448,6 +451,8 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         console.log("credential request error, error is ", e);
         return res.status(500).json("Server error");
     }
-});
+}
+
+);
 
 export default router;

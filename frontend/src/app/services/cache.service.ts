@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { RawVerificationStatus, VerificationStatus } from '../model/verificationstatus';
 import { VerifiableCredential } from '@elastosfoundation/did-js-sdk';
-import { PassbaseVerificationStatus } from '../model/passbase/passbaseverificationstatus';
+import { ProviderType } from '../model/providertype';
+import { ProviderVerificationStatus } from '../model/providerverificationstatus';
 
 @Injectable({
     providedIn: 'root'
@@ -12,23 +13,47 @@ export class CacheService {
     constructor() {
     }
 
-    private static parseVerificationStatusResult(result: any): VerificationStatus {
-        const status = JSON.parse(result) as RawVerificationStatus;
-        const finalResult = {
-            passbase: {
-                status: PassbaseVerificationStatus.APPROVED,
-            },
-            credentials: status.credentials.map(c => VerifiableCredential.parse(c))
+    private static parseVerificationStatusResult(result: string): VerificationStatus {
+        try {
+            const status = JSON.parse(result) as RawVerificationStatus;
+            if (result.includes("extInfo")) {
+                const finalResult = {
+                    extInfo: {
+                        providertype: status.extInfo.providertype,
+                        status: status.extInfo.status
+                    },
+                    credentials: status.credentials.map(c => VerifiableCredential.parse(c))
+                }
+                return finalResult;
+            }
+
+            const credentials = status.credentials.map(c => VerifiableCredential.parse(c))
+            if (credentials.length > 0) {
+                const finalResult = {
+                    extInfo: {
+                        providertype: ProviderType.UNKNOWN,
+                        status: ProviderVerificationStatus.APPROVED
+                    },
+                    credentials: status.credentials.map(c => VerifiableCredential.parse(c))
+                }
+                return finalResult;
+            }
+
+            return null;
+        } catch (error) {
+            console.log("Parse verification result error", error);
+            return null;
         }
-        return finalResult;
     }
 
     private static get(key: string): any {
         if (!CacheService.cachedData[key]) {
-            const value = localStorage.getItem(key);
+            const value: string = localStorage.getItem(key);
             if (!value) return null;
 
-            CacheService.cachedData[key] = CacheService.parseVerificationStatusResult(value);
+            const verificationStatus = CacheService.parseVerificationStatusResult(value);
+            if (verificationStatus)
+                CacheService.cachedData[key] = verificationStatus
         }
         return CacheService.cachedData[key];
     }
