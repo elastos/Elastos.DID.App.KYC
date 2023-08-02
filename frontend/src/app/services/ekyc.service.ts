@@ -215,7 +215,6 @@ export class EkycService {
         console.error(error);
       }
     });
-
   }
 
   public parseResult(result: any): EkycPassedStatus {
@@ -239,6 +238,42 @@ export class EkycService {
     } catch (error) {
       return null;
     }
+  }
+
+  public async deleteCachedData(transactionId: any): Promise<Response> {
+    return new Promise(async (resolve, reject) => {
+      if (!transactionId) {
+        console.error("transactionId is null");
+      }
+
+      const userDid = this.authService.signedInDID();
+      const requestBody = {
+        transactionId: transactionId,
+        merchantUserId: userDid
+      }
+      console.log("requestBody is ", requestBody);
+
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/deleteCachedData`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "token": this.authService.getAuthToken()
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+          console.error("response error", response);
+          reject(response);
+          return;
+        }
+        console.log("response ok ", response);
+        resolve(response);
+      } catch (error) {
+        console.error(error);
+      }
+    });
   }
 
   public handleIDOCRResult() {

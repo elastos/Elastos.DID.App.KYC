@@ -62,6 +62,20 @@ class EkycService {
     });
   }
 
+  //TODO
+  public async processDeleteCachedData(transactionId: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        //TODO use alicloud api delete alicloud cached data
+        console.log("delete alicloud data, transactionId is", transactionId);
+        const result = {};
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   public async processFaceVerify(metaInfo: string, facePictureBase64: string, facePictureUrl: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const productCode = EKYCProductCode.FACE_VERIFY;

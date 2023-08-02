@@ -4,19 +4,17 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { SecretConfig } from '../config/env-secret';
 import logger from '../logger';
-import { PassbaseVerificationStatus } from '../model/passbase/passbaseverificationstatus';
 import { User } from '../model/user';
 import { VerificationStatus } from '../model/verificationstatus';
 import { dbService } from '../services/db.service';
 // eslint-disable-next-line import/namespace
-import { passbaseService } from '../services/passbase.service';
+// import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
 import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
 import { EKYCResponseType } from '../model/ekycresponsetype';
 import { CommonUtils } from '../utils/commonutils';
 import { ProviderType } from '../model/providertype';
-import { OverallStatus } from '../model/overallstatus';
 import { ProviderVerificationStatus } from '../model/providerverificationstatus';
 
 let router = Router();
@@ -196,36 +194,38 @@ router.post('/login', async (req, res) => {
  * Returns a base64 encoded metadata, encrypted with a secret key provided by passbase,
  * so that passbase can decrypt this content and send it back in hooks/passbase apis.
  */
-router.get('/user/passbase/metadata', (req, res) => {
-    let userDid = req.user.did;
+// deprecated passsbase
+// router.get('/user/passbase/metadata', (req, res) => {
+//     let userDid = req.user.did;
 
-    let metadata = {
-        did: userDid
-    };
+//     let metadata = {
+//         did: userDid
+//     };
 
-    let encryptedMetadata = passbaseService.encryptMetadata(metadata);
+//     let encryptedMetadata = passbaseService.encryptMetadata(metadata);
 
-    res.json(encryptedMetadata);
-});
+//     res.json(encryptedMetadata);
+// });
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.post('/user/passbase/uuid', async (req, res) => {
-    let userDid = req.user.did;
-    let passbaseUUID = req.body.passbaseUUID;
+// deprecated passsbase
+// router.post('/user/passbase/uuid', async (req, res) => {
+//     let userDid = req.user.did;
+//     let passbaseUUID = req.body.passbaseUUID;
 
-    if (!passbaseUUID) {
-        return res.json({
-            code: 403,
-            message: "passbaseUUID is missing"
-        });
-    }
+//     if (!passbaseUUID) {
+//         return res.json({
+//             code: 403,
+//             message: "passbaseUUID is missing"
+//         });
+//     }
 
-    let dataOrError = await dbService.setPassbaseUUID(userDid, passbaseUUID)
-    if (dataOrError.error)
-        return apiError(res, dataOrError);
+//     let dataOrError = await dbService.setPassbaseUUID(userDid, passbaseUUID)
+//     if (dataOrError.error)
+//         return apiError(res, dataOrError);
 
-    res.json();
-});
+//     res.json();
+// });
 
 router.post('/user/ekyc/idocr', async (req, res) => {
     let metaInfo = req.body;
@@ -451,8 +451,43 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         console.log("credential request error, error is ", e);
         return res.status(500).json("Server error");
     }
-}
+});
 
-);
+router.post('/user/ekyc/deleteCachedData', async (req, res) => {
+    const requestBody = req.body;
+    let transactionId = requestBody.transactionId;
+    let merchantUserId = requestBody.merchantUserId;
+    console.log("deleteCachedData request params are ", transactionId, merchantUserId);
+
+    if (!transactionId)
+        return res.json({ code: 403, message: 'Missing transactionId' });
+
+    if (!merchantUserId)
+        return res.json({ code: 403, message: 'Missing merchantUserId' });
+
+    try {
+        if (merchantUserId != req.user.did) {
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        const result = await ekycService.processDeleteCachedData(transactionId);
+        console.log("saveTransactionUserMapping ", result.transactionId, merchantUserId);
+        dbService.saveTransactionUserMapping(result.transactionId, merchantUserId);
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: result
+        }
+        res.json(JSON.stringify(response));
+    }
+    catch (e) {
+        console.log("ekyc request error, error is", e);
+        return res.status(500).json("Server error");
+    }
+});
 
 export default router;

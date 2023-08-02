@@ -84,6 +84,7 @@ class DBService {
         }
     }
 
+    // deprecated passsbase
     public async setPassbaseUUID(did: string, passbaseUUID: string): Promise<DataOrError<void>> {
         try {
             await this.client.connect();
@@ -106,6 +107,7 @@ class DBService {
         }
     }
 
+    // deprecated passbase
     public async setPassbaseVerificationStatus(did: string, status: PassbaseVerificationStatus): Promise<DataOrError<void>> {
         logger.info(`Setting passbase verification status for DID ${did} to ${status}`);
         try {
@@ -129,6 +131,7 @@ class DBService {
         }
     }
 
+    // deprecated passbase
     public async getUserCredentials(did: string): Promise<DataOrError<Credential[]>> {
         try {
             await this.client.connect();
@@ -143,6 +146,7 @@ class DBService {
         }
     }
 
+    // deprecated passbase
     public async saveCredentials(did: string, newCredentials: VerifiableCredential[]): Promise<DataOrError<void>> {
         try {
             await this.client.connect();
@@ -194,8 +198,6 @@ class DBService {
             await this.client.close();
         }
     }
-
-
 }
 
 export const dbService = new DBService();
