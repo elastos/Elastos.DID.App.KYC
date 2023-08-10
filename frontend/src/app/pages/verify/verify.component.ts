@@ -109,6 +109,7 @@ export class VerifyComponent {
         if (resultCode == EKYCReturnCode.VERIFY_FAILED) {
           const result = await this.checkResult(transactionId)
           const parsedResult = this.ekycService.parseResult(result);
+          this.deleteCachedData(transactionId);
           if (!parsedResult) {
             this.showVerifyErrorDialog();
             return;
@@ -135,8 +136,8 @@ export class VerifyComponent {
           return;
         }
 
-
         const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
+        this.deleteCachedData(transactionId);
         const credentialResponseObj = JSON.parse(credentialResponse)
 
         if (credentialResponseObj.code == EKYCResponseType.DID_NOT_MATCH) {
@@ -157,7 +158,6 @@ export class VerifyComponent {
         CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
         this.verificationCompleted = true;
         this.router.navigate(['/verifysuccess'], { skipLocationChange: true });
-
       } catch (error: any) {
         this.openDialog("Tips", "The server encountered a temporary error and could not complete your request. ");
         // alert("The server encountered a temporary error and could not complete your request. ");
@@ -293,6 +293,11 @@ export class VerifyComponent {
       "transactionId": transactionId
     }
     return await this.ekycService.checkResult(transactionBody);
+  }
+
+
+  private async deleteCachedData(transactionId: string) {
+    return await this.ekycService.deleteCachedData(transactionId);
   }
 
   openBottomSheet(): void {

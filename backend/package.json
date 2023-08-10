@@ -10,7 +10,7 @@
     "node": ">=11.6.0"
   },
   "dependencies": {
-    "@alicloud/cloudauth-intl20220809": "^1.0.8",
+    "@alicloud/cloudauth-intl20220809": "^1.0.16",
     "@alicloud/openapi-client": "^0.4.6",
     "@elastosfoundation/did-js-sdk": "^2.2.5",
     "@passbase/node": "^1.3.0",

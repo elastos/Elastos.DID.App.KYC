@@ -9,6 +9,7 @@ import moment from "moment";
 import { EkycIDCardResult, EkycPassportResult } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
+import { DeleteVerifyResultRequest } from "@alicloud/cloudauth-intl20220809";
 
 const require = createRequire(import.meta.url);
 
@@ -62,14 +63,29 @@ class EkycService {
     });
   }
 
-  //TODO
   public async processDeleteCachedData(transactionId: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
+        // Build client
+        const config = new Config({
+          accessKeyId: SecretConfig.EKYC.accessKeyId,
+          accessKeySecret: SecretConfig.EKYC.accessKeySecret,
+          endpoint: SecretConfig.EKYC.endpoint
+        });
+        const client = new Client(config);
+        // Build request
+        const request = new DeleteVerifyResultRequest({
+          transactionId: transactionId,
+          deleteAfterQuery: "Y",
+          deleteType: "All"
+        });
+
+        // Invoke API
+        const response = await client.deleteVerifyResult(request);
+
         //TODO use alicloud api delete alicloud cached data
         console.log("delete alicloud data, transactionId is", transactionId);
-        const result = {};
-        resolve(result);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
@@ -365,6 +381,7 @@ class EkycService {
           reject(response);
           return;
         }
+
         resolve(response);
       } catch (error) {
         console.log('Check result error: ', error);
