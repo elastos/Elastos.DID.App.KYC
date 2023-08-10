@@ -7,6 +7,7 @@ import { DataOrError, ErrorType } from "../model/dataorerror";
 import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificationstatus";
 import { User } from "../model/user";
 import { TransactionMap } from "../model/ekyc/transactionmap";
+import { DocType } from "../model/ekyc/ekycproductcode";
 
 class DBService {
     private client: MongoClient;
@@ -166,14 +167,15 @@ class DBService {
         }
     }
 
-    public async saveTransactionUserMapping(transactionId: string, did: string): Promise<DataOrError<void>> {
+    public async saveTransactionUserMapping(transactionId: string, did: string, docType: string): Promise<DataOrError<void>> {
         try {
             await this.client.connect();
             const transactionsCollection = this.client.db().collection('transactions');
 
             const transactionMap: TransactionMap = {
                 transactionId: transactionId,
-                did: did
+                did: did,
+                docType: docType
             };
             await transactionsCollection.insertOne(transactionMap);
             return {};
@@ -185,12 +187,26 @@ class DBService {
         }
     }
 
-    public async getTransactionUserMapping(transactionId: string): Promise<DataOrError<string>> {
+    public async getTransactionUserMapping(transactionId: string): Promise<DataOrError<{ did: string, docType: string }>> {
         try {
             await this.client.connect();
             const transactionsCollection = this.client.db().collection('transactions');
             const transactionMap = (await transactionsCollection.find({ transactionId: transactionId }).project<TransactionMap>({ _id: 0 }).limit(1).toArray())[0];
-            return { data: transactionMap.did };
+            return { data: { did: transactionMap.did, docType: transactionMap.docType || DocType.Passport } };
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async getRequestDocTypeFromTxId(transactionId: string): Promise<DataOrError<string>> {
+        try {
+            await this.client.connect();
+            const transactionsCollection = this.client.db().collection('transactions');
+            const transactionMap = (await transactionsCollection.find({ transactionId: transactionId }).project<TransactionMap>({ _id: 0 }).limit(1).toArray())[0];
+            return { data: transactionMap.docType };
         } catch (err) {
             logger.error(err);
             return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };

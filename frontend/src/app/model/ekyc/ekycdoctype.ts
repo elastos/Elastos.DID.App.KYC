@@ -1,10 +1,3 @@
-export enum EKYCProductCode {
-    ID_OCR = "ID_OCR",
-    EKYC = "eKYC",
-    FACE_VERIFY = "FACE_VERIFY",
-    FACE_LIVENESS = "FACE_LIVENESS",
-}
-
 export enum DocType {
     Passport = "01000000",//Passport for all countries
     HKID2003 = "00000006",//HKID 2003 version (Hong Kong Identity Card)

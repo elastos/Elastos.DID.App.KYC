@@ -6,8 +6,9 @@ import { ErrorType } from "../model/dataorerror";
 import { FullCredentialType } from "../model/fullcredentialtype";
 import { didService } from "./did.service";
 import moment from "moment";
-import { EKYCResult } from "../model/ekyc/ekycresult";
+import { EkycIDCardResult, EkycPassportResult } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
+import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 
 const require = createRequire(import.meta.url);
 
@@ -41,12 +42,11 @@ class EkycService {
     });
   }
 
-  public async processEkyc(metaInfo: string, merchantUserId: string): Promise<any> {
+  public async processEkyc(metaInfo: string, merchantUserId: string, docType: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const productCode = EKYCProductCode.EKYC;
       const returnUrl = SecretConfig.EKYC.returnUrl;
       const merchantBizId = SecretConfig.EKYC.merchantBizId;
-      const docType = DocType.Passport;
 
       try {
         const response = await this.initialIDOCRAndEKYC(productCode, metaInfo, returnUrl, merchantBizId, merchantUserId, docType);
@@ -499,7 +499,7 @@ class EkycService {
     });
   }
 
-  public async generateNewUserCredentials(did: string, ekycResult: EKYCResult): Promise<VerifiableCredential[]> {
+  public async generateNewUserPassportCredentials(did: string, ekycResult: EkycPassportResult): Promise<VerifiableCredential[]> {
     if (!ekycResult || !ekycResult.extIdInfo || !ekycResult.extIdInfo.ocrIdInfo) {
       return [];
     }
@@ -509,7 +509,26 @@ class EkycService {
 
       let generatedCredentials: VerifiableCredential[] = [];
       let ekycPassportGenerator = new EkycPassportGenerator();
-      await ekycPassportGenerator.generateAll(did, ekycResult.extIdInfo.ocrIdInfo, generatedCredentials);
+      await ekycPassportGenerator.generateAll(did, ekycOcrInfo, generatedCredentials);
+      return generatedCredentials;
+    }
+    catch (e) {
+      console.warn("fetchNewUserCredentials(): Error:", e);
+      return [];
+    }
+  }
+
+  public async generateNewUserIDCardCredentials(did: string, ekycResult: EkycIDCardResult): Promise<VerifiableCredential[]> {
+    if (!ekycResult || !ekycResult.extIdInfo || !ekycResult.extIdInfo.ocrIdInfo) {
+      return [];
+    }
+
+    try {
+      const ekycOcrInfo = ekycResult.extIdInfo.ocrIdInfo;
+
+      let generatedCredentials: VerifiableCredential[] = [];
+      let ekycIDCardGenerator = new EkycIDCardGenerator();
+      await ekycIDCardGenerator.generateAll(did, ekycOcrInfo, generatedCredentials);
       return generatedCredentials;
     }
     catch (e) {

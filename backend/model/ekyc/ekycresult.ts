@@ -12,30 +12,36 @@ export type EkycRawResult = {
     subCode: string;
 }
 
-export type EKYCResult = {
-    extFaceInfo: ExtFaceInfo;
-    extIdInfo: ExtIdInfo;
-    passed: string;
-    subCode: string;
-}
-
-export type ExtFaceInfo = {
+export type EkycExtFaceInfo = {
     faceComparisonScore: number; // faceComparisonScore:    Specifies the score that indicates a result of comparing the live face (selfie) against the source face image. Required if the face verification process runs successfully. The value of this field is in the range of 0-100.
     facePassed: string; // Face Passed "N" or "Y"
     faceOcclusion: string;//Face Occlusion
 }
 
-export type ExtIdInfo = {
-    ocrIdEditInfo: OCRIDEditInfo;
-    ocrIdInfo: OCRIdInfo;
+export type EkycOCRIDEditInfo = {
+}
+
+export type SpoofInfo = {
+    spoofResult: string; // spoofResult:    Y: failed the authenticity check.    N: pass.
+    spoofType: string; // spoofType: SCREEN_REMARK: screen recapture    PHOTO_COPY: Copy, not original document    TAMPER: PS tampering
+}
+
+//Passport result
+export type EkycPassportResult = {
+    extFaceInfo: EkycExtFaceInfo;
+    extIdInfo: EkycPassportExtIdInfo;
+    passed: string;
+    subCode: string;
+}
+
+export type EkycPassportExtIdInfo = {
+    ocrIdEditInfo: EkycOCRIDEditInfo;
+    ocrIdInfo: EkycPassportOCRIdInfo;
     ocrIdPassed: string;
     spoofInfo: SpoofInfo;
 }
 
-export type OCRIDEditInfo = {
-}
-
-export type OCRIdInfo = {
+export type EkycPassportOCRIdInfo = {
     surname: string; // Surname
     givenname: string; // Given name
     sex: string; // Gender
@@ -46,8 +52,29 @@ export type OCRIdInfo = {
     countryCode: string; // Country Code
 }
 
-
-export type SpoofInfo = {
-    spoofResult: string; // spoofResult:    Y: failed the authenticity check.    N: pass.
-    spoofType: string; // spoofType: SCREEN_REMARK: screen recapture    PHOTO_COPY: Copy, not original document    TAMPER: PS tampering
+//ID card
+export type EkycIDCardResult = {
+    extFaceInfo: EkycExtFaceInfo;
+    extIdInfo: EkycIDCardExtIdInfo;
+    passed: string;
+    subCode: string;
 }
+
+export type EkycIDCardExtIdInfo = {
+    ocrIdEditInfo: EkycOCRIDEditInfo;
+    ocrIdInfo: EkycIDCardOCRInfo;
+    ocrIdPassed: string;
+    spoofInfo: SpoofInfo;
+}
+
+export type EkycIDCardOCRInfo = {
+    address: string,
+    ethnicity: string,
+    province: string,
+    city: string,
+    sex: string,
+    name: string,
+    idNumber: string,
+    birthDate: string
+}
+

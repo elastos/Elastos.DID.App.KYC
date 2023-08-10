@@ -45,7 +45,7 @@ export class EkycService {
 
   }
 
-  public async processEKYC(metaInfo: string): Promise<Response> {
+  public async processEKYC(metaInfo: string, docType: string): Promise<Response> {
     return new Promise(async (resolve, reject) => {
       if (!metaInfo) {
         console.error("metaInfo is null");
@@ -54,7 +54,8 @@ export class EkycService {
       const userDid = this.authService.signedInDID();
       const requestBody = {
         metaInfo: metaInfo,
-        merchantUserId: userDid
+        merchantUserId: userDid,
+        docType: docType
       }
       console.log("requestBody is ", requestBody);
 

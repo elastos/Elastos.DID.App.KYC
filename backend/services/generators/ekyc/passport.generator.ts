@@ -2,11 +2,11 @@ import { VerifiableCredential } from "@elastosfoundation/did-js-sdk";
 import { SecretConfig } from "../../../config/env-secret";
 import { FullCredentialType } from "../../../model/fullcredentialtype";
 import { ekycService } from "../../ekyc.service";
-import { OCRIdInfo } from "../../../model/ekyc/ekycresult";
+import { EkycPassportOCRIdInfo } from "../../../model/ekyc/ekycresult";
 import { CommonUtils, commonUtils } from "../../../utils/commonutils";
 
 export class EkycPassportGenerator {
-  public async generateAll(did: string, ocrIdInfo: OCRIdInfo, generatedCredentials: VerifiableCredential[]): Promise<void> {
+  public async generateAll(did: string, ocrIdInfo: EkycPassportOCRIdInfo, generatedCredentials: VerifiableCredential[]): Promise<void> {
     if (!ocrIdInfo) {
       console.warn("EKYC info incomplete");
       return null;
@@ -37,7 +37,7 @@ export class EkycPassportGenerator {
       generatedCredentials.push(passportNumberHashCredential);
   }
 
-  private async generateNameCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  private async generateNameCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.givenname)
       return null;
 
@@ -59,7 +59,7 @@ export class EkycPassportGenerator {
   }
 
 
-  public async generateNationalityCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  public async generateNationalityCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.nationality)
       return null;
 
@@ -79,7 +79,7 @@ export class EkycPassportGenerator {
   }
 
 
-  private async generateGenderCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  private async generateGenderCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.sex)
       return null;
 
@@ -99,7 +99,7 @@ export class EkycPassportGenerator {
   }
 
 
-  private async generateBirthDateCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  private async generateBirthDateCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.birthDate)
       return null;
 
@@ -122,7 +122,7 @@ export class EkycPassportGenerator {
   /**
    * PassportNumberCredential
    */
-  private async generatePassportNumberCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  private async generatePassportNumberCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.passportNo)
       return null;
 
@@ -144,20 +144,17 @@ export class EkycPassportGenerator {
   /**
    * PassportNumberHashCredential
    */
-  private async generatePassPortNumberHashCredential(targetDID: string, ocrIdInfo: OCRIdInfo): Promise<VerifiableCredential> {
+  private async generatePassPortNumberHashCredential(targetDID: string, ocrIdInfo: EkycPassportOCRIdInfo): Promise<VerifiableCredential> {
     if (!ocrIdInfo.passportNo || !ocrIdInfo.givenname || !ocrIdInfo.surname)
       return null;
 
     const passportNoUtf8 = Buffer.from(ocrIdInfo.passportNo, 'utf-8').toString();
-    console.log("passportNoUtf8", passportNoUtf8);
     const passportUTF8NFC = passportNoUtf8.normalize('NFC');
 
     const givennameUtf8 = Buffer.from(ocrIdInfo.givenname, 'utf-8').toString();
-    console.log("givennameUtf8", givennameUtf8);
     const givennameUtf8NFC = givennameUtf8.normalize('NFC');
 
     const surnameUtf8 = Buffer.from(ocrIdInfo.surname, 'utf-8').toString();
-    console.log("surnameUtf8", surnameUtf8);
     const surnameUtf8NFC = surnameUtf8.normalize('NFC');
 
     const passportNoHash = CommonUtils.SHA256(passportUTF8NFC + givennameUtf8NFC + surnameUtf8NFC);

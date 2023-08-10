@@ -19,6 +19,12 @@ import { PromoteService } from 'src/app/services/promote.service';
 
 import * as api from 'src/assets/js/jsvm_all.js';
 
+interface DocTypeCategory {
+  id: string;
+  name: string;
+}
+import { DocType } from 'src/app/model/ekyc/ekycdoctype';
+
 @Component({
   selector: 'app-verify',
   templateUrl: './verify.component.html',
@@ -36,6 +42,9 @@ export class VerifyComponent {
 
   public enableVerify = true;
 
+  categories: DocTypeCategory[];
+  selectedCategory: DocTypeCategory;
+
   constructor(
     private _bottomSheet: MatBottomSheet,
     private authService: AuthService,
@@ -46,7 +55,19 @@ export class VerifyComponent {
     private activatedRoute: ActivatedRoute,
     private promoteService: PromoteService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    this.categories = [
+      {
+        id: DocType.Passport,
+        name: "Passport"
+      },
+      {
+        id: DocType.ChinaMainLand2ndIDCard,
+        name: "ChinaMainLand2ndIDCard"
+      }
+    ];
+    this.selectedCategory = this.categories[0];
+  }
 
   openDialog(title: string, content: string) {
     this.promoteService.setPromoteTitle(title);
@@ -178,7 +199,7 @@ export class VerifyComponent {
     const metainfo = this.getMetaInfo();
 
     try {
-      const response = await this.ekycService.processEKYC(metainfo);
+      const response = await this.ekycService.processEKYC(metainfo, this.selectedCategory.id);
       const result = await response.json()
       console.log("ekyc result response is ", result);
       const responseObj = JSON.parse(result)

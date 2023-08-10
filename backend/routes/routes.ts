@@ -11,11 +11,12 @@ import { dbService } from '../services/db.service';
 // import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
-import { EKYCResult, EkycRawResult, EkycResponse } from '../model/ekyc/ekycresult';
+import { EkycPassportResult, EkycRawResult, EkycResponse, EkycIDCardResult } from '../model/ekyc/ekycresult';
 import { EKYCResponseType } from '../model/ekycresponsetype';
 import { CommonUtils } from '../utils/commonutils';
 import { ProviderType } from '../model/providertype';
 import { ProviderVerificationStatus } from '../model/providerverificationstatus';
+import { DocType } from '../model/ekyc/ekycproductcode';
 
 let router = Router();
 
@@ -247,7 +248,9 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
     const requestBody = req.body;
     let metaInfo = requestBody.metaInfo;
     let merchantUserId = requestBody.merchantUserId;
-    console.log("ekyc request params are ", metaInfo, merchantUserId);
+    let docType = requestBody.docType;
+
+    console.log("ekyc request params are ", metaInfo, merchantUserId, docType);
 
     if (!metaInfo)
         return res.json({ code: 403, message: 'Missing metaInfo' });
@@ -265,9 +268,9 @@ router.post('/user/ekyc/ekyc', async (req, res) => {
             return;
         }
 
-        const result = await ekycService.processEkyc(metaInfo, merchantUserId);
-        console.log("saveTransactionUserMapping ", result.transactionId, merchantUserId);
-        dbService.saveTransactionUserMapping(result.transactionId, merchantUserId);
+        const result = await ekycService.processEkyc(metaInfo, merchantUserId, docType);
+        console.log("Cache map", result.transactionId, merchantUserId, docType);
+        dbService.saveTransactionUserMapping(result.transactionId, merchantUserId, docType);
         const response = {
             code: EKYCResponseType.SUCCESS,
             data: result
@@ -361,20 +364,17 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
     if (!transactionBody) {
         return res.json({ code: 403, message: 'transactionBody error' });
     }
-
     try {
         const transactionId: string = transactionBody.transactionId;
         const merchantUserId = transactionBody.merchantUserId;
-        console.log("credential request params are ", transactionId, merchantUserId);
         const dbTransactionsDataOrError = await dbService.getTransactionUserMapping(transactionId);
 
         if (dbTransactionsDataOrError.error)
             return apiError(res, dbTransactionsDataOrError);
-        const userDid = dbTransactionsDataOrError.data;
-        console.log("userDid is ", userDid);
+        const userDid = dbTransactionsDataOrError.data.did;
+        const requestDocType = dbTransactionsDataOrError.data.docType;
 
         if (merchantUserId != req.user.did || merchantUserId != userDid) {
-            console.log("did don't match", merchantUserId, req.user.did, userDid);
             const response = {
                 code: EKYCResponseType.DID_NOT_MATCH,
                 data: ""
@@ -384,68 +384,18 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         const checkResultResponse = await ekycService.checkResult(transactionId);
+        let finalResponse = createEmptyResponse();
 
-        const ekycResponse: EkycResponse = checkResultResponse.body;
-        const ekycRawResult: EkycRawResult = ekycResponse.result;
-        const ekycResult: EKYCResult = {
-            extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
-            extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
-            passed: ekycRawResult.passed,
-            subCode: ekycRawResult.subCode
+        switch (requestDocType) {
+            case DocType.Passport:
+                finalResponse = await processPassport(userDid, checkResultResponse);
+                break;
+            case DocType.ChinaMainLand2ndIDCard:
+                finalResponse = await processIDCard(userDid, checkResultResponse);
+                break;
         }
 
-        let verificationStatus: VerificationStatus = {
-            // passbase: {
-            //     status: PassbaseVerificationStatus.UNKNOWN
-            // },
-            extInfo: {
-                type: ProviderType.EKYC,
-                status: ProviderVerificationStatus.APPROVED
-            },
-            credentials: []
-        };
-
-        // Passport expiry detection
-        const currentTime = Date.now();
-        const expiryDate = new Date(CommonUtils.formatDate(ekycResult.extIdInfo.ocrIdInfo.expiryDate)).getTime();
-        if (expiryDate < currentTime) {
-            console.log("Detect passport expire");
-            const response = {
-                code: EKYCResponseType.PASSPORT_EXPIRE,
-                data: verificationStatus
-            }
-
-            res.json(JSON.stringify(response));
-            return;
-        }
-
-        //Face occlusion detection
-        if (ekycResult.extFaceInfo.faceOcclusion == "Y") {
-            console.log("Detect face occlusion");
-            const response = {
-                code: EKYCResponseType.FACE_OCCLUSION,
-                data: verificationStatus
-            }
-
-            res.json(JSON.stringify(response));
-            return;
-        }
-
-        let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserCredentials(userDid, ekycResult);
-
-        // FINALIZE
-        // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
-
-        // Sort by most recent first
-        // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
-        verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
-
-        const response = {
-            code: EKYCResponseType.SUCCESS,
-            data: verificationStatus
-        }
-
-        res.json(JSON.stringify(response));
+        res.json(finalResponse);
     }
     catch (e) {
         console.log("credential request error, error is ", e);
@@ -476,8 +426,6 @@ router.post('/user/ekyc/deleteCachedData', async (req, res) => {
         }
 
         const result = await ekycService.processDeleteCachedData(transactionId);
-        console.log("saveTransactionUserMapping ", result.transactionId, merchantUserId);
-        dbService.saveTransactionUserMapping(result.transactionId, merchantUserId);
         const response = {
             code: EKYCResponseType.SUCCESS,
             data: result
@@ -489,5 +437,129 @@ router.post('/user/ekyc/deleteCachedData', async (req, res) => {
         return res.status(500).json("Server error");
     }
 });
+
+const processPassport = async (userDid: string, checkResultResponse: any): Promise<string> => {
+    const ekycResponse: EkycResponse = checkResultResponse.body;
+    const ekycRawResult: EkycRawResult = ekycResponse.result;
+    const ekycResult: EkycPassportResult = {
+        extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
+        extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
+        passed: ekycRawResult.passed,
+        subCode: ekycRawResult.subCode
+    }
+
+    let verificationStatus: VerificationStatus = {
+        // passbase: {
+        //     status: PassbaseVerificationStatus.UNKNOWN
+        // },
+        extInfo: {
+            type: ProviderType.EKYC,
+            status: ProviderVerificationStatus.APPROVED
+        },
+        credentials: []
+    };
+
+    // Passport expiry detection
+    const currentTime = Date.now();
+    const expiryDate = new Date(CommonUtils.formatDate(ekycResult.extIdInfo.ocrIdInfo.expiryDate)).getTime();
+    if (expiryDate < currentTime) {
+        const response = {
+            code: EKYCResponseType.PASSPORT_EXPIRE,
+            data: verificationStatus
+        }
+        return JSON.stringify(response);
+    }
+
+    //Face occlusion detection
+    if (ekycResult.extFaceInfo.faceOcclusion == "Y") {
+        console.log("Detect face occlusion");
+        const response = {
+            code: EKYCResponseType.FACE_OCCLUSION,
+            data: verificationStatus
+        }
+
+        return JSON.stringify(response);
+    }
+
+    let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserPassportCredentials(userDid, ekycResult);
+
+    // FINALIZE
+    // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+    // Sort by most recent first
+    // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+    verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
+
+    const response = {
+        code: EKYCResponseType.SUCCESS,
+        data: verificationStatus
+    }
+
+    return JSON.stringify(response);
+}
+
+const processIDCard = async (userDid: string, checkResultResponse: any): Promise<string> => {
+    const ekycResponse: EkycResponse = checkResultResponse.body;
+    const ekycRawResult: EkycRawResult = ekycResponse.result;
+    const ekycResult: EkycIDCardResult = {
+        extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
+        extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
+        passed: ekycRawResult.passed,
+        subCode: ekycRawResult.subCode
+    }
+
+    let verificationStatus: VerificationStatus = {
+        // passbase: {
+        //     status: PassbaseVerificationStatus.UNKNOWN
+        // },
+        extInfo: {
+            type: ProviderType.EKYC,
+            status: ProviderVerificationStatus.APPROVED
+        },
+        credentials: []
+    };
+
+    //Face occlusion detection
+    if (ekycResult.extFaceInfo.faceOcclusion == "Y") {
+        console.log("Detect face occlusion");
+        const response = {
+            code: EKYCResponseType.FACE_OCCLUSION,
+            data: verificationStatus
+        }
+
+        return JSON.stringify(response);
+    }
+
+    let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserIDCardCredentials(userDid, ekycResult);
+
+    // FINALIZE
+    // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+    // Sort by most recent first
+    // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+    verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
+
+    const response = {
+        code: EKYCResponseType.SUCCESS,
+        data: verificationStatus
+    }
+
+    return JSON.stringify(response);
+}
+
+const createEmptyResponse = (): string => {
+    const verificationStatus: VerificationStatus = {
+        extInfo: {
+            type: ProviderType.EKYC,
+            status: ProviderVerificationStatus.APPROVED
+        },
+        credentials: []
+    };
+    const response = {
+        code: EKYCResponseType.UNKNOWN,
+        data: verificationStatus
+    }
+    return JSON.stringify(response);
+}
 
 export default router;
