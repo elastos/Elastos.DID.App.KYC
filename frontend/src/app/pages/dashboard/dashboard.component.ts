@@ -88,6 +88,11 @@ export class DashboardComponent {
       case "dateOfBirth": return "Data of birth"
       case "passportNumber": return "Passport Number";
       case "passportNumberHash": return "Passport Number Hash";
+
+      case "address": return "Address";
+      case "ethnicgroup": return "Ethnic Group";
+      case "nationalId": return "National Id";
+      case "nationalIdHash": return "National Id Hash";
       default: return key;
     }
   }

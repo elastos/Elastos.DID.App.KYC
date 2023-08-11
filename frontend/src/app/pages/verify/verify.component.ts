@@ -90,7 +90,7 @@ export class VerifyComponent {
     this.activatedRoute.queryParams.subscribe(async (params) => {
       try {
         const cerifacations = CacheService.getVerificationStatus(this.authService.signedInDID());
-        if (cerifacations) {
+        if (cerifacations && cerifacations.credentials && cerifacations.credentials.length > 0) {
           window.location.replace("/dashboard");
         }
 
