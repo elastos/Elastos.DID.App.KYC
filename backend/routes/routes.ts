@@ -350,8 +350,8 @@ router.post('/user/ekyc/checkresult', async (req, res) => {
 
     try {
         const transactionId: string = transactionBody.transactionId;
-        const response = await ekycService.checkResult(transactionId);
-        res.json(response.body);
+        const ekycResult = await ekycService.checkEkycResult(transactionId);
+        res.json(ekycResult);
     }
     catch (e) {
         console.error("Check error is ", e);
@@ -383,15 +383,20 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
             return;
         }
 
-        const checkResultResponse = await ekycService.checkResult(transactionId);
+        const ekycResult = await ekycService.checkEkycResult(transactionId);
         let finalResponse = createEmptyResponse();
+
+        if (!ekycResult) {
+            res.json(finalResponse);
+            return;
+        }
 
         switch (requestDocType) {
             case DocType.Passport:
-                finalResponse = await processPassport(userDid, checkResultResponse);
+                finalResponse = await processPassport(userDid, ekycResult);
                 break;
             case DocType.ChinaMainLand2ndIDCard:
-                finalResponse = await processIDCard(userDid, checkResultResponse);
+                finalResponse = await processIDCard(userDid, ekycResult);
                 break;
         }
 
@@ -438,9 +443,7 @@ router.post('/user/ekyc/deleteCachedData', async (req, res) => {
     }
 });
 
-const processPassport = async (userDid: string, checkResultResponse: any): Promise<string> => {
-    const ekycResponse: EkycResponse = checkResultResponse.body;
-    const ekycRawResult: EkycRawResult = ekycResponse.result;
+const processPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
     const ekycResult: EkycPassportResult = {
         extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
         extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
@@ -498,9 +501,7 @@ const processPassport = async (userDid: string, checkResultResponse: any): Promi
     return JSON.stringify(response);
 }
 
-const processIDCard = async (userDid: string, checkResultResponse: any): Promise<string> => {
-    const ekycResponse: EkycResponse = checkResultResponse.body;
-    const ekycRawResult: EkycRawResult = ekycResponse.result;
+const processIDCard = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
     const ekycResult: EkycIDCardResult = {
         extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
         extIdInfo: JSON.parse(ekycRawResult.extIdInfo),

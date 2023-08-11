@@ -133,7 +133,7 @@ export class DashboardComponent {
   }
 
   public prepareOverallStatus() {
-    if (!this.verificationStatus) {
+    if (!this.verificationStatus || !this.verificationStatus.credentials || this.verificationStatus.credentials.length == 0) {
       this.overallVerificationStatus = OverallStatus.UNVERIFIED;
       return;
     }

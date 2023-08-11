@@ -8,6 +8,8 @@ import { PassbaseVerificationStatus } from "../model/passbase/passbaseverificati
 import { User } from "../model/user";
 import { TransactionMap } from "../model/ekyc/transactionmap";
 import { DocType } from "../model/ekyc/ekycproductcode";
+import { EKYCResultMap } from "../model/ekyc/ekycresultmap";
+import { EkycRawResult } from "../model/ekyc/ekycresult";
 
 class DBService {
     private client: MongoClient;
@@ -201,15 +203,38 @@ class DBService {
         }
     }
 
-    public async getRequestDocTypeFromTxId(transactionId: string): Promise<DataOrError<string>> {
+
+
+    public async saveEKYCResultMapping(transactionId: string, result: EkycRawResult): Promise<DataOrError<void>> {
         try {
             await this.client.connect();
-            const transactionsCollection = this.client.db().collection('transactions');
-            const transactionMap = (await transactionsCollection.find({ transactionId: transactionId }).project<TransactionMap>({ _id: 0 }).limit(1).toArray())[0];
-            return { data: transactionMap.docType };
+            const ekycResultCollection = this.client.db().collection('ekycnosensitiveresult');
+
+            const ekycResult: EKYCResultMap = {
+                transactionId: transactionId,
+                result: result
+            };
+            await ekycResultCollection.insertOne(ekycResult);
+            return {};
         } catch (err) {
             logger.error(err);
             return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async getEKYCResultFromTxId(transactionId: string): Promise<EkycRawResult> {
+        try {
+            await this.client.connect();
+            const ekycResultCollection = this.client.db().collection('ekycnosensitiveresult');
+            const ekycResultMap = (await ekycResultCollection.find({ transactionId: transactionId }).project<EKYCResultMap>({ _id: 0 }).limit(1).toArray())[0];
+            if (!ekycResultMap || !ekycResultMap.result)
+                return null;
+            return ekycResultMap.result;
+        } catch (err) {
+            logger.error(err);
+            return null;
         } finally {
             await this.client.close();
         }

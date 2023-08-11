@@ -6,10 +6,11 @@ import { ErrorType } from "../model/dataorerror";
 import { FullCredentialType } from "../model/fullcredentialtype";
 import { didService } from "./did.service";
 import moment from "moment";
-import { EkycIDCardResult, EkycPassportResult } from "../model/ekyc/ekycresult";
+import { EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 import { DeleteVerifyResultRequest } from "@alicloud/cloudauth-intl20220809";
+import { dbService } from "./db.service";
 
 const require = createRequire(import.meta.url);
 
@@ -358,7 +359,7 @@ class EkycService {
     });
   }
 
-  public async checkResult(transactionId: string): Promise<any> {
+  getEkycResultFromAlicloud(transactionId: string): Promise<EkycRawResult> {
     return new Promise<any>(async (resolve, reject) => {
       try {
         const config = new Config({
@@ -378,11 +379,53 @@ class EkycService {
         const response = await client.checkResult(request);
 
         if (!response) {
-          reject(response);
+          resolve(null);
           return;
         }
 
-        resolve(response);
+        const ekycResponse: EkycResponse = response.body;
+        const ekycRawResult: EkycRawResult = ekycResponse.result;
+        resolve(ekycRawResult);
+      } catch (error) {
+        console.log('Check result error: ', error);
+        reject(error);
+      }
+    });
+  }
+
+  public async checkEkycResult(transactionId: string): Promise<EkycRawResult> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const dbResult = await dbService.getEKYCResultFromTxId(transactionId);
+        if (dbResult) {
+          resolve(dbResult);
+          return;
+        }
+
+        const ekycResult = await this.getEkycResultFromAlicloud(transactionId);
+        if (!ekycResult) {
+          resolve(null);
+          return;
+        }
+
+        if (!ekycResult || !ekycResult.extIdInfo) {
+          resolve(ekycResult);
+          return;
+        }
+
+        const extIdInfo = JSON.parse(ekycResult.extIdInfo);
+        if (extIdInfo) {
+          const noSensitiveInfo = { ocrIdPassed: extIdInfo.ocrIdPassed, spoofInfo: extIdInfo.spoofInfo };
+          const noSensitiveInfoResult: EkycRawResult = {
+            extFaceInfo: ekycResult.extFaceInfo,
+            extIdInfo: JSON.stringify(noSensitiveInfo),
+            passed: ekycResult.passed,
+            subCode: ekycResult.subCode
+          }
+          await dbService.saveEKYCResultMapping(transactionId, noSensitiveInfoResult);
+        }
+
+        resolve(ekycResult);
       } catch (error) {
         console.log('Check result error: ', error);
         reject(error);
@@ -393,7 +436,7 @@ class EkycService {
   public async checkID_OCRRResult(transactionId: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const response = await this.checkResult(transactionId);
+        const response = await this.checkEkycResult(transactionId);
         /**
          * @param requestId {string} The unique ID of the request, which can be used to locate issues..
          * @param code {string} Return code. For the full list of codes,
@@ -418,7 +461,7 @@ class EkycService {
   public async checkEKYCResult(transactionId: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const response = await this.checkResult(transactionId);
+        const response = await this.checkEkycResult(transactionId);
         /**
          * @param requestId {string} The unique ID of the request, which can be used to locate issues.for example: 130A2C10-B9EE-4D84-88E3-5384FF039795
          * @param code {string} Return code. For the full list of codes. for example: Success
@@ -462,7 +505,7 @@ class EkycService {
   public async checkFaceVerifyResult(transactionId: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const response = await this.checkResult(transactionId);
+        const response = await this.checkEkycResult(transactionId);
         /**
          * @param requestId {string} The unique ID of the request, which can be used to locate issues.
          * @param code {string} Return code. For the full list of codes,

@@ -220,14 +220,14 @@ export class EkycService {
 
   public parseResult(result: any): EkycPassedStatus {
     try {
-      if (!result || !result.result || !result.result.extFaceInfo || !result.result.extIdInfo || !result.result.passed)
+      if (!result || !result.extFaceInfo || !result.extIdInfo || !result.passed)
         return null;
 
-      const extFaceInfo = JSON.parse(result.result.extFaceInfo)
-      const extIDInfo = JSON.parse(result.result.extIdInfo)
+      const extFaceInfo = JSON.parse(result.extFaceInfo)
+      const extIDInfo = JSON.parse(result.extIdInfo)
 
-      const passed = result.result.passed;
-      const subCode = result.result.subCode
+      const passed = result.passed;
+      const subCode = result.subCode
 
       const ekycPassedStatus: EkycPassedStatus = {
         passed: passed,
