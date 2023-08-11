@@ -11,7 +11,7 @@ export class EkycIDCardGenerator {
       console.warn("EKYC info incomplete");
       return null;
     }
-    //     name - 姓名 - https://ns.elastos.org/credentials/profile/name/v1
+    // name - 姓名 - https://ns.elastos.org/credentials/profile/name/v1
     // ethnicGroup - 民族 - TODO - https://ns.elastos.org/credentials/profile/ethnicgroup/v1
     // gender - 性别 - https://ns.elastos.org/credentials/profile/gender/v1
     // birthDate - 出生日期 - TODO - https://ns.elastos.org/credentials/profile/birthdate/v1
@@ -122,7 +122,13 @@ export class EkycIDCardGenerator {
     let description = "${dateOfBirth}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // Workaround
+    const types = [
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+    ]
+    return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
   }
 
   // Generate EthnicGroup credential
@@ -142,7 +148,14 @@ export class EkycIDCardGenerator {
     let description = "${ethnicgroup}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+
+    // Workaround
+    const types = [
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+    ]
+    return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
   }
 
   // Generate address credential
@@ -162,7 +175,14 @@ export class EkycIDCardGenerator {
     let description = "${address}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+
+    // Workaround
+    const types = [
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+    ]
+    return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
   }
 
   /**
@@ -185,7 +205,13 @@ export class EkycIDCardGenerator {
     let description = "${nationalId}";
 
     // Create Credential
-    return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
+    // Workaround
+    const types = [
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+      "https://ns.elastos.org/credentials/v1#SensitiveCredential"
+    ]
+    return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
   }
 
   /**
@@ -215,16 +241,19 @@ export class EkycIDCardGenerator {
       nationalIdHash: nationalIdHash,
     };
 
-    const types = [
-      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
-      "https://ns.elastos.org/credentials/profile/nationalidhash/v1#NationalIdHashCredential"
-    ]
-
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/nationalidhash.png`;
     let title = "NationalId hash";
     let description = "${nationalIdHash}";
-
+    // const types = [
+    //   "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+    //   "https://ns.elastos.org/credentials/profile/nationalidhash/v1#NationalIdHashCredential"
+    // ]
     // Create Credential
+    // return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
+    // Workaround
+    const types = [
+      "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
+    ]
     return await ekycService.createBaseCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description, types);
   }
 
