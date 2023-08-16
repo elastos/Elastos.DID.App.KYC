@@ -86,13 +86,14 @@ export class DashboardComponent {
       case "gender": return "Gender";
       case "mrtdVerified": return "MRTD Verified";
       case "dateOfBirth": return "Data of birth"
-      case "passportNumber": return "Passport Number";
-      case "passportNumberHash": return "Passport Number Hash";
+      case "passportNumber": return "Passport number";
+      case "passportNumberHash": return "Passport number hash";
 
+      case "name": return "Name";
       case "address": return "Address";
-      case "ethnicgroup": return "Ethnic Group";
+      case "ethnicgroup": return "Ethnic group";
       case "nationalId": return "National Id";
-      case "nationalIdHash": return "National Id Hash";
+      case "nationalIdHash": return "National Id hash";
       default: return key;
     }
   }

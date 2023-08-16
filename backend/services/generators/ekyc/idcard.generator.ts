@@ -201,7 +201,7 @@ export class EkycIDCardGenerator {
       nationalId: ocrIdInfo.idNumber,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/nationalid.png`;
-    let title = "NationalId";
+    let title = "National Id";
     let description = "${nationalId}";
 
     // Create Credential
@@ -242,7 +242,7 @@ export class EkycIDCardGenerator {
     };
 
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/nationalidhash.png`;
-    let title = "NationalId hash";
+    let title = "National Id hash";
     let description = "${nationalIdHash}";
     // const types = [
     //   "https://ns.elastos.org/credentials/displayable/v1#DisplayableCredential",
