@@ -144,7 +144,7 @@ export class EkycIDCardGenerator {
       ethnicgroup: ocrIdInfo.ethnicity,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/ethnicgroup.png`;
-    let title = "Ethnic Group";
+    let title = "Ethnic group";
     let description = "${ethnicgroup}";
 
     // Create Credential
