@@ -1,6 +1,7 @@
 <Toolbar></Toolbar>
 
 <div class="container">
+  
   <div class="wrapper-box">
     <div class="d-flex justify-content-center mt-2">
       <p class="heading text-center c-4ab4f0">Identity Verification</p>
@@ -42,7 +43,7 @@
       </div>
     </div>
 
-    <div class="my-2 verify-container"  style="min-height: 25px;">
+    <div class="my-2 verify-container"  style="min-height: 25px; margin-bottom: 20px;">
       <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
       <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processEKYC()" *ngIf="!isStartPrcocessEKYC && enableVerify">
         Verify
@@ -51,13 +52,30 @@
         Verify
       </button>
     </div>
+
+
+    <div class="my-2 center-container" style="margin-top: 30px;" *ngIf="!verificationCompleted">
+      <div class="fw-600 fs-15 c-4ab4f0 mr-1">eKYC
+        <img src="../../../assets/tecentcloud.svg" style="height: 10px; margin-bottom: 2.5px;">
+      </div>
+    </div>
+
+    <div class="my-2 verify-container"  style=" min-height: 25px;">
+      <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
+      <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" (click)="processEKYCFromTencent()" *ngIf="!isStartPrcocessEKYC && enableVerify">
+        Verify
+      </button>
+      <button disabled class="grey-box fs-13 py-1 px-2 fw-unset" *ngIf="!enableVerify">
+        Verify
+      </button>
+    </div>
+
     <div class="d-flex flex-column mt-3 justify-content-center" *ngIf="!enableVerify">
       <p class="mx-3 fs-15 text-center c-000000">
         To continue, please open kyc-me.io 
          from your mobile phone
       </p>
     </div>
-
     <!-- Verification complete -->
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center flex-columns" *ngIf="verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">Great, you're done! Please come back to Dashboad and import your credentials.</div>

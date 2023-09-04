@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { VerifyComponent } from './pages/verify/verify.component';
 import { VerifySuccessComponent } from './pages/verifysuccess/verifysuccess.component';
 import { AuthGuardService } from './services/auth-guard.service';
+import { TencentEkycComponent } from './pages/tencentekyc/tencentekyc.component';
 
 //  canActivate: [AuthGuardService]
 
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
   { path: 'verify', component: VerifyComponent, canActivate: [AuthGuardService] },
   { path: 'verifysuccess', component: VerifySuccessComponent, canActivate: [AuthGuardService] },
+  { path: 'tencentekyc', component: TencentEkycComponent, canActivate: [AuthGuardService] },
 
   { path: '**', redirectTo: '/', pathMatch: 'full' },
 ];

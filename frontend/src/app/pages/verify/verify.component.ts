@@ -24,6 +24,7 @@ interface DocTypeCategory {
   name: string;
 }
 import { DocType } from 'src/app/model/ekyc/ekycdoctype';
+import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
 
 @Component({
   selector: 'app-verify',
@@ -54,7 +55,8 @@ export class VerifyComponent {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private promoteService: PromoteService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private tencentEkycService: TencentEkycService
   ) {
     this.categories = [
       {
@@ -192,6 +194,9 @@ export class VerifyComponent {
     const metainfo = api.getMetaInfo();
     console.log("meta info is ", metainfo);
     this.ekycService.processIDOCR(metainfo);
+  }
+  async processEKYCFromTencent() {
+    this.router.navigate(['/tencentekyc']);
   }
 
   async processEKYC() {

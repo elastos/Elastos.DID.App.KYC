@@ -1,0 +1,17 @@
+<Toolbar></Toolbar>
+<div class="container">
+  <div class="wrapper-box">
+    <div class="d-flex justify-content-center mt-2">
+      <p class="heading text-center c-4ab4f0">Tencent ekyc</p>
+    </div>
+    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center flex-columns" >
+      <video  id="video" autoplay ></video>
+      <canvas id="canvas" ></canvas>
+      <div class="pos-relative align-items-center">
+        <button id="snap" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="takePicture()"> takePicture </button>
+        <button id="snap" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3"  (click)="openCamera()"> reset </button>
+      </div>
+    </div>
+  </div>
+</div>
+<Clouds></Clouds>

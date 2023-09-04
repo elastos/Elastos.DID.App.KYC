@@ -20,6 +20,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { VerifyComponent } from './pages/verify/verify.component';
 import { VerifySuccessComponent } from './pages/verifysuccess/verifysuccess.component';
+import { TencentEkycComponent } from './pages/tencentekyc/tencentekyc.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { VerifySuccessComponent } from './pages/verifysuccess/verifysuccess.comp
     DashboardComponent,
     LoginComponent,
     VerifyComponent,
-    VerifySuccessComponent
+    VerifySuccessComponent,
+    TencentEkycComponent
   ],
   imports: [
     BrowserModule,
