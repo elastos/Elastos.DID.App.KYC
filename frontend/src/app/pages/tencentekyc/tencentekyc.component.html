@@ -8,7 +8,9 @@
       <video  id="video" autoplay ></video>
       <canvas id="canvas" ></canvas>
       <div class="pos-relative align-items-center">
-        <button id="snap" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="takePicture()"> takePicture </button>
+        <button id="snap" *ngIf="!isShowCameraResult" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="takePicture()"> takePicture </button>
+        <button id="snap"  *ngIf="isShowCameraResult" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="processOCR()"> continueEkyc </button>
+
         <button id="snap" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3"  (click)="openCamera()"> reset </button>
       </div>
     </div>

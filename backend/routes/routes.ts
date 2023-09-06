@@ -11,6 +11,7 @@ import { dbService } from '../services/db.service';
 // import { passbaseService } from '../services/passbase.service';
 import { apiError } from '../utils/api';
 import { ekycService } from '../services/ekyc.service';
+import { tencentEkycService } from '../services/tencent.ekyc.service';
 import { EkycPassportResult, EkycRawResult, EkycResponse, EkycIDCardResult } from '../model/ekyc/ekycresult';
 import { EKYCResponseType } from '../model/ekycresponsetype';
 import { CommonUtils } from '../utils/commonutils';
@@ -438,7 +439,46 @@ router.post('/user/ekyc/deleteCachedData', async (req, res) => {
         res.json(JSON.stringify(response));
     }
     catch (e) {
-        console.log("ekyc request error, error is", e);
+        console.log("Delete cached data error, error is", e);
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
+    const requestBody = req.body;
+
+    let imageBase64: string = requestBody.imageBase64;
+    let docType = requestBody.docType;
+    let userId = requestBody.userId;
+
+    // console.log("Process ocr request params are ", docType, userId, imageBase64);
+    console.log("Process ocr request params are ", docType, userId, imageBase64.substring(0, 15));
+
+    if (!userId)
+        return res.json({ code: 403, message: 'Missing userId' });
+
+    if (!imageBase64)
+        return res.json({ code: 403, message: 'Missing imageBase64' });
+
+    try {
+        if (userId != req.user.did) {
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        const result = await tencentEkycService.processEkyc(imageBase64);
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: result
+        }
+        res.json(JSON.stringify(response));
+    }
+    catch (e) {
+        console.log("Process tencent ekyc request error, error is", e);
         return res.status(500).json("Server error");
     }
 });

@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation } from '@angular/core';
+import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
 
 @Component({
   selector: 'app-tencentekyc',
@@ -10,8 +11,9 @@ export class TencentEkycComponent {
   public video: HTMLVideoElement;
   public canvas: HTMLCanvasElement;
   public mediaSteam: MediaStream;
-  constructor(
-  ) { }
+  private imageData: string;
+  public isShowCameraResult: boolean;
+  constructor(private tencentEkycService: TencentEkycService) { }
 
   ngOnInit() {
     this.canvas = document.querySelector('#canvas');
@@ -20,14 +22,17 @@ export class TencentEkycComponent {
 
   takePicture() {
     if (this.video) {
+      this.isShowCameraResult = true;
       this.video.hidden = true;
       this.canvas.hidden = false;
+
       this.canvas.width = this.video.videoWidth;
 
       this.canvas.height = this.video.videoHeight;
       this.canvas.getContext('2d').drawImage(this.video, 0, 0);
 
       const dataUrl = this.canvas.toDataURL();
+      this.imageData = dataUrl;
     }
 
     this.closeCamera();
@@ -47,6 +52,7 @@ export class TencentEkycComponent {
   openCamera() {
     if (!this.video) {
       this.video = document.querySelector('#video');
+      this.isShowCameraResult = false;
       this.video.hidden = false;
       this.canvas.hidden = true;
       navigator.mediaDevices.getUserMedia({ video: true }).then(
@@ -58,4 +64,12 @@ export class TencentEkycComponent {
     }
   }
 
+  async processOCR() {
+    try {
+      const response = await this.tencentEkycService.processEKYC(this.imageData, 'IDCardOCR');
+      console.log('Process ocr response', response);
+    } catch (error) {
+      console.log('Process ocr error', error);
+    }
+  }
 }
