@@ -9,7 +9,12 @@ import { EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } fro
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 
+import SparkMD5 from 'spark-md5';
+
+import { UploadUrlResult } from "../model/ekyc/tencent/uploadurlresult";
+
 const require = createRequire(import.meta.url);
+
 const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
 const OcrClient = tencentcloud.ocr.v20181119.Client;
@@ -19,6 +24,8 @@ const Credential = tencentcloud.common.Credential;
 const ClientProfile = tencentcloud.common.ClientProfile;
 const HttpProfile = tencentcloud.common.HttpProfile;
 
+const FaceidClient = tencentcloud.faceid.v20180301.Client;
+const faceIdmodels = tencentcloud.faceid.v20180301.Models;
 
 class TencentEkycService {
   public async setup() {
@@ -49,26 +56,157 @@ class TencentEkycService {
       //   "Config": null,
       //   "EnableRecognitionRectify": null
       // }
-      let params = { ImageBase64: imageBase64 };
+      const config = { "CropIdCard": true, "CropPortrait": true }
+
+      let params = { ImageBase64: imageBase64, Config: JSON.stringify(config) };
 
       req.from_json_string(JSON.stringify(params))
 
       // 返回的resp是一个IDCardOCRResponse的实例，与请求对象对应
       client.IDCardOCR(req, (err: any, response: any) => {
+        console.log("err,", err);
+        console.log("response,", response);
         if (err) {
           reject(err);
           console.log(err);
           return;
         }
 
-        // console.log("response,", response);
-        console.log("response,", response.substring(0, 100));
+
+        // console.log("response,", response.substring(0, 100));
         // 输出json格式的字符串回包
-        // console.log(response.to_json_string());
+        console.log(response.to_json_string());
         resolve(response);
       });
     });
+  }
 
+  processOCR() {
+
+  }
+
+  async processLiveness(compareImageBase64: string) {
+    // create upload url
+    // upload image to url
+    // calculate image md5
+    // apply web verification token
+    // redirect to VerificationUrl
+
+    const uploadUrlResult: UploadUrlResult = await this.createUploadUrl();
+    console.log('uploadUrlResult', uploadUrlResult);
+
+    let imageMd5 = SparkMD5.hash(compareImageBase64);
+    console.log('imageMd5', imageMd5);
+  }
+
+  createUploadUrl(): Promise<UploadUrlResult> {
+    return new Promise((resolve, reject) => {
+      const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
+
+      const FaceidClient = tencentcloud.faceid.v20180301.Client;
+      const models = tencentcloud.faceid.v20180301.Models;
+
+      const Credential = tencentcloud.common.Credential;
+      const ClientProfile = tencentcloud.common.ClientProfile;
+      const HttpProfile = tencentcloud.common.HttpProfile;
+
+      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
+      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
+      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      let httpProfile = new HttpProfile();
+      httpProfile.endpoint = "faceid.tencentcloudapi.com";
+      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      let clientProfile = new ClientProfile();
+      clientProfile.httpProfile = httpProfile;
+
+      // 实例化要请求产品的client对象,clientProfile是可选的
+      let client = new FaceidClient(cred, "ap-hongkong", clientProfile);
+
+      // 实例化一个请求对象,每个接口都会对应一个request对象
+      let req = new models.CreateUploadUrlRequest();
+
+      let params = {
+        "TargetAction": "ApplyWebVerificationToken"
+      };
+
+      req.from_json_string(JSON.stringify(params))
+
+      // 返回的resp是一个CreateUploadUrlResponse的实例，与请求对象对应
+      client.CreateUploadUrl(req, function (err: any, response: any) {
+        if (err) {
+          console.log(err);
+          reject(err);
+          return;
+        }
+
+        // 输出json格式的字符串回包
+        console.log(response.to_json_string());
+
+        const resultJsonString = response.to_json_string();
+
+        const resultobj: UploadUrlResult = JSON.parse(resultJsonString);
+        console.log('resultobj ResourceUrl', resultobj.ResourceUrl);
+        console.log('resultobj UploadUrl', resultobj.UploadUrl);
+        console.log('resultobj ExpiredTimestamp', resultobj.ExpiredTimestamp);
+        console.log('resultobj RequestId', resultobj.RequestId);
+
+        resolve(resultobj);
+      });
+    });
+
+  }
+
+  async uploadImage(uploadUrl: string, base64Image: string) {
+    this.uploadImageTest(uploadUrl, base64Image);
+  }
+
+  applyWebVerificationToken() {
+    const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
+
+    const FaceidClient = tencentcloud.faceid.v20180301.Client;
+    const models = tencentcloud.faceid.v20180301.Models;
+
+    const Credential = tencentcloud.common.Credential;
+    const ClientProfile = tencentcloud.common.ClientProfile;
+    const HttpProfile = tencentcloud.common.HttpProfile;
+
+    // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
+    // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+    let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
+    // 实例化一个http选项，可选的，没有特殊需求可以跳过
+    let httpProfile = new HttpProfile();
+    httpProfile.endpoint = "faceid.tencentcloudapi.com";
+    // 实例化一个client选项，可选的，没有特殊需求可以跳过
+    let clientProfile = new ClientProfile();
+    clientProfile.httpProfile = httpProfile;
+
+    // 实例化要请求产品的client对象,clientProfile是可选的
+    let client = new FaceidClient(cred, "ap-singapore", clientProfile);
+
+    // 实例化一个请求对象,每个接口都会对应一个request对象
+    let req = new models.ApplyWebVerificationTokenRequest();
+
+    const redirectUrl = 'http://localhost/test';
+    const compareImageUrl = 'https://faceid-resource-hk-1258344699.cos.ap-hongkong.myqcloud.com/faceid%2FApplyWebVerificationToken%2F1317986905%2F8e680eef-01eb-48d8-943b-c260be872629?q-sign-algorithm=sha1&q-ak=AKIDe6JgmcBVYP9tUxA8pHTO3TdW7SYNvCE2&q-sign-time=1694154436%3B1694161636&q-key-time=1694154436%3B1694161636&q-header-list=host&q-url-param-list=&q-signature=264c04f7e912f3528cf07547c4d3d282a34c11b9';
+
+    const imageMD5 = '21c505a077d04b8c0f1cf0787c20dfda';
+    let params = {
+      "RedirectUrl": redirectUrl,
+      "CompareImageUrl": compareImageUrl,
+      "CompareImageMd5": imageMD5
+    };
+    req.from_json_string(JSON.stringify(params))
+
+    // 返回的resp是一个ApplyWebVerificationTokenResponse的实例，与请求对象对应
+    client.ApplyWebVerificationToken(req, function (err: any, response: any) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      // 输出json格式的字符串回包
+      console.log(response.to_json_string());
+    });
   }
 
   public async generateNewUserPassportCredentials(did: string, ekycResult: EkycPassportResult): Promise<VerifiableCredential[]> {
@@ -168,6 +306,55 @@ class TencentEkycService {
       .seal(didService.getStorePass());
 
     return credential;
+  }
+
+  async uploadImageTest(uploadImageUrl: string, imageBase64: string) {
+    try {
+      let response = await fetch(uploadImageUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: this.dataURLtoBlob(imageBase64)
+      });
+
+      if (!response.ok) {
+        console.error(response);
+        return "FAILED";
+      }
+
+      console.log(response.json);
+      return "SUCCESS";
+    } catch (error) {
+      console.error(error);
+      return "FAILED";
+    }
+  }
+
+  public static blobToDataURL(blob: Blob): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let file = new FileReader();
+        file.onload = (e) => {
+          resolve(e.target.result.toString());
+        }
+        file.readAsDataURL(blob);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  public dataURLtoBlob(dataurl: string): Blob {
+    let arr = dataurl.split(','),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
   }
 }
 
