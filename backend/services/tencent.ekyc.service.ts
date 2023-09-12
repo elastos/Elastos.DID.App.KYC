@@ -8,13 +8,11 @@ import moment from "moment";
 import { EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
-
 import SparkMD5 from 'spark-md5';
-
+import { RequestOptions, request } from "http";
 import { UploadUrlResult } from "../model/ekyc/tencent/uploadurlresult";
 
 const require = createRequire(import.meta.url);
-
 const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
 const OcrClient = tencentcloud.ocr.v20181119.Client;
@@ -85,7 +83,7 @@ class TencentEkycService {
 
   }
 
-  async processLiveness(compareImageBase64: string) {
+  async processLiveness(imageBase64: string) {
     // create upload url
     // upload image to url
     // calculate image md5
@@ -95,8 +93,16 @@ class TencentEkycService {
     const uploadUrlResult: UploadUrlResult = await this.createUploadUrl();
     console.log('uploadUrlResult', uploadUrlResult);
 
-    let imageMd5 = SparkMD5.hash(compareImageBase64);
+    const uploadUrl = uploadUrlResult.UploadUrl;
+    await this.uploadImage(uploadUrl, imageBase64);
+
+    let imageMd5 = SparkMD5.hash(imageBase64);
     console.log('imageMd5', imageMd5);
+
+    // const redirectUrl = '';
+    // const compareImageUrl = uploadUrlResult.ResourceUrl;
+
+    // this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5);
   }
 
   createUploadUrl(): Promise<UploadUrlResult> {
@@ -157,55 +163,101 @@ class TencentEkycService {
 
   }
 
-  async uploadImage(uploadUrl: string, base64Image: string) {
-    this.uploadImageTest(uploadUrl, base64Image);
+  async uploadImage(uploadImageUrl: string, imageBase64: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const url = new URL(uploadImageUrl);
+        const hostName = url.hostname;
+
+        const pathUrl = uploadImageUrl.replace(url.origin, '');
+        console.log('pathUrl= ', pathUrl);
+
+        const options: RequestOptions = {
+          host: hostName,
+          method: 'PUT',
+          path: pathUrl,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        };
+
+        const req = request(options, response => {
+          let data: any = '';
+          response.on('data', (chunk) => {
+            data += chunk
+          });
+
+          response.on("end", () => {
+            if (response.statusCode == 200) {
+              resolve('SUCCESS');
+            } else {
+              reject('FAILED');
+            }
+            console.log('response.statusCode', response.statusCode);
+            console.log('response', data);
+          });
+
+          response.on("error", (error) => {
+            console.log('upload image error', error);
+            reject('FAILD');
+          });
+        });
+        // const body = Buffer.from(imageBase64)
+        req.write(imageBase64);
+        req.end();
+      } catch (error) {
+        console.error(error);
+        reject('FAILED');
+      }
+    });
   }
 
-  applyWebVerificationToken() {
-    const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
+  applyWebVerificationToken(redirectUrl: string, compareImageUrl: string, imageMd5: string) {
+    return new Promise(async (resolve, reject) => {
+      const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
-    const FaceidClient = tencentcloud.faceid.v20180301.Client;
-    const models = tencentcloud.faceid.v20180301.Models;
+      const FaceidClient = tencentcloud.faceid.v20180301.Client;
+      const models = tencentcloud.faceid.v20180301.Models;
 
-    const Credential = tencentcloud.common.Credential;
-    const ClientProfile = tencentcloud.common.ClientProfile;
-    const HttpProfile = tencentcloud.common.HttpProfile;
+      const Credential = tencentcloud.common.Credential;
+      const ClientProfile = tencentcloud.common.ClientProfile;
+      const HttpProfile = tencentcloud.common.HttpProfile;
 
-    // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-    // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
-    let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-    // 实例化一个http选项，可选的，没有特殊需求可以跳过
-    let httpProfile = new HttpProfile();
-    httpProfile.endpoint = "faceid.tencentcloudapi.com";
-    // 实例化一个client选项，可选的，没有特殊需求可以跳过
-    let clientProfile = new ClientProfile();
-    clientProfile.httpProfile = httpProfile;
+      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
+      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
+      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      let httpProfile = new HttpProfile();
+      httpProfile.endpoint = "faceid.tencentcloudapi.com";
+      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      let clientProfile = new ClientProfile();
+      clientProfile.httpProfile = httpProfile;
 
-    // 实例化要请求产品的client对象,clientProfile是可选的
-    let client = new FaceidClient(cred, "ap-singapore", clientProfile);
+      // 实例化要请求产品的client对象,clientProfile是可选的
+      let client = new FaceidClient(cred, "ap-singapore", clientProfile);
 
-    // 实例化一个请求对象,每个接口都会对应一个request对象
-    let req = new models.ApplyWebVerificationTokenRequest();
+      // 实例化一个请求对象,每个接口都会对应一个request对象
+      let req = new models.ApplyWebVerificationTokenRequest();
 
-    const redirectUrl = 'http://localhost/test';
-    const compareImageUrl = 'https://faceid-resource-hk-1258344699.cos.ap-hongkong.myqcloud.com/faceid%2FApplyWebVerificationToken%2F1317986905%2F8e680eef-01eb-48d8-943b-c260be872629?q-sign-algorithm=sha1&q-ak=AKIDe6JgmcBVYP9tUxA8pHTO3TdW7SYNvCE2&q-sign-time=1694154436%3B1694161636&q-key-time=1694154436%3B1694161636&q-header-list=host&q-url-param-list=&q-signature=264c04f7e912f3528cf07547c4d3d282a34c11b9';
+      // const imageMD5 = '21c505a077d04b8c0f1cf0787c20dfda';
+      let params = {
+        "RedirectUrl": redirectUrl,
+        "CompareImageUrl": compareImageUrl,
+        "CompareImageMd5": imageMd5
+      };
+      req.from_json_string(JSON.stringify(params))
 
-    const imageMD5 = '21c505a077d04b8c0f1cf0787c20dfda';
-    let params = {
-      "RedirectUrl": redirectUrl,
-      "CompareImageUrl": compareImageUrl,
-      "CompareImageMd5": imageMD5
-    };
-    req.from_json_string(JSON.stringify(params))
-
-    // 返回的resp是一个ApplyWebVerificationTokenResponse的实例，与请求对象对应
-    client.ApplyWebVerificationToken(req, function (err: any, response: any) {
-      if (err) {
-        console.log(err);
-        return;
-      }
-      // 输出json格式的字符串回包
-      console.log(response.to_json_string());
+      // 返回的resp是一个ApplyWebVerificationTokenResponse的实例，与请求对象对应
+      client.ApplyWebVerificationToken(req, function (err: any, response: any) {
+        if (err) {
+          console.log(err);
+          reject(err);
+          return;
+        }
+        // 输出json格式的字符串回包
+        console.log(response.to_json_string());
+        return response;
+      });
     });
   }
 
@@ -306,29 +358,6 @@ class TencentEkycService {
       .seal(didService.getStorePass());
 
     return credential;
-  }
-
-  async uploadImageTest(uploadImageUrl: string, imageBase64: string) {
-    try {
-      let response = await fetch(uploadImageUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: this.dataURLtoBlob(imageBase64)
-      });
-
-      if (!response.ok) {
-        console.error(response);
-        return "FAILED";
-      }
-
-      console.log(response.json);
-      return "SUCCESS";
-    } catch (error) {
-      console.error(error);
-      return "FAILED";
-    }
   }
 
   public static blobToDataURL(blob: Blob): Promise<string> {
