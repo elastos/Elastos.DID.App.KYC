@@ -448,11 +448,11 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
     const requestBody = req.body;
 
     let imageBase64: string = requestBody.imageBase64;
-    let docType = requestBody.docType;
-    let userId = requestBody.userId;
-
+    let docType: string = requestBody.docType;
+    let userId: string = requestBody.userId;
+    const redirectUrl: string = requestBody.redirectUrl;
     // console.log("Process ocr request params are ", docType, userId, imageBase64);
-    console.log("Process ocr request params are ", docType, userId, imageBase64.substring(0, 15));
+    console.log("Process ocr request params are ", docType, userId, redirectUrl, imageBase64.substring(0, 15));
 
     if (!userId)
         return res.json({ code: 403, message: 'Missing userId' });
@@ -470,7 +470,7 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
             return;
         }
 
-        const result = await tencentEkycService.processEkyc(imageBase64);
+        const result = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
         const response = {
             code: EKYCResponseType.SUCCESS,
             data: result

@@ -11,6 +11,7 @@ import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 import SparkMD5 from 'spark-md5';
 import { RequestOptions, request } from "http";
 import { UploadUrlResult } from "../model/ekyc/tencent/uploadurlresult";
+import { IDCardOCROriginResult, IDCardOCRResult } from "../model/ekyc/tencent/idcardocrresult";
 
 const require = createRequire(import.meta.url);
 const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
@@ -29,7 +30,20 @@ class TencentEkycService {
   public async setup() {
   }
 
-  processEkyc(imageBase64: string) {
+  processEkyc(imageBase64: string, redirectUrl: string) {
+    return new Promise(async (resolve, reject) => {
+      const result = await this.processIDCardOCR(imageBase64);
+      const idCardResult: IDCardOCRResult = this.parseIDCardOCRResult(result);
+      console.log('idCardResult,', idCardResult);
+      console.log('redirectUrl = ', redirectUrl);
+      const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
+      console.log('portraitBase64Image = ', portraitBase64Image);
+
+      // await this.processLiveness(idCardResult.AdvancedInfo.Portrait, redirectUrl);
+    });
+  }
+
+  processIDCardOCR(imageBase64: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
       // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
@@ -79,11 +93,7 @@ class TencentEkycService {
     });
   }
 
-  processOCR() {
-
-  }
-
-  async processLiveness(imageBase64: string) {
+  async processLiveness(imageBase64: string, redirectUrl: string) {
     // create upload url
     // upload image to url
     // calculate image md5
@@ -99,10 +109,9 @@ class TencentEkycService {
     let imageMd5 = SparkMD5.hash(imageBase64);
     console.log('imageMd5', imageMd5);
 
-    // const redirectUrl = '';
-    // const compareImageUrl = uploadUrlResult.ResourceUrl;
+    const compareImageUrl = uploadUrlResult.ResourceUrl;
 
-    // this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5);
+    this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5);
   }
 
   createUploadUrl(): Promise<UploadUrlResult> {
@@ -239,7 +248,6 @@ class TencentEkycService {
       // 实例化一个请求对象,每个接口都会对应一个request对象
       let req = new models.ApplyWebVerificationTokenRequest();
 
-      // const imageMD5 = '21c505a077d04b8c0f1cf0787c20dfda';
       let params = {
         "RedirectUrl": redirectUrl,
         "CompareImageUrl": compareImageUrl,
@@ -255,7 +263,7 @@ class TencentEkycService {
           return;
         }
         // 输出json格式的字符串回包
-        console.log(response.to_json_string());
+        console.log('ApplyWebVerificationToken = ', response.to_json_string());
         return response;
       });
     });
@@ -384,6 +392,25 @@ class TencentEkycService {
       u8arr[n] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
+  }
+
+  parseIDCardOCRResult(result: any): IDCardOCRResult {
+    const idCardOCROriginResult = result as IDCardOCROriginResult;
+    const advancedInfo = JSON.parse(idCardOCROriginResult.AdvancedInfo);
+    const idCardResult: IDCardOCRResult = {
+      Name: idCardOCROriginResult.Name,
+      Sex: idCardOCROriginResult.Sex,
+      Nation: idCardOCROriginResult.Nation,
+      Birth: idCardOCROriginResult.Birth,
+      Address: idCardOCROriginResult.Address,
+      IdNum: idCardOCROriginResult.IdNum,
+      Authority: idCardOCROriginResult.Authority,
+      ValidDate: idCardOCROriginResult.ValidDate,
+      AdvancedInfo: advancedInfo,
+      RequestId: idCardOCROriginResult.RequestId
+    }
+
+    return idCardResult;
   }
 }
 

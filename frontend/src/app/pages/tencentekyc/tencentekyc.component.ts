@@ -66,7 +66,7 @@ export class TencentEkycComponent {
 
   async processOCR() {
     try {
-      const response = await this.tencentEkycService.processEKYC(this.imageData, 'IDCardOCR');
+      const response = await this.tencentEkycService.processEKYC(this.imageData, 'IDCardOCR', `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
       console.log('Process ocr response', response);
     } catch (error) {
       console.log('Process ocr error', error);

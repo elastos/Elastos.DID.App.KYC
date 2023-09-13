@@ -12,7 +12,7 @@ export class TencentEkycService {
   ) {
   }
 
-  public async processEKYC(imageBase64: string, docType: string): Promise<Response> {
+  public async processEKYC(imageBase64: string, docType: string, redirectUrl: string): Promise<Response> {
     return new Promise(async (resolve, reject) => {
       if (!imageBase64 || !docType) {
         console.error("Process ekyc ocr params is null");
@@ -23,7 +23,8 @@ export class TencentEkycService {
       const requestBody = {
         imageBase64: imageBase64,
         userId: userDid,
-        docType: docType
+        docType: docType,
+        redirectUrl: redirectUrl
       }
       console.log("requestBody is ", requestBody);
 
