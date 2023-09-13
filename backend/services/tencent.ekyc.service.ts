@@ -12,6 +12,7 @@ import SparkMD5 from 'spark-md5';
 import { RequestOptions, request } from "http";
 import { UploadUrlResult } from "../model/ekyc/tencent/uploadurlresult";
 import { IDCardOCROriginResult, IDCardOCRResult } from "../model/ekyc/tencent/idcardocrresult";
+import { VerificationUrlresult } from "../model/ekyc/tencent/verificationurlresult";
 
 const require = createRequire(import.meta.url);
 const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
@@ -30,16 +31,25 @@ class TencentEkycService {
   public async setup() {
   }
 
-  processEkyc(imageBase64: string, redirectUrl: string) {
+  processEkyc(imageBase64: string, redirectUrl: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
-      const result = await this.processIDCardOCR(imageBase64);
-      const idCardResult: IDCardOCRResult = this.parseIDCardOCRResult(result);
-      console.log('idCardResult,', idCardResult);
-      console.log('redirectUrl = ', redirectUrl);
-      const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
-      console.log('portraitBase64Image = ', portraitBase64Image);
+      try {
+        const result = await this.processIDCardOCR(imageBase64);
+        const idCardResult: IDCardOCRResult = this.parseIDCardOCRResult(result);
+        console.log('idCardResult,', idCardResult);
+        console.log('redirectUrl = ', redirectUrl);
+        const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
+        console.log('portraitBase64Image = ', portraitBase64Image);
 
-      // await this.processLiveness(idCardResult.AdvancedInfo.Portrait, redirectUrl);
+        const verificationUrlresult = await this.processLiveness(idCardResult.AdvancedInfo.Portrait, redirectUrl);
+        if (!verificationUrlresult) {
+          reject('Verification Url result is null');
+          return;
+        }
+        resolve(verificationUrlresult.VerificationUrl);
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -68,7 +78,7 @@ class TencentEkycService {
       //   "Config": null,
       //   "EnableRecognitionRectify": null
       // }
-      const config = { "CropIdCard": true, "CropPortrait": true }
+      const config = { "CropPortrait": true }
 
       let params = { ImageBase64: imageBase64, Config: JSON.stringify(config) };
 
@@ -93,25 +103,33 @@ class TencentEkycService {
     });
   }
 
-  async processLiveness(imageBase64: string, redirectUrl: string) {
+  async processLiveness(imageBase64: string, redirectUrl: string): Promise<VerificationUrlresult> {
     // create upload url
     // upload image to url
     // calculate image md5
     // apply web verification token
     // redirect to VerificationUrl
+    return new Promise(async (resolve, reject) => {
+      try {
+        const uploadUrlResult: UploadUrlResult = await this.createUploadUrl();
+        console.log('uploadUrlResult', uploadUrlResult);
 
-    const uploadUrlResult: UploadUrlResult = await this.createUploadUrl();
-    console.log('uploadUrlResult', uploadUrlResult);
+        const uploadUrl = uploadUrlResult.UploadUrl;
+        await this.uploadImage(uploadUrl, imageBase64);
 
-    const uploadUrl = uploadUrlResult.UploadUrl;
-    await this.uploadImage(uploadUrl, imageBase64);
+        let imageMd5 = SparkMD5.hash(imageBase64);
+        console.log('imageMd5', imageMd5);
 
-    let imageMd5 = SparkMD5.hash(imageBase64);
-    console.log('imageMd5', imageMd5);
+        const compareImageUrl = uploadUrlResult.ResourceUrl;
 
-    const compareImageUrl = uploadUrlResult.ResourceUrl;
+        const verificationUrlresult = await this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5) as VerificationUrlresult;
 
-    this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5);
+        console.log("verificationUrlresult = ", verificationUrlresult);
+        resolve(verificationUrlresult);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   createUploadUrl(): Promise<UploadUrlResult> {
@@ -136,7 +154,7 @@ class TencentEkycService {
       clientProfile.httpProfile = httpProfile;
 
       // 实例化要请求产品的client对象,clientProfile是可选的
-      let client = new FaceidClient(cred, "ap-hongkong", clientProfile);
+      let client = new FaceidClient(cred, "ap-singapore", clientProfile);
 
       // 实例化一个请求对象,每个接口都会对应一个request对象
       let req = new models.CreateUploadUrlRequest();
@@ -221,7 +239,7 @@ class TencentEkycService {
     });
   }
 
-  applyWebVerificationToken(redirectUrl: string, compareImageUrl: string, imageMd5: string) {
+  applyWebVerificationToken(redirectUrl: string, compareImageUrl: string, imageMd5: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
@@ -254,7 +272,8 @@ class TencentEkycService {
         "CompareImageMd5": imageMd5
       };
       req.from_json_string(JSON.stringify(params))
-
+      console.log('params = ', JSON.stringify(params));
+      console.log('req = ', req);
       // 返回的resp是一个ApplyWebVerificationTokenResponse的实例，与请求对象对应
       client.ApplyWebVerificationToken(req, function (err: any, response: any) {
         if (err) {
@@ -264,6 +283,7 @@ class TencentEkycService {
         }
         // 输出json格式的字符串回包
         console.log('ApplyWebVerificationToken = ', response.to_json_string());
+        resolve(response);
         return response;
       });
     });

@@ -470,10 +470,13 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
             return;
         }
 
-        const result = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
+        const VerificationUrl = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
+        const verificationObj = {
+            verificationUrl: VerificationUrl
+        }
         const response = {
             code: EKYCResponseType.SUCCESS,
-            data: result
+            data: verificationObj
         }
         res.json(JSON.stringify(response));
     }

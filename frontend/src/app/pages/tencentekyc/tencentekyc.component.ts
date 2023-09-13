@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation } from '@angular/core';
+import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
 
 @Component({
@@ -67,7 +68,24 @@ export class TencentEkycComponent {
   async processOCR() {
     try {
       const response = await this.tencentEkycService.processEKYC(this.imageData, 'IDCardOCR', `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
-      console.log('Process ocr response', response);
+      const result = await response.json();
+      console.log("ekyc result response is ", result);
+      const responseObj = JSON.parse(result);
+
+      if (responseObj.code != EKYCResponseType.SUCCESS) {
+        // this.showDIDNotMatchedDialog(responseObj.code)
+        // TODO
+        console.log('Did not match');
+        return;
+      }
+
+      console.log('responseObj ', responseObj);
+
+      const responseData = responseObj.data;
+      const verificationUrl = responseData.verificationUrl;
+
+      window.location.href = verificationUrl;
+
     } catch (error) {
       console.log('Process ocr error', error);
     }
