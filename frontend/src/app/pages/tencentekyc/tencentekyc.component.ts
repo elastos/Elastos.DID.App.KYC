@@ -21,6 +21,12 @@ export class TencentEkycComponent {
     this.openCamera();
   }
 
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
+    this.closeCamera();
+  }
+
   takePicture() {
     if (this.video) {
       this.isShowCameraResult = true;
