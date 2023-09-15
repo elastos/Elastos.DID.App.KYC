@@ -486,6 +486,90 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
     }
 });
 
+router.post('/user/ekyc/tencent/checkresult', async (req, res) => {
+    const requestBody = req.body;
+    let userId: string = requestBody.userId;
+    let bizToken: string = requestBody.bizToken;
+    console.log("Process ocr request params are ", userId, bizToken);
+
+    if (!userId)
+        return res.json({ code: 403, message: 'Missing userId' });
+
+    if (!bizToken)
+        return res.json({ code: 403, message: 'Missing bizToken' });
+
+    try {
+        if (userId != req.user.did) {
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        const result = await tencentEkycService.getWebVerificationResultIntl(bizToken);
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: result
+        }
+        res.json(JSON.stringify(response));
+    }
+    catch (e) {
+        console.log("Process tencent ekyc request error, error is", e);
+        return res.status(500).json("Server error");
+    }
+});
+
+router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
+    const transactionBody = req.body;
+    if (!transactionBody) {
+        return res.json({ code: 403, message: 'transactionBody error' });
+    }
+    try {
+        const transactionId: string = transactionBody.transactionId;
+        const merchantUserId = transactionBody.merchantUserId;
+        const dbTransactionsDataOrError = await dbService.getTransactionUserMapping(transactionId);
+
+        if (dbTransactionsDataOrError.error)
+            return apiError(res, dbTransactionsDataOrError);
+        const userDid = dbTransactionsDataOrError.data.did;
+        const requestDocType = dbTransactionsDataOrError.data.docType;
+
+        if (merchantUserId != req.user.did || merchantUserId != userDid) {
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        const ekycResult = await ekycService.checkEkycResult(transactionId);
+        let finalResponse = createEmptyResponse();
+
+        if (!ekycResult) {
+            res.json(finalResponse);
+            return;
+        }
+
+        switch (requestDocType) {
+            case DocType.Passport:
+                finalResponse = await processPassport(userDid, ekycResult);
+                break;
+            case DocType.ChinaMainLand2ndIDCard:
+                finalResponse = await processIDCard(userDid, ekycResult);
+                break;
+        }
+
+        res.json(finalResponse);
+    }
+    catch (e) {
+        console.log("credential request error, error is ", e);
+        return res.status(500).json("Server error");
+    }
+});
+
 const processPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
     const ekycResult: EkycPassportResult = {
         extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),

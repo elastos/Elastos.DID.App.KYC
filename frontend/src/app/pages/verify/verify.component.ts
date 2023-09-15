@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { EKYCReturnCode } from 'src/app/model/ekyc/ekycreturncode';
 import { AuthService } from 'src/app/services/auth.service';
@@ -89,25 +89,55 @@ export class VerifyComponent {
       this.enableVerify = false;
     }
 
-    this.activatedRoute.queryParams.subscribe(async (params) => {
+    this.activatedRoute.queryParams.subscribe(async (params: Params) => {
       try {
         const cerifacations = CacheService.getVerificationStatus(this.authService.signedInDID());
         if (cerifacations && cerifacations.credentials && cerifacations.credentials.length > 0) {
           window.location.replace("/dashboard");
         }
 
-        if (!params || !params.response) {
+        if (!params || !(params.response || params.token)) {
           return;
         }
 
         this.isStartPrcocessEKYC = true;
+        let credentialResponseObj = null;
+
+        if (params.response) {
+          credentialResponseObj = await this.processAlicloudEkycResult(params);
+        }
+
+        if (params.token) {
+          const tencentEkycResult = await this.processTencentEkycResult(params);//TODO 
+          console.log('tencentEkycResult = ', tencentEkycResult);
+        }
+
+        if (!credentialResponseObj) {
+          console.log('Credential responseObj is null')
+          return;
+        }
+
+        CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
+        this.verificationCompleted = true;
+        this.router.navigate(['/verifysuccess'], { skipLocationChange: true });
+      } catch (error: any) {
+        this.openDialog("Tips", "The server encountered a temporary error and could not complete your request. ");
+        // alert("The server encountered a temporary error and could not complete your request. ");
+        console.error("error is ", error);
+      }
+    });
+  }
+
+  processAlicloudEkycResult(params: Params): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
         const returnURLRespose = params.response;
         const responseObj = JSON.parse(returnURLRespose);
 
         const resultCode = responseObj.resultCode;
         const transactionId = responseObj.extInfo.certifyId;
-        window.history.replaceState({}, '', '/verify');
 
+        window.history.replaceState({}, '', '/verify');
         if (resultCode == EKYCReturnCode.VERIFY_FAILED) {
           const result = await this.checkResult(transactionId)
           const parsedResult = this.ekycService.parseResult(result);
@@ -139,6 +169,12 @@ export class VerifyComponent {
         }
 
         const credentialResponse = await this.credentialsService.fetchEkycCredential(transactionId);
+        if (!credentialResponse) {
+          console.log('Credential response is null');
+          reject('Credential response is null');
+          return;
+        }
+
         this.deleteCachedData(transactionId);
         const credentialResponseObj = JSON.parse(credentialResponse)
 
@@ -156,14 +192,33 @@ export class VerifyComponent {
           this.showPassportExpireDialog(credentialResponseObj.code)
           return;
         }
+        resolve(credentialResponseObj);
+      } catch (error) {
+        console.log(error);
+        reject(error);
+      }
+    });
+  }
 
-        CacheService.setVerificationStatus(this.authService.signedInDID(), JSON.stringify(credentialResponseObj.data));
-        this.verificationCompleted = true;
-        this.router.navigate(['/verifysuccess'], { skipLocationChange: true });
-      } catch (error: any) {
-        this.openDialog("Tips", "The server encountered a temporary error and could not complete your request. ");
-        // alert("The server encountered a temporary error and could not complete your request. ");
-        console.error("error is ", error);
+  processTencentEkycResult(params: Params): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const bizToken = params.token;
+        window.history.replaceState({}, '', '/verify');
+        console.log('params.token = ', bizToken);
+        const response = await this.tencentEkycService.checkResult(bizToken);
+        if (!response) {
+          reject('Response is null');
+          return;
+        }
+
+        const responseObj = JSON.parse(response);
+        const data = responseObj.data;
+        const dataObj = JSON.parse(data);
+        console.log('resultObj = ', dataObj);
+        resolve(dataObj);
+      } catch (error) {
+        reject(error);
       }
     });
   }
