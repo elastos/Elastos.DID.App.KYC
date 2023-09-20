@@ -115,11 +115,11 @@ export class EkycIDCardGenerator {
       shortType: "BirthDateCredential"
     };
     let credentialSubject = {
-      dateOfBirth: ocrIdInfo.birthDate,
+      birthDate: ocrIdInfo.birthDate,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/birthdate.png`;
     let title = "Date of birth";
-    let description = "${dateOfBirth}";
+    let description = "${birthDate}";
 
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
@@ -135,11 +135,11 @@ export class EkycIDCardGenerator {
       shortType: "EthnicGroupCredential"
     };
     let credentialSubject = {
-      ethnicgroup: ocrIdInfo.ethnicity,
+      ethnicGroup: ocrIdInfo.ethnicity,
     };
     let iconUrl = `${SecretConfig.Express.publicEndpoint}/icons/credentials/ethnicgroup.png`;
     let title = "Ethnic group";
-    let description = "${ethnicgroup}";
+    let description = "${ethnicGroup}";
 
     // Create Credential
     return await ekycService.createCredential(targetDID, credentialType, credentialSubject, iconUrl, title, description);
