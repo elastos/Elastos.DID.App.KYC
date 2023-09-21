@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation } from '@angular/core';
+import { DocType } from 'src/app/model/ekyc/ekycdoctype';
 import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
 
@@ -62,7 +63,16 @@ export class TencentEkycComponent {
       this.isShowCameraResult = false;
       this.video.hidden = false;
       this.canvas.hidden = true;
-      navigator.mediaDevices.getUserMedia({ video: true }).then(
+
+      const height = window.screen.height;
+      const width = window.screen.width;
+
+      const videoHeight = width;
+      const videoWidth = width / 1.585;
+      console.log('width = ', width);
+      console.log('height = ', height);
+      console.log('height = ', height);
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: videoWidth, height: videoHeight } }).then(
         (stream) => {
           this.video.srcObject = stream;
           this.mediaSteam = stream;
@@ -73,9 +83,10 @@ export class TencentEkycComponent {
 
   async processOCR() {
     try {
-      const response = await this.tencentEkycService.processEKYC(this.imageData, 'IDCardOCR', `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
+      const response = await this.tencentEkycService.processEKYC(this.imageData, DocType.ChinaMainLand2ndIDCard, `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
       const result = await response.json();
       console.log("ekyc result response is ", result);
+
       const responseObj = JSON.parse(result);
 
       if (responseObj.code != EKYCResponseType.SUCCESS) {
@@ -84,14 +95,10 @@ export class TencentEkycComponent {
         console.log('Did not match');
         return;
       }
-
-      console.log('responseObj ', responseObj);
-
       const responseData = responseObj.data;
       const verificationUrl = responseData.verificationUrl;
 
       window.location.href = verificationUrl;
-
     } catch (error) {
       console.log('Process ocr error', error);
     }

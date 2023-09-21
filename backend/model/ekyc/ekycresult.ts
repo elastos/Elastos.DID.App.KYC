@@ -75,6 +75,6 @@ export type EkycIDCardOCRInfo = {
     sex: string,
     name: string,
     idNumber: string,
-    birthDate: string
+    birthDate: string // yyyy-MM-dd
 }
 

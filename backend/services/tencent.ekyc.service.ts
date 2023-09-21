@@ -5,7 +5,7 @@ import { createRequire } from "module";
 import { FullCredentialType } from "../model/fullcredentialtype";
 import { didService } from "./did.service";
 import moment from "moment";
-import { EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
+import { EkycIDCardOCRInfo, EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 import SparkMD5 from 'spark-md5';
@@ -13,6 +13,8 @@ import { RequestOptions, request } from "http";
 import { UploadUrlResult } from "../model/ekyc/tencent/uploadurlresult";
 import { IDCardOCROriginResult, IDCardOCRResult } from "../model/ekyc/tencent/idcardocrresult";
 import { VerificationUrlresult } from "../model/ekyc/tencent/verificationurlresult";
+import { dbService } from "./db.service";
+import { CommonUtils } from "../utils/commonutils";
 
 const require = createRequire(import.meta.url);
 const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
@@ -31,7 +33,7 @@ class TencentEkycService {
   public async setup() {
   }
 
-  processEkyc(imageBase64: string, redirectUrl: string): Promise<string> {
+  processEkyc(imageBase64: string, redirectUrl: string): Promise<{ verificationUrlresult: string, ocrResult: any }> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this.processIDCardOCR(imageBase64);
@@ -42,11 +44,15 @@ class TencentEkycService {
         console.log('portraitBase64Image = ', portraitBase64Image);
 
         const verificationUrlresult = await this.processLiveness(idCardResult.AdvancedInfo.Portrait, redirectUrl);
+
+        console.log('verificationUrlresult = ', verificationUrlresult);
+
         if (!verificationUrlresult) {
           reject('Verification Url result is null');
           return;
         }
-        resolve(verificationUrlresult.VerificationUrl);
+
+        resolve({ verificationUrlresult: verificationUrlresult, ocrResult: result });
       } catch (error) {
         reject(error);
       }
@@ -103,7 +109,7 @@ class TencentEkycService {
     });
   }
 
-  async processLiveness(imageBase64: string, redirectUrl: string): Promise<VerificationUrlresult> {
+  async processLiveness(imageBase64: string, redirectUrl: string): Promise<any> {
     // create upload url
     // upload image to url
     // calculate image md5
@@ -124,7 +130,7 @@ class TencentEkycService {
         // const verificationUrlresult = await this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5) as VerificationUrlresult;
 
 
-        const verificationUrlresult = await this.applyWebVerificationBizToken(redirectUrl, imageBase64, 'extratest:testvalue') as VerificationUrlresult;
+        const verificationUrlresult = await this.applyWebVerificationBizToken(redirectUrl, imageBase64, 'extratest:testvalue');
         console.log('result = ', verificationUrlresult);
 
         // console.log("verificationUrlresult = ", verificationUrlresult);
@@ -343,7 +349,7 @@ class TencentEkycService {
     });
   }
 
-  getWebVerificationResultIntl(bizToken: string) {
+  getWebVerificationResultIntl(bizToken: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
@@ -408,13 +414,23 @@ class TencentEkycService {
     }
   }
 
-  public async generateNewUserIDCardCredentials(did: string, ekycResult: EkycIDCardResult): Promise<VerifiableCredential[]> {
-    if (!ekycResult || !ekycResult.extIdInfo || !ekycResult.extIdInfo.ocrIdInfo) {
+  public async generateNewUserIDCardCredentials(did: string, idCardOCRResult: IDCardOCRResult): Promise<VerifiableCredential[]> {
+    if (!idCardOCRResult) {
       return [];
     }
 
+    const ekycBirthDate = CommonUtils.formatDate2(idCardOCRResult.Birth);
     try {
-      const ekycOcrInfo = ekycResult.extIdInfo.ocrIdInfo;
+      const ekycOcrInfo: EkycIDCardOCRInfo = {
+        address: idCardOCRResult.Address,
+        ethnicity: idCardOCRResult.Nation,
+        province: '',
+        city: '',
+        sex: idCardOCRResult.Sex,
+        name: idCardOCRResult.Name,
+        idNumber: idCardOCRResult.IdNum,
+        birthDate: ekycBirthDate
+      }
 
       let generatedCredentials: VerifiableCredential[] = [];
       let ekycIDCardGenerator = new EkycIDCardGenerator();

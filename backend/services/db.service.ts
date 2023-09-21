@@ -10,6 +10,7 @@ import { TransactionMap } from "../model/ekyc/transactionmap";
 import { DocType } from "../model/ekyc/ekycproductcode";
 import { EKYCResultMap } from "../model/ekyc/ekycresultmap";
 import { EkycRawResult } from "../model/ekyc/ekycresult";
+import { OCRResultMap } from "../model/ekyc/tencent/ocrresultmap";
 
 class DBService {
     private client: MongoClient;
@@ -203,8 +204,6 @@ class DBService {
         }
     }
 
-
-
     public async saveEKYCResultMapping(transactionId: string, result: EkycRawResult): Promise<DataOrError<void>> {
         try {
             await this.client.connect();
@@ -235,6 +234,44 @@ class DBService {
         } catch (err) {
             logger.error(err);
             return null;
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async saveOCRInfo(bizToken: string, did: string, docType: string, ocrInfo: string): Promise<DataOrError<void>> {
+        try {
+            await this.client.connect();
+            const ocrInfoCollection = this.client.db().collection('ekycocrinfo');
+
+            const ocrResult: OCRResultMap = {
+                bizToken: bizToken,
+                did: did,
+                docType: docType,
+                ocrInfo: ocrInfo
+            };
+            const doc = await ocrInfoCollection.insertOne(ocrResult);
+            console.log('doc', doc);
+            return {};
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
+
+    public async getOCRInfo(bizToken: string): Promise<DataOrError<OCRResultMap>> {
+        try {
+            await this.client.connect();
+            const ocrInfoResultCollection = this.client.db().collection('ekycocrinfo');
+            const ocrInfoResultMap = (await ocrInfoResultCollection.find({ bizToken: bizToken }).project<OCRResultMap>({ _id: 0 }).limit(1).toArray())[0];
+            if (!ocrInfoResultMap || !ocrInfoResultMap)
+                return null;
+            return { data: ocrInfoResultMap };
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
         } finally {
             await this.client.close();
         }

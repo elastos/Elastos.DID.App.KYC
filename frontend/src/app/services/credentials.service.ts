@@ -80,7 +80,42 @@ export class CredentialsService {
   //   }
   // }
 
-  public async fetchEkycCredential(transactionId: string): Promise<string> {
+  public async fetchTencentEkycCredential(bizToken: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      if (!bizToken) {
+        console.error("bizToken is null");
+      }
+      const userDid = this.authService.signedInDID();
+      const transactionObj = {
+        "bizToken": bizToken,
+        "merchantUserId": userDid
+      }
+
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/user/ekyc/tencent/ekyccredential`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "token": this.authService.getAuthToken()
+          },
+          body: JSON.stringify(transactionObj)
+        });
+
+        if (!response.ok) {
+          console.error("response error", response);
+          reject(response);
+          return;
+        }
+
+        let result = await response.json()
+        resolve(result);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  public async fetchEkycCredential(transactionId: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (!transactionId) {
         console.error("transactionId is null");

@@ -108,8 +108,7 @@ export class VerifyComponent {
         }
 
         if (params.token) {
-          const tencentEkycResult = await this.processTencentEkycResult(params);//TODO 
-          console.log('tencentEkycResult = ', tencentEkycResult);
+          credentialResponseObj = await this.processTencentEkycResult(params);//TODO 
         }
 
         if (!credentialResponseObj) {
@@ -207,6 +206,7 @@ export class VerifyComponent {
         window.history.replaceState({}, '', '/verify');
         console.log('params.token = ', bizToken);
         const response = await this.tencentEkycService.checkResult(bizToken);
+        //TODO check liveness valid
         if (!response) {
           reject('Response is null');
           return;
@@ -216,7 +216,33 @@ export class VerifyComponent {
         const data = responseObj.data;
         const dataObj = JSON.parse(data);
         console.log('resultObj = ', dataObj);
-        resolve(dataObj);
+
+        const credentialResponse = await this.credentialsService.fetchTencentEkycCredential(bizToken);
+        if (!credentialResponse) {
+          console.log('Credential response is null');
+          reject('Credential response is null');
+          return;
+        }
+
+        //TODO delete cached data
+        // this.deleteCachedData(transactionId);
+        const credentialResponseObj = JSON.parse(credentialResponse)
+        console.log('credentialResponseObj ', credentialResponseObj);
+        if (credentialResponseObj.code == EKYCResponseType.DID_NOT_MATCH) {
+          this.showDIDNotMatchedDialog(credentialResponseObj.code)
+          return;
+        }
+
+        if (credentialResponseObj.code == EKYCResponseType.FACE_OCCLUSION) {
+          this.showFaceOcclusionDialog(credentialResponseObj.code)
+          return;
+        }
+
+        if (credentialResponseObj.code == EKYCResponseType.PASSPORT_EXPIRE) {
+          this.showPassportExpireDialog(credentialResponseObj.code)
+          return;
+        }
+        resolve(credentialResponseObj);
       } catch (error) {
         reject(error);
       }

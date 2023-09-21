@@ -207,7 +207,7 @@ export class CommonUtils {
   }
 
   /**
-   * formate time: dd-mm-yyyy => yyyy-mm-dd
+   * formate time: dd-MM-yyyy => yyyy-MM-dd
    */
   public static formatDate(date: string): string {
     if (!date)
@@ -218,6 +218,24 @@ export class CommonUtils {
       return null;
 
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+
+  /**
+   * formate time: yyyy/M/dd => yyyy-MM-dd
+   */
+  public static formatDate2(date: string): string {
+    if (!date)
+      return null;
+
+    let parts = date.split("/");
+    if (parts.length != 3)
+      return null;
+
+    const y = parts[0];
+    const monthInt = parseInt(parts[1]);
+    const m = monthInt < 10 ? "0" + monthInt : parts[1];
+    const d = parts[2];
+    return `${y}-${m}-${d}`;
   }
 }
 

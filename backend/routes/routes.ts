@@ -18,6 +18,9 @@ import { CommonUtils } from '../utils/commonutils';
 import { ProviderType } from '../model/providertype';
 import { ProviderVerificationStatus } from '../model/providerverificationstatus';
 import { DocType } from '../model/ekyc/ekycproductcode';
+import { IDCardOCRResult } from '../model/ekyc/tencent/idcardocrresult';
+import { LivenessResult } from '../model/ekyc/tencent/livenessresult';
+import { OCRResultMap } from '../model/ekyc/tencent/ocrresultmap';
 
 let router = Router();
 
@@ -394,10 +397,10 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
 
         switch (requestDocType) {
             case DocType.Passport:
-                finalResponse = await processPassport(userDid, ekycResult);
+                finalResponse = await processAlicloudPassport(userDid, ekycResult);
                 break;
             case DocType.ChinaMainLand2ndIDCard:
-                finalResponse = await processIDCard(userDid, ekycResult);
+                finalResponse = await processAlicloudIDCard(userDid, ekycResult);
                 break;
         }
 
@@ -446,7 +449,6 @@ router.post('/user/ekyc/deleteCachedData', async (req, res) => {
 
 router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
     const requestBody = req.body;
-
     let imageBase64: string = requestBody.imageBase64;
     let docType: string = requestBody.docType;
     let userId: string = requestBody.userId;
@@ -461,6 +463,10 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
         return res.json({ code: 403, message: 'Missing imageBase64' });
 
     try {
+        // const dbTransactionsDataOrError = await dbService.getOCRInfo("111");
+        // console.log('dbTransactionsDataOrError', dbTransactionsDataOrError);
+        // await dbService.saveOCRInfo("111", "userId", "docType", "result.ocrResult");
+
         if (userId != req.user.did) {
             const response = {
                 code: EKYCResponseType.DID_NOT_MATCH,
@@ -470,14 +476,29 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
             return;
         }
 
-        const VerificationUrl = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
-        const verificationObj = {
-            verificationUrl: VerificationUrl
+        const result = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
+        // console.log('processEkyc result = ', result);
+        if (!result || !result.verificationUrlresult || !result.ocrResult) {
+            const response = {
+                code: EKYCResponseType.UNKNOWN,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
         }
+
+        const verificationUrlresultObj = JSON.parse(result.verificationUrlresult);
+        await dbService.saveOCRInfo(verificationUrlresultObj.BizToken, userId, docType, result.ocrResult);
+
+        const verificationObj = {
+            verificationUrl: verificationUrlresultObj.VerificationUrl
+        }
+        // console.log('verificationObj result = ', verificationObj);
         const response = {
             code: EKYCResponseType.SUCCESS,
             data: verificationObj
         }
+        // console.log('response = ', response);
         res.json(JSON.stringify(response));
     }
     catch (e) {
@@ -527,14 +548,40 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
         return res.json({ code: 403, message: 'transactionBody error' });
     }
     try {
-        const transactionId: string = transactionBody.transactionId;
+        const bizToken = transactionBody.bizToken;
         const merchantUserId = transactionBody.merchantUserId;
-        const dbTransactionsDataOrError = await dbService.getTransactionUserMapping(transactionId);
+        const livenessResult = await tencentEkycService.getWebVerificationResultIntl(bizToken);
+
+        const livenessResultObj = JSON.parse(livenessResult);
+
+
+        console.log(livenessResultObj.ErrorCode);
+        console.log(livenessResultObj.ErrorMsg);
+        console.log(livenessResultObj.VerificationDetailList);
+
+
+        let finalResponse = createEmptyResponse();
+
+        if (!livenessResultObj || livenessResultObj.ErrorCode != 0) {
+            res.json(finalResponse);
+            return;
+        }
+
+        const dbTransactionsDataOrError = await dbService.getOCRInfo(bizToken);
+        console.log('dbTransactionsDataOrError', dbTransactionsDataOrError);
 
         if (dbTransactionsDataOrError.error)
             return apiError(res, dbTransactionsDataOrError);
-        const userDid = dbTransactionsDataOrError.data.did;
-        const requestDocType = dbTransactionsDataOrError.data.docType;
+
+        const ocrResultMap: OCRResultMap = dbTransactionsDataOrError.data;
+        console.log('ocrResultMap', ocrResultMap);
+
+        const userDid = ocrResultMap.did;
+        const requestDocType = ocrResultMap.docType;
+        const ocrInfo = ocrResultMap.ocrInfo
+
+        console.log('userDid,', userDid);
+        console.log('requestDocType,', requestDocType);
 
         if (merchantUserId != req.user.did || merchantUserId != userDid) {
             const response = {
@@ -545,23 +592,17 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
             return;
         }
 
-        const ekycResult = await ekycService.checkEkycResult(transactionId);
-        let finalResponse = createEmptyResponse();
-
-        if (!ekycResult) {
-            res.json(finalResponse);
-            return;
-        }
-
         switch (requestDocType) {
             case DocType.Passport:
-                finalResponse = await processPassport(userDid, ekycResult);
+                // finalResponse = await processTencentPassport(userDid);
                 break;
             case DocType.ChinaMainLand2ndIDCard:
-                finalResponse = await processIDCard(userDid, ekycResult);
+                finalResponse = await processTencentIDCard(userDid, ocrInfo);
                 break;
         }
 
+        // finalResponse = await processTencentIDCard(userDid, ocrInfo);
+        console.log('finalResponse', finalResponse);
         res.json(finalResponse);
     }
     catch (e) {
@@ -570,7 +611,7 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
     }
 });
 
-const processPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
+const processAlicloudPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
     const ekycResult: EkycPassportResult = {
         extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
         extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
@@ -628,7 +669,7 @@ const processPassport = async (userDid: string, ekycRawResult: EkycRawResult): P
     return JSON.stringify(response);
 }
 
-const processIDCard = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
+const processAlicloudIDCard = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
     const ekycResult: EkycIDCardResult = {
         extFaceInfo: JSON.parse(ekycRawResult.extFaceInfo),
         extIdInfo: JSON.parse(ekycRawResult.extIdInfo),
@@ -659,6 +700,38 @@ const processIDCard = async (userDid: string, ekycRawResult: EkycRawResult): Pro
     }
 
     let newEKYCCredentials: VerifiableCredential[] = await ekycService.generateNewUserIDCardCredentials(userDid, ekycResult);
+
+    // FINALIZE
+    // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+    // Sort by most recent first
+    // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+    verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
+
+    const response = {
+        code: EKYCResponseType.SUCCESS,
+        data: verificationStatus
+    }
+
+    return JSON.stringify(response);
+}
+
+// const processTencentPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
+
+// }
+
+const processTencentIDCard = async (userDid: string, idCardOCRResult: string): Promise<string> => {
+    const idCardOcrResult: IDCardOCRResult = tencentEkycService.parseIDCardOCRResult(idCardOCRResult);
+
+    let verificationStatus: VerificationStatus = {
+        extInfo: {
+            type: ProviderType.EKYC,
+            status: ProviderVerificationStatus.APPROVED
+        },
+        credentials: []
+    };
+
+    let newEKYCCredentials: VerifiableCredential[] = await tencentEkycService.generateNewUserIDCardCredentials(userDid, idCardOcrResult);
 
     // FINALIZE
     // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
