@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { DocType } from 'src/app/model/ekyc/ekycdoctype';
 import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-tencentekyc',
@@ -15,9 +16,21 @@ export class TencentEkycComponent {
   public mediaSteam: MediaStream;
   private imageData: string;
   public isShowCameraResult: boolean;
-  constructor(private tencentEkycService: TencentEkycService) { }
+  private docType: string;
+  constructor(
+    private tencentEkycService: TencentEkycService,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
+    this.route.queryParams.subscribe(queryParams => {
+      console.log("queryParams", queryParams)
+      if ("docType" in queryParams) {
+        this.docType = queryParams["docType"];
+        console.log('docType = ', this.docType);
+      }
+    })
+
     this.canvas = document.querySelector('#canvas');
     this.openCamera();
   }
@@ -83,7 +96,7 @@ export class TencentEkycComponent {
 
   async processOCR() {
     try {
-      const response = await this.tencentEkycService.processEKYC(this.imageData, DocType.ChinaMainLand2ndIDCard, `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
+      const response = await this.tencentEkycService.processEKYC(this.imageData, this.docType, `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
       const result = await response.json();
       console.log("ekyc result response is ", result);
 

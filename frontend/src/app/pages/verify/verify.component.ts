@@ -277,7 +277,7 @@ export class VerifyComponent {
     this.ekycService.processIDOCR(metainfo);
   }
   async processEKYCFromTencent() {
-    this.router.navigate(['/tencentekyc']);
+    this.router.navigate(['/tencentekyc'], { queryParams: { docType: this.selectedCategory.id } });
   }
 
   async processEKYC() {

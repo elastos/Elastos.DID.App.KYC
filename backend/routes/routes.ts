@@ -463,10 +463,6 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
         return res.json({ code: 403, message: 'Missing imageBase64' });
 
     try {
-        // const dbTransactionsDataOrError = await dbService.getOCRInfo("111");
-        // console.log('dbTransactionsDataOrError', dbTransactionsDataOrError);
-        // await dbService.saveOCRInfo("111", "userId", "docType", "result.ocrResult");
-
         if (userId != req.user.did) {
             const response = {
                 code: EKYCResponseType.DID_NOT_MATCH,
@@ -476,8 +472,8 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
             return;
         }
 
-        const result = await tencentEkycService.processEkyc(imageBase64, redirectUrl);
-        // console.log('processEkyc result = ', result);
+        const result = await tencentEkycService.processEkyc(docType, imageBase64, redirectUrl);
+
         if (!result || !result.verificationUrlresult || !result.ocrResult) {
             const response = {
                 code: EKYCResponseType.UNKNOWN,

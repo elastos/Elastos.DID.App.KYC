@@ -28,18 +28,18 @@
       </p>
     </div>
 
+    <div class="my-2 center-container">
+      <label class="center-container">Choose an Identity type: </label>
+      <div class="center-container">
+          <select [(ngModel)]="selectedCategory">
+            <option *ngFor="let c of categories" [ngValue]="c">{{ c.name }}</option>
+          </select>
+        </div>
+    </div>
+
     <div class="my-2 center-container" *ngIf="!verificationCompleted">
       <div class="fw-600 fs-15 c-4ab4f0 mr-1">eKYC
         <img src="../../../assets/alicloud.svg" style="height: 10px; margin-bottom: 2.5px;">
-      </div>
-    </div>
-
-   <div class="my-2 center-container">
-   <label class="center-container">Choose an Identity type: </label>
-     <div class="center-container">
-        <select [(ngModel)]="selectedCategory">
-          <option *ngFor="let c of categories" [ngValue]="c">{{ c.name }}</option>
-        </select>
       </div>
     </div>
 
