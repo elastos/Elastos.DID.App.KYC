@@ -5,7 +5,7 @@ import { createRequire } from "module";
 import { FullCredentialType } from "../model/fullcredentialtype";
 import { didService } from "./did.service";
 import moment from "moment";
-import { EkycIDCardOCRInfo, EkycIDCardResult, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
+import { EkycIDCardOCRInfo, EkycIDCardResult, EkycPassportOCRIdInfo, EkycPassportResult, EkycRawResult, EkycResponse } from "../model/ekyc/ekycresult";
 import { EkycPassportGenerator } from "./generators/ekyc/passport.generator";
 import { EkycIDCardGenerator } from "./generators/ekyc/idcard.generator";
 import SparkMD5 from 'spark-md5';
@@ -469,13 +469,27 @@ class TencentEkycService {
     });
   }
 
-  public async generateNewUserPassportCredentials(did: string, ekycResult: EkycPassportResult): Promise<VerifiableCredential[]> {
-    if (!ekycResult || !ekycResult.extIdInfo || !ekycResult.extIdInfo.ocrIdInfo) {
+  public async generateNewUserPassportCredentials(did: string, passportOcrResult: PassportOcrResult): Promise<VerifiableCredential[]> {
+    if (!passportOcrResult) {
       return [];
     }
 
+    const ekycBirthDate = CommonUtils.formatDate3(passportOcrResult.DateOfBirth);
+    const reverseBirthDate = CommonUtils.formatDate(ekycBirthDate);
+    const ekycExpirationDate = CommonUtils.formatDate3(passportOcrResult.DateOfExpiration);
+
+
     try {
-      const ekycOcrInfo = ekycResult.extIdInfo.ocrIdInfo;
+      const ekycOcrInfo: EkycPassportOCRIdInfo = {
+        surname: passportOcrResult.Surname,
+        givenname: passportOcrResult.GivenName,
+        sex: passportOcrResult.Sex,
+        birthDate: reverseBirthDate,
+        passportNo: passportOcrResult.ID,
+        nationality: passportOcrResult.Nationality,
+        expiryDate: ekycExpirationDate,
+        countryCode: passportOcrResult.Nationality
+      }
 
       let generatedCredentials: VerifiableCredential[] = [];
       let ekycPassportGenerator = new EkycPassportGenerator();
@@ -625,26 +639,6 @@ class TencentEkycService {
 
   parsePassportOCRResult(result: any): PassportOcrResult {
     const passportOcrResult = result as PassportOcrResult;
-
-    console.log("passportOcrResult.ID", passportOcrResult.ID);
-    console.log("passportOcrResult.GivenName", passportOcrResult.GivenName);
-    console.log("passportOcrResult.DateOfBirth", passportOcrResult.DateOfBirth);
-
-
-    // const advancedInfo = JSON.parse(idCardOCROriginResult.AdvancedInfo);
-    // const idCardResult: IDCardOCRResult = {
-    //   Name: idCardOCROriginResult.Name,
-    //   Sex: idCardOCROriginResult.Sex,
-    //   Nation: idCardOCROriginResult.Nation,
-    //   Birth: idCardOCROriginResult.Birth,
-    //   Address: idCardOCROriginResult.Address,
-    //   IdNum: idCardOCROriginResult.IdNum,
-    //   Authority: idCardOCROriginResult.Authority,
-    //   ValidDate: idCardOCROriginResult.ValidDate,
-    //   AdvancedInfo: advancedInfo,
-    //   RequestId: idCardOCROriginResult.RequestId
-    // }
-
     return passportOcrResult;
   }
 }

@@ -21,6 +21,7 @@ import { DocType } from '../model/ekyc/ekycproductcode';
 import { IDCardOCRResult } from '../model/ekyc/tencent/idcardocrresult';
 import { LivenessResult } from '../model/ekyc/tencent/livenessresult';
 import { OCRResultMap } from '../model/ekyc/tencent/ocrresultmap';
+import { PassportOcrResult } from '../model/ekyc/tencent/passportocrresult';
 
 let router = Router();
 
@@ -550,12 +551,6 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
 
         const livenessResultObj = JSON.parse(livenessResult);
 
-
-        console.log(livenessResultObj.ErrorCode);
-        console.log(livenessResultObj.ErrorMsg);
-        console.log(livenessResultObj.VerificationDetailList);
-
-
         let finalResponse = createEmptyResponse();
 
         if (!livenessResultObj || livenessResultObj.ErrorCode != 0) {
@@ -570,14 +565,10 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
             return apiError(res, dbTransactionsDataOrError);
 
         const ocrResultMap: OCRResultMap = dbTransactionsDataOrError.data;
-        console.log('ocrResultMap', ocrResultMap);
 
         const userDid = ocrResultMap.did;
         const requestDocType = ocrResultMap.docType;
         const ocrInfo = ocrResultMap.ocrInfo
-
-        console.log('userDid,', userDid);
-        console.log('requestDocType,', requestDocType);
 
         if (merchantUserId != req.user.did || merchantUserId != userDid) {
             const response = {
@@ -590,14 +581,13 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
 
         switch (requestDocType) {
             case DocType.Passport:
-                // finalResponse = await processTencentPassport(userDid);
+                finalResponse = await processTencentPassport(userDid, ocrInfo);
                 break;
             case DocType.ChinaMainLand2ndIDCard:
                 finalResponse = await processTencentIDCard(userDid, ocrInfo);
                 break;
         }
 
-        // finalResponse = await processTencentIDCard(userDid, ocrInfo);
         console.log('finalResponse', finalResponse);
         res.json(finalResponse);
     }
@@ -712,9 +702,45 @@ const processAlicloudIDCard = async (userDid: string, ekycRawResult: EkycRawResu
     return JSON.stringify(response);
 }
 
-// const processTencentPassport = async (userDid: string, ekycRawResult: EkycRawResult): Promise<string> => {
+const processTencentPassport = async (userDid: string, passportOCRResult: string): Promise<string> => {
+    const passportOcrResult: PassportOcrResult = tencentEkycService.parsePassportOCRResult(passportOCRResult);
 
-// }
+    let verificationStatus: VerificationStatus = {
+        extInfo: {
+            type: ProviderType.EKYC,
+            status: ProviderVerificationStatus.APPROVED
+        },
+        credentials: []
+    };
+
+    // Passport expiry detection
+    const currentTime = Date.now();
+    const ekycExpirationDate = CommonUtils.formatDate3(passportOcrResult.DateOfExpiration);
+    const expiryDate = new Date(ekycExpirationDate).getTime();
+    if (expiryDate < currentTime) {
+        const response = {
+            code: EKYCResponseType.PASSPORT_EXPIRE,
+            data: verificationStatus
+        }
+        return JSON.stringify(response);
+    }
+
+    let newEKYCCredentials: VerifiableCredential[] = await tencentEkycService.generateNewUserPassportCredentials(userDid, passportOcrResult);
+
+    // FINALIZE
+    // let allCredentials = [...dbCredentials, ...newPassbaseCredentials];
+
+    // Sort by most recent first
+    // allCredentials.sort((c1, c2) => c2.getIssuanceDate().valueOf() - c1.getIssuanceDate().valueOf());
+    verificationStatus.credentials = newEKYCCredentials.map(c => c.toJSON());
+
+    const response = {
+        code: EKYCResponseType.SUCCESS,
+        data: verificationStatus
+    }
+
+    return JSON.stringify(response);
+}
 
 const processTencentIDCard = async (userDid: string, idCardOCRResult: string): Promise<string> => {
     const idCardOcrResult: IDCardOCRResult = tencentEkycService.parseIDCardOCRResult(idCardOCRResult);

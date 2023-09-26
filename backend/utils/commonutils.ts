@@ -237,6 +237,17 @@ export class CommonUtils {
     const d = parts[2];
     return `${y}-${m}-${d}`;
   }
+
+
+  /**
+   * formate time: yyyyMMdd => yyyy-MM-dd
+   */
+  public static formatDate3(dateString: string): string {
+    if (!dateString)
+      return null;
+
+    return dateString.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+  }
 }
 
 export const commonUtils = new CommonUtils();

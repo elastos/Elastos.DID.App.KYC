@@ -159,7 +159,6 @@ export class EkycPassportGenerator {
 
     const passportNoHash = CommonUtils.SHA256(passportUTF8NFC + givennameUtf8NFC + surnameUtf8NFC);
 
-    console.log("passportNoHash = ", passportNoHash);
     let credentialType = {
       context: "did://elastos/iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK/PassportNumberHashCredential",
       shortType: "PassportNumberHashCredential"
