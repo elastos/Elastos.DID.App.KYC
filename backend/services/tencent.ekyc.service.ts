@@ -44,7 +44,8 @@ class TencentEkycService {
           case DocType.ChinaMainLand2ndIDCard:
             const idCardOcrResult = await this.processIDCardOCR(imageBase64);
             const idCardResult: IDCardOCRResult = this.parseIDCardOCRResult(idCardOcrResult);
-            ocrResult = idCardResult;
+            const idCardOcrOriginResult: IDCardOCROriginResult = this.parseIDCardOCROriginResult(idCardOcrResult);
+            ocrResult = idCardOcrOriginResult;
             console.log('idCardResult,', idCardResult);
             console.log('redirectUrl = ', redirectUrl);
             // const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
@@ -635,6 +636,11 @@ class TencentEkycService {
     }
 
     return idCardResult;
+  }
+
+  parseIDCardOCROriginResult(result: any): IDCardOCROriginResult {
+    const idCardOCROriginResult = result as IDCardOCROriginResult;
+    return idCardOCROriginResult;
   }
 
   parsePassportOCRResult(result: any): PassportOcrResult {
