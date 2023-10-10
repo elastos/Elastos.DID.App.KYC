@@ -48,8 +48,6 @@ class TencentEkycService {
             ocrResult = idCardOcrOriginResult;
             console.log('idCardResult,', idCardResult);
             console.log('redirectUrl = ', redirectUrl);
-            // const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
-            // console.log('portraitBase64Image = ', portraitBase64Image);
             retImageBase64 = idCardResult.AdvancedInfo.Portrait;
 
             break;
@@ -62,18 +60,8 @@ class TencentEkycService {
             retImageBase64 = passportOcrResult.Image;
             break;
         }
-
-        // const result = await this.processIDCardOCR(imageBase64);
-        // const idCardResult: IDCardOCRResult = this.parseIDCardOCRResult(result);
-        // console.log('idCardResult,', idCardResult);
-        // console.log('redirectUrl = ', redirectUrl);
-        // const portraitBase64Image = 'data:image/jpg;base64,' + idCardResult.AdvancedInfo.Portrait;
-        // console.log('portraitBase64Image = ', portraitBase64Image);
-
         const verificationUrlresult = await this.processLiveness(retImageBase64, redirectUrl);
-
         console.log('verificationUrlresult = ', verificationUrlresult);
-
         if (!verificationUrlresult) {
           reject('Verification Url result is null');
           return;

@@ -498,8 +498,24 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
         // console.log('response = ', response);
         res.json(JSON.stringify(response));
     }
-    catch (e) {
-        console.log("Process tencent ekyc request error, error is", e);
+    catch (error) {
+        console.log("Process tencent ekyc request error, error is", error);
+        if (error.toString().includes('NoPassport')) {
+            const response = {
+                code: EKYCResponseType.TENCENT_OCR_NOPASSPORT,
+                data: ""
+            }
+            return res.json(JSON.stringify(response));
+        }
+
+        if (error.toString().includes('照片未检测到身份证')) {
+            const response = {
+                code: EKYCResponseType.TENCENT_OCR_NOIDCARD,
+                data: ""
+            }
+            return res.json(JSON.stringify(response));
+        }
+
         return res.status(500).json("Server error");
     }
 });

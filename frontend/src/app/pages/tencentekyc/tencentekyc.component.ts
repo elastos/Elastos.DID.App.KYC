@@ -114,6 +114,16 @@ export class TencentEkycComponent {
         return;
       }
 
+      if (responseObj.code == EKYCResponseType.TENCENT_OCR_NOIDCARD) {
+        this.showNotFoundIDCardDialog(responseObj.code)
+        return;
+      }
+
+      if (responseObj.code == EKYCResponseType.TENCENT_OCR_NOPASSPORT) {
+        this.showNotFoundPassportDialog(responseObj.code)
+        return;
+      }
+
       if (responseObj.code != EKYCResponseType.SUCCESS) {
         this.showErrorDialog(responseObj.code)
         return;
@@ -127,6 +137,16 @@ export class TencentEkycComponent {
       this.isStartPrcocessEKYC = false;
       console.log('Process ocr error', error);
     }
+  }
+
+  showNotFoundPassportDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Passport was not detected");
+  }
+
+  showNotFoundIDCardDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "IDCard was not detected");
   }
 
   showDIDNotMatchedDialog(responseCode: string) {
