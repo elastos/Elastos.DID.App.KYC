@@ -3,6 +3,9 @@ import { DocType } from 'src/app/model/ekyc/ekycdoctype';
 import { EKYCResponseType } from 'src/app/model/ekyc/ekycresponsetype';
 import { TencentEkycService } from 'src/app/services/tencent.ekyc.service';
 import { ActivatedRoute } from '@angular/router';
+import { PromoteService } from 'src/app/services/promote.service';
+import { PromoteComponent } from 'src/app/components/promote/promote.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-tencentekyc',
@@ -20,7 +23,9 @@ export class TencentEkycComponent {
   public isStartPrcocessEKYC = false;
   constructor(
     private tencentEkycService: TencentEkycService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private promoteService: PromoteService,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit() {
@@ -97,18 +102,23 @@ export class TencentEkycComponent {
   async processOCR() {
     try {
       this.isStartPrcocessEKYC = true;
+
       const response = await this.tencentEkycService.processEKYC(this.imageData, this.docType, `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
       const result = await response.json();
       console.log("ekyc result response is ", result);
 
       const responseObj = JSON.parse(result);
 
-      if (responseObj.code != EKYCResponseType.SUCCESS) {
-        // this.showDIDNotMatchedDialog(responseObj.code)
-        // TODO
-        console.log('Did not match');
+      if (responseObj.code == EKYCResponseType.DID_NOT_MATCH) {
+        this.showDIDNotMatchedDialog(responseObj.code)
         return;
       }
+
+      if (responseObj.code != EKYCResponseType.SUCCESS) {
+        this.showErrorDialog(responseObj.code)
+        return;
+      }
+
       const responseData = responseObj.data;
       const verificationUrl = responseData.verificationUrl;
 
@@ -117,5 +127,26 @@ export class TencentEkycComponent {
       this.isStartPrcocessEKYC = false;
       console.log('Process ocr error', error);
     }
+  }
+
+  showDIDNotMatchedDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Did not matched");
+  }
+
+  showErrorDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Process ekyc error, please try again");
+  }
+
+  openDialog(title: string, content: string) {
+    this.promoteService.setPromoteTitle(title);
+    this.promoteService.setPromoteContent(content);
+    const dialogRef = this.dialog.open(PromoteComponent, { role: "alertdialog", disableClose: true });
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result)
+        return;
+      this.isStartPrcocessEKYC = false;
+    });
   }
 }
