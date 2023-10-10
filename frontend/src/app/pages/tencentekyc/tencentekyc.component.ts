@@ -17,6 +17,7 @@ export class TencentEkycComponent {
   private imageData: string;
   public isShowCameraResult: boolean;
   private docType: string;
+  public isStartPrcocessEKYC = false;
   constructor(
     private tencentEkycService: TencentEkycService,
     private route: ActivatedRoute
@@ -84,7 +85,6 @@ export class TencentEkycComponent {
       const videoWidth = width / 1.585;
       console.log('width = ', width);
       console.log('height = ', height);
-      console.log('height = ', height);
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: videoWidth, height: videoHeight } }).then(
         (stream) => {
           this.video.srcObject = stream;
@@ -96,6 +96,7 @@ export class TencentEkycComponent {
 
   async processOCR() {
     try {
+      this.isStartPrcocessEKYC = true;
       const response = await this.tencentEkycService.processEKYC(this.imageData, this.docType, `${process.env.NG_APP_TENCENT_REDIRECT_URL}`);
       const result = await response.json();
       console.log("ekyc result response is ", result);
@@ -113,6 +114,7 @@ export class TencentEkycComponent {
 
       window.location.href = verificationUrl;
     } catch (error) {
+      this.isStartPrcocessEKYC = false;
       console.log('Process ocr error', error);
     }
   }

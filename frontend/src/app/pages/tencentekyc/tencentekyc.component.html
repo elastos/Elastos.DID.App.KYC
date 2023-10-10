@@ -7,11 +7,19 @@
     <div class="mx-5 my-2 d-flex-evenly text-center align-items-center flex-columns" >
       <video  id="video" autoplay ></video>
       <canvas id="canvas" ></canvas>
-      <div class="pos-relative align-items-center">
-        <button id="snap" *ngIf="!isShowCameraResult" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="takePicture()"> takePicture </button>
-        <button id="snap"  *ngIf="isShowCameraResult" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3" (click)="processOCR()"> continueEkyc </button>
-
-        <button id="snap" class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset mt-3"  (click)="openCamera()"> reset </button>
+      <div class="my-2 verify-container"  style="min-height: 25px; margin-bottom: 20px;">
+        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="!isShowCameraResult" (click)="takePicture()">
+          takePicture
+        </button>
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="isShowCameraResult && !isStartPrcocessEKYC" (click)="processOCR()">
+          continueEkyc
+        </button>
+      </div>
+      <div class="my-2 verify-container"  style="min-height: 25px; margin-bottom: 20px;">
+        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="!isStartPrcocessEKYC" (click)="openCamera()">
+          reset
+        </button>
       </div>
     </div>
   </div>

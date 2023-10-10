@@ -1,0 +1,16 @@
+.verify-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    mat-progress-spinner {
+      position: absolute;
+      z-index: -1;
+    }
+  }
+  
+  .center-container{
+    width: -webkit-fill-available;
+    text-align: center;
+  }
