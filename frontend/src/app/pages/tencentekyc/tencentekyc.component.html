@@ -1,27 +1,32 @@
-<Toolbar></Toolbar>
-<div class="container">
-  <div class="wrapper-box">
-    <div class="d-flex justify-content-center mt-2">
-      <p class="heading text-center c-4ab4f0">Tencent ekyc</p>
+<div style="width: 100%; height: 100%; font-size: 0.28rem" data-v-app="">
+    <div class="ocr-camera-container">
+        <div class="back" (click)="back()"></div>
+        <video id="video" autoplay playsinline class="ocr-video"></video>
+        <canvas id="canvas" class="ocr-canvas" class="ocr-video"></canvas>
+        <div class="ocr-photo ocr-photo-shadow"></div>
+        <!-- <div>
+            <input id="fileInput" type="file" accept="image/jpeg,image/jpg,image/png" multiple="" style="display: none;" (click)="handleFeedsVideo($event)">
+            <label for="fileInput" class="ocr-open-file">
+                <img height="48" width="48" src="../../../assets/photo.png">
+            </label>
+        </div> -->
+
+        <div>
+            <div class="ocr-top-tip">
+              <span>Place your ID within the frame and take a picture</span>
+            </div>
+            <img  class="ocr-photo-border" src="../../../assets/takePicBorder.png">
+            <img src="../../../assets/takePic.png" height="80" width="80" class="ocr-button" (click)="takePicture()">
+        </div>
+        
+        <div *ngIf="isShowCameraResult" (click)="submit()">
+            <img src="../../../assets/submit.png" height="80" width="80" class="ocr-button">
+        </div>
+        
+        <div *ngIf="isStartPrcocessEKYC">
+            <div class="ocr-loading-bg"></div>
+            <img class="ocr-loading" height="48" width="48" src="../../../assets/loading.png">
+        </div>
+        <div id="opacityDom" style="opacity: 0; width: 0px; height: 0px; overflow: hidden; position: fixed; top: 0px; z-index: -99;"></div>
     </div>
-    <div class="mx-5 my-2 d-flex-evenly text-center align-items-center flex-columns" >
-      <video  id="video" autoplay ></video>
-      <canvas id="canvas" ></canvas>
-      <div class="my-2 verify-container"  style="min-height: 25px; margin-bottom: 20px;">
-        <mat-progress-spinner diameter="20" color="color" mode="indeterminate" *ngIf="isStartPrcocessEKYC"></mat-progress-spinner>
-        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="!isShowCameraResult" (click)="takePicture()">
-          takePicture
-        </button>
-        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="isShowCameraResult && !isStartPrcocessEKYC" (click)="processOCR()">
-          continueEkyc
-        </button>
-      </div>
-      <div class="my-2 verify-container"  style="min-height: 25px; margin-bottom: 20px;">
-        <button class="blue-btn fs-13 py-1 px-2 c-4ab4f0 fw-unset" *ngIf="!isStartPrcocessEKYC" (click)="openCamera()">
-          reset
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
-<Clouds></Clouds>

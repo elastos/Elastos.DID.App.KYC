@@ -1,3 +1,13 @@
+@keyframes loadinganimal {
+    0% {
+        transform: rotate(0deg)
+    }
+
+    to {
+        transform: rotate(1turn)
+    }
+}
+
 .verify-container {
     position: relative;
     display: flex;
@@ -8,9 +18,111 @@
       position: absolute;
       z-index: -1;
     }
-  }
+}
   
-  .center-container{
+.center-container{
     width: -webkit-fill-available;
     text-align: center;
-  }
+}
+
+.ocr-camera-container{
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.back{
+    position: fixed;
+    top: 10px;
+    width: 40px;
+    height: 40px;
+    background-image: url('../../../assets/back.png');
+    background-size: 10px;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    filter: invert(1);
+    z-index: 1;
+}
+
+.ocr-top-tip{
+    z-index: 2;
+    position: absolute;
+    text-align: center;
+    width: 100vw;
+    top: 23vh;
+    font-weight: 400;
+    font-size: 14px;
+    color: #fff;
+}
+  
+.ocr-photo-border{
+    position: absolute;
+    width: 90vw;
+    height: 50.625vw;
+    left: 5vw;
+    top: calc(50vh - 25.3125vw);
+}
+
+.ocr-button{
+    position: absolute;
+    z-index: 2;
+    display: block;
+    bottom: 2.4rem;
+    left: calc(50vw - 40px);
+}
+
+.ocr-video{
+    position: absolute;
+    width: 100vw;
+    height: 56.25vw;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.ocr-photo{
+    position: absolute;
+    width: 94vw;
+    left: 3vw;
+    height: 52.875vw;
+    top: calc(50vh - 26.4375vw);
+}
+
+.ocr-loading-bg{
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    background-color: rgba(2,2,2,.7);
+    width: 100vw;
+    height: 100vh;
+}
+
+.ocr-loading{
+    position: absolute;
+    z-index: 2;
+    left: calc(50vw - 24px);
+    top: calc(50vh - 24px);
+    animation: loadinganimal 3s linear infinite;
+}
+
+.ocr-photo-shadow{
+    box-shadow: 0 0 0 100vh rgba(2,2,2,.8);
+}
+
+.ocr-photo{
+    position: absolute;
+    width: 94vw;
+    left: 3vw;
+    height: 52.875vw;
+    top: calc(50vh - 26.4375vw);
+}
+
+.ocr-open-file{
+    position: absolute;
+    left: 0.32rem;
+    bottom: 2.7rem;
+    height: 48px;
+    width: 48px;
+}

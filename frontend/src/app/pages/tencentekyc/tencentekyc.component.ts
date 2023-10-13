@@ -169,4 +169,12 @@ export class TencentEkycComponent {
       this.isStartPrcocessEKYC = false;
     });
   }
+
+  back() {
+    window.history.back();
+  }
+
+  submit() {
+    this.processOCR();
+  }
 }
