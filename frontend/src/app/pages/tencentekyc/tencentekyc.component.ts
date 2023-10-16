@@ -19,6 +19,7 @@ export class TencentEkycComponent {
   public mediaSteam: MediaStream;
   private imageData: string;
   public isShowCameraResult: boolean;
+  public isSelectImage: boolean;
   private docType: string;
   public isStartPrcocessEKYC = false;
   constructor(
@@ -29,6 +30,7 @@ export class TencentEkycComponent {
   ) { }
 
   ngOnInit() {
+    this.isSelectImage = false;
     this.route.queryParams.subscribe(queryParams => {
       console.log("queryParams", queryParams)
       if ("docType" in queryParams) {
@@ -53,13 +55,7 @@ export class TencentEkycComponent {
       this.video.hidden = true;
       this.canvas.hidden = false;
 
-      this.canvas.width = this.video.videoWidth;
-
-      this.canvas.height = this.video.videoHeight;
-      this.canvas.getContext('2d').drawImage(this.video, 0, 0);
-
-      const dataUrl = this.canvas.toDataURL();
-      this.imageData = dataUrl;
+      this.drawCanvas(this.video.videoWidth, this.video.videoHeight, this.video.videoWidth, this.video.videoHeight, this.video, this.canvas);
     }
 
     this.closeCamera();
@@ -97,6 +93,26 @@ export class TencentEkycComponent {
         }
       ).catch((error) => { });
     }
+  }
+
+  drawCanvas(canvasWidth: number, canvasHeight: number, naturalWidth: number, naturalHeight: number, drawImage: CanvasImageSource, canvas: HTMLCanvasElement) {
+    if (canvasWidth >= naturalHeight && canvasHeight >= naturalHeight) {
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      canvas.getContext('2d').drawImage(drawImage, 0, 0);
+    } else {
+      let scale = naturalWidth / canvasWidth;
+      let height = naturalHeight / scale;
+
+      canvas.width = canvasWidth;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(drawImage, 0, 0, canvasWidth, height);
+    }
+
+    const dataUrl = canvas.toDataURL();
+    this.imageData = dataUrl;
+
+    console.log("this.imageData ", this.imageData);
   }
 
   async processOCR() {
@@ -176,5 +192,37 @@ export class TencentEkycComponent {
 
   submit() {
     this.processOCR();
+  }
+
+  async handleSelectFile(event: any) {
+    this.closeCamera();
+    this.canvas.hidden = true;
+    this.isSelectImage = true;
+    const reader = new FileReader();
+    reader.readAsDataURL(event.target.files[0]);
+
+    reader.onload = async event => {
+      try {
+        let result = event.target.result.toString();
+        this.setSelectImage(result);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  setSelectImage(imageSrc: string) {
+    let selectedImage = document.querySelector('#displaySelectImg') as HTMLImageElement;
+    selectedImage.src = imageSrc;
+    this.isShowCameraResult = true;
+
+    let canvas = document.createElement("canvas");
+
+    selectedImage.onload = () => {
+      let selectedImageWidth = selectedImage.width;
+      let selectedImageHeight = selectedImage.height;
+
+      this.drawCanvas(selectedImageWidth, selectedImageHeight, selectedImage.naturalWidth, selectedImage.naturalHeight, selectedImage, canvas);
+    }
   }
 }

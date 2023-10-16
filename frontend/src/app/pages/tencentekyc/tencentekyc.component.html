@@ -2,20 +2,21 @@
     <div class="ocr-camera-container">
         <div class="back" (click)="back()"></div>
         <video id="video" autoplay playsinline class="ocr-video"></video>
-        <canvas id="canvas" class="ocr-canvas" class="ocr-video"></canvas>
+        <canvas id="canvas" class="ocr-video"></canvas>
         <div class="ocr-photo ocr-photo-shadow"></div>
-        <!-- <div>
-            <input id="fileInput" type="file" accept="image/jpeg,image/jpg,image/png" multiple="" style="display: none;" (click)="handleFeedsVideo($event)">
+        <div>
+            <input id="fileInput" type="file" accept="image/jpeg,image/jpg,image/png" multiple="" style="display: none;" (change)="handleSelectFile($event)">
             <label for="fileInput" class="ocr-open-file">
                 <img height="48" width="48" src="../../../assets/photo.png">
             </label>
-        </div> -->
+        </div>
 
         <div>
             <div class="ocr-top-tip">
               <span>Place your ID within the frame and take a picture</span>
             </div>
-            <img  class="ocr-photo-border" src="../../../assets/takePicBorder.png">
+            <img class="ocr-photo-border" id="border" src="../../../assets/takePicBorder.png">
+            <img *ngIf="isSelectImage" id="displaySelectImg" style="object-fit: scale-down" class="ocr-photo-border">
             <img src="../../../assets/takePic.png" height="80" width="80" class="ocr-button" (click)="takePicture()">
         </div>
         
