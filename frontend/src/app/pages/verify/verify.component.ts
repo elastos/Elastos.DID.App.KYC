@@ -279,7 +279,7 @@ export class VerifyComponent {
   async processEKYCFromTencent() {
     this.isStartPrcocessEKYC = true;
     setTimeout(() => {
-      this.router.navigate(['/tencentekyc'], { queryParams: { docType: this.selectedCategory.id } });
+      this.router.navigate(['/guide'], { queryParams: { docType: this.selectedCategory.id } });
     }, 10);
   }
 
