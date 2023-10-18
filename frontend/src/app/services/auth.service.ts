@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { DID } from "@elastosfoundation/elastos-connectivity-sdk-js";
+import { DID, didAccessV2 } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import jwtDecode from 'jwt-decode';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../model/user';
 import { ConnectivityService } from './connectivity.service';
+import { VerifiablePresentation } from '@elastosfoundation/did-js-sdk';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
 
 @Injectable({
@@ -71,23 +72,7 @@ export class AuthService {
     if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
       await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
 
-    const didAccess = new DID.DIDAccess();
-    let presentation;
-
-    console.log("Trying to sign in using the connectivity SDK");
-    try {
-      presentation = await didAccess.requestCredentials({
-        claims: [
-          // optional email to automatically fill passbase form for convenience
-          DID.standardEmailClaim("Used during the KYC process", false)
-        ]
-      });
-    } catch (e) {
-      // Possible exception while using wallet connect (i.e. not an identity wallet)
-      // Kill the wallet connect session
-      console.warn("Error while getting credentials", e);
-      return "FAILED";
-    }
+    let presentation = await this.requestCredentialsV2();
 
     if (!presentation) {
       console.warn("Presentation error,", presentation);
@@ -142,5 +127,44 @@ export class AuthService {
     console.log("Signing out without nav");
     this.authenticatedUser.next(null);
     localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  }
+
+  private requestCredentialsV1(): Promise<VerifiablePresentation> {
+    return new Promise(async (resolve, reject) => {
+      const didAccess = new DID.DIDAccess();
+      let presentation;
+
+      console.log("Trying to sign in using the connectivity SDK");
+      try {
+        presentation = await didAccess.requestCredentials({
+          claims: [
+            // optional email to automatically fill passbase form for convenience
+            DID.standardEmailClaim("Used during the KYC process", false)
+          ]
+        });
+        resolve(presentation);
+      } catch (e) {
+        // Possible exception while using wallet connect (i.e. not an identity wallet)
+        // Kill the wallet connect session
+        console.warn("Error while getting credentials", e);
+        resolve(null);
+      }
+    });
+  }
+
+  private requestCredentialsV2(): Promise<VerifiablePresentation> {
+    return new Promise(async (resolve, reject) => {
+      didAccessV2.onRequestCredentialsResponse((context, presentation) => {
+        console.log("onRequestCredentialsResponse", context, presentation);
+        resolve(presentation);
+      });
+
+      await didAccessV2.requestCredentials({
+        claims: [
+          // optional email to automatically fill passbase form for convenience
+          DID.standardEmailClaim("Used during the KYC process", false)
+        ]
+      });
+    });
   }
 }
