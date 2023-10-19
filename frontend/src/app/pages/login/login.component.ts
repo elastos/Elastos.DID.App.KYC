@@ -5,6 +5,7 @@ import { ConnectivityService } from 'src/app/services/connectivity.service';
 import { PromoteService } from 'src/app/services/promote.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PromoteComponent } from 'src/app/components/promote/promote.component';
+import { ConnectorSelectComponent } from 'src/app/components/connectorselect/connectorselect.component';
 
 @Component({
   selector: 'app-login',
@@ -28,20 +29,28 @@ export class LoginComponent {
     } else {
       this.isShowDisconnectButton = false;
     }
+
+    const r = new URL(window.location.href);
+    if (new URLSearchParams(r.search).get("rid")) {
+      this.signingIn = true;
+    }
   }
 
   public async signIn() {
     this.signingIn = true;
-    await this.authService.signIn().then((status: string) => {
-      if (status != "SUCCESS") {
-        //show error dialog
-        this.openDialog("Tips", "Unable to sign in now, please try again later")
-        return;
-      }
-      this.signingIn = false;
-      this.isShowDisconnectButton = true;
-    }).catch((error) => {
-      console.error(error);
+    this.showConnectorSelectDialog().then(async (connectorName: string) => {
+      // await this.authService.signIn(connector).then((status: string) => {
+      await this.authService.signIn(connectorName).then((status: string) => {
+        if (status != "SUCCESS") {
+          //show error dialog
+          this.openDialog("Tips", "Unable to sign in now, please try again later")
+          return;
+        }
+        this.signingIn = false;
+        this.isShowDisconnectButton = true;
+      }).catch((error) => {
+        console.error(error);
+      });
     });
   }
 
@@ -64,6 +73,25 @@ export class LoginComponent {
     this.authService.signOutWithoutNav();
   }
 
+  // public canDisconnectWalletConnectEssentials(): boolean {
+  //   return this.isUsingConnector() && this.connectivityService.getEssentialsConnector().hasWalletConnectSession();
+  // }
+
+  // private isUsingConnector(): boolean {
+  //   return connectivity.getActiveConnector() && this.connectivityService.getConnector() && connectivity.getActiveConnector().name === this.connectivityService.getConnector().name;
+  // }
+
+  // public disconnectEssentials() {
+  //   console.log("disconnectEssentials");
+  //   this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+  //   this.authService.signOut();
+  // }
+
+  // public disconnectEssentialsWithoutNav() {
+  //   this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+  //   this.authService.signOutWithoutNav();
+  // }
+
 
   openDialog(title: string, content: string) {
     this.promoteService.setPromoteTitle(title);
@@ -78,6 +106,18 @@ export class LoginComponent {
       this.authService.signOutWithoutNav();
       this.signingIn = false;
       this.isShowDisconnectButton = false;
+    });
+  }
+
+  showConnectorSelectDialog(): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      const dialogRef = this.dialog.open(ConnectorSelectComponent, { role: "alertdialog", disableClose: true });
+      dialogRef.afterClosed().subscribe(result => {
+        console.log('result', result);
+        if (!result)
+          return;
+        resolve(result);
+      });
     });
   }
 }

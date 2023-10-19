@@ -8,6 +8,7 @@ import { User } from '../model/user';
 import { ConnectivityService } from './connectivity.service';
 import { VerifiablePresentation } from '@elastosfoundation/did-js-sdk';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
+const CONNECTOR_NAME = "connectorname";
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,18 @@ export class AuthService {
 
   constructor(private jwtHelper: JwtHelperService, public router: Router, private connectivityService: ConnectivityService) {
     this.loadUser();
+
+    didAccessV2.onRequestCredentialsResponse(async (context, presentation) => {
+      console.log("onRequestCredentialsResponse2222", context, presentation);
+      try {
+        if (!presentation) {
+          console.warn("Presentation error,", presentation);
+        }
+
+        await this.processSignInBackend(JSON.stringify(presentation.toJSON()));
+      } catch (error) {
+      }
+    });
   }
 
   /**
@@ -67,54 +80,87 @@ export class AuthService {
     this.postAuthRoute = postAuthRoute;
   }
 
-  public async signIn(): Promise<string> {
+  public async signIn(connectorName: string): Promise<string> {
     // Always disconnect from older WC session first to restart fresh, if needed
-    if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
-      await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+    // if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
+    // await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+    // await this.connectivityService.getConnector(connectorName);
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.prepareSignin();
+        localStorage.setItem(CONNECTOR_NAME, connectorName);
 
-    let presentation = await this.requestCredentialsV2();
+        await this.connectivityService.setActiveConnector(connectorName);
+        let presentation = await this.requestCredentialsV2();
 
-    if (!presentation) {
-      console.warn("Presentation error,", presentation);
-      return "FAILED";
+        if (!presentation) {
+          console.warn("Presentation error,", presentation);
+          resolve('FAILED');
+        }
+
+        await this.processSignInBackend(JSON.stringify(presentation.toJSON()));
+        resolve('SUCCESS');
+      } catch (error) {
+        resolve('FAILED');
+      }
+    });
+  }
+
+  async prepareSignin() {
+    const connectorName = localStorage.getItem(CONNECTOR_NAME)
+    if (connectorName && connectorName == 'essentials') {
+      if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
+        await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
     }
+  }
 
-    // const did = presentation.getHolder().getMethodSpecificId();
-    try {
-      let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(presentation.toJSON())
-      });
+  private processSignInBackend(presentationString: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const token = await this.signInBackend(presentationString);
+        localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+        this.authenticatedUser.next(jwtDecode(token));
+        console.log("Sign in: setting user to:", this.authenticatedUser.value);
 
-      if (!response.ok) {
-        console.error(response);
-        return "FAILED";
+        if (this.postAuthRoute) {
+          this.router.navigate([this.postAuthRoute]);
+          this.postAuthRoute = null;
+        }
+        else {
+          this.router.navigate(['home']);
+        }
+
+        resolve("SUCCESS");
+      } catch (error) {
+        console.error(error);
+        reject(error);
       }
+    });
+  }
 
-      const token = await response.json();
+  private signInBackend(presentationString: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let response = await fetch(`${process.env.NG_APP_API_URL}/api/v1/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: presentationString
+        });
 
-      localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+        if (!response.ok) {
+          console.error(response);
+          reject(response);
+        }
 
-      this.authenticatedUser.next(jwtDecode(token));
-      console.log("Sign in: setting user to:", this.authenticatedUser.value);
-
-      if (this.postAuthRoute) {
-        this.router.navigate([this.postAuthRoute]);
-        this.postAuthRoute = null;
+        const token = await response.json();
+        resolve(token);
+      } catch (error) {
+        console.error(error);
+        reject(error);
       }
-      else {
-        this.router.navigate(['home']);
-      }
-
-      return "SUCCESS";
-    } catch (error) {
-      console.error(error);
-      return "FAILED";
-      //showToast(`Failed to call the backend API. Check your connectivity and make sure ${api.url} is reachable`, "error");
-    }
+    });
   }
 
   public signOut() {
@@ -127,6 +173,7 @@ export class AuthService {
     console.log("Signing out without nav");
     this.authenticatedUser.next(null);
     localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(CONNECTOR_NAME);
   }
 
   private requestCredentialsV1(): Promise<VerifiablePresentation> {
@@ -158,7 +205,7 @@ export class AuthService {
         console.log("onRequestCredentialsResponse", context, presentation);
         resolve(presentation);
       });
-
+      console.log('didAccessV2.requestCredentials');
       await didAccessV2.requestCredentials({
         claims: [
           // optional email to automatically fill passbase form for convenience

@@ -9,12 +9,14 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { AppRoutingModule } from './../app-routing.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { PromoteComponent } from './promote/promote.component';
+import { ConnectorSelectComponent } from './connectorselect/connectorselect.component';
 
 @NgModule({
   declarations: [
     ToolbarComponent,
     CloudsComponent,
-    PromoteComponent
+    PromoteComponent,
+    ConnectorSelectComponent
   ],
   imports: [
     AppRoutingModule,
@@ -28,7 +30,8 @@ import { PromoteComponent } from './promote/promote.component';
   exports: [
     ToolbarComponent,
     CloudsComponent,
-    PromoteComponent
+    PromoteComponent,
+    ConnectorSelectComponent
   ],
   providers: [],
 })

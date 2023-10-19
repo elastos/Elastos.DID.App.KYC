@@ -31,7 +31,9 @@ import { ImportedCredential } from '@elastosfoundation/elastos-connectivity-sdk-
   providedIn: 'root'
 })
 export class CredentialsService {
-  constructor(private authService: AuthService, private _snackBar: MatSnackBar) { }
+  constructor(private authService: AuthService, private _snackBar: MatSnackBar) {
+
+  }
 
   /**
    * Attach a passbase UUID to a user's DID in the backend
