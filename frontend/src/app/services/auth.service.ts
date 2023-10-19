@@ -41,6 +41,13 @@ export class AuthService {
     if (token) {
       try {
         this.authenticatedUser.next(jwtDecode(token));
+
+        const connectorName = localStorage.getItem(CONNECTOR_NAME)
+        console.log('getItem connectorName', connectorName);
+        if (connectorName && (connectorName.includes('essentials') || connectorName.includes('mydentity'))) {
+          this.connectivityService.setActiveConnector(connectorName);
+        }
+
         console.log("Loaded user from auth token:", this.authenticatedUser.value);
       }
       catch (e) {
@@ -81,15 +88,11 @@ export class AuthService {
   }
 
   public async signIn(connectorName: string): Promise<string> {
-    // Always disconnect from older WC session first to restart fresh, if needed
-    // if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
-    // await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
-    // await this.connectivityService.getConnector(connectorName);
     return new Promise(async (resolve, reject) => {
       try {
-        this.prepareSignin();
-        localStorage.setItem(CONNECTOR_NAME, connectorName);
+        await this.prepareSignin(connectorName);
 
+        console.log('setItem connectorName', connectorName);
         await this.connectivityService.setActiveConnector(connectorName);
         let presentation = await this.requestCredentialsV2();
 
@@ -106,12 +109,11 @@ export class AuthService {
     });
   }
 
-  async prepareSignin() {
-    const connectorName = localStorage.getItem(CONNECTOR_NAME)
-    if (connectorName && connectorName == 'essentials') {
-      if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
-        await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
-    }
+  async prepareSignin(connectorName: string) {
+    localStorage.setItem(CONNECTOR_NAME, connectorName);
+    // Always disconnect from older WC session first to restart fresh, if needed
+    if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
+      await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
   }
 
   private processSignInBackend(presentationString: string): Promise<string> {
@@ -201,10 +203,11 @@ export class AuthService {
 
   private requestCredentialsV2(): Promise<VerifiablePresentation> {
     return new Promise(async (resolve, reject) => {
-      didAccessV2.onRequestCredentialsResponse((context, presentation) => {
-        console.log("onRequestCredentialsResponse", context, presentation);
-        resolve(presentation);
-      });
+      // const unsubscribe = didAccessV2.onRequestCredentialsResponse((context, presentation) => {
+      //   console.log("onRequestCredentialsResponse", context, presentation);
+      //   resolve(presentation);
+      // });
+
       console.log('didAccessV2.requestCredentials');
       await didAccessV2.requestCredentials({
         claims: [
