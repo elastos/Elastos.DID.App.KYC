@@ -23,8 +23,9 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { VerifiableCredential } from '@elastosfoundation/did-js-sdk';
-import { DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
+import { didAccessV2, DID as ConnDID } from '@elastosfoundation/elastos-connectivity-sdk-js';
 import { AuthService } from './auth.service';
+import { ImportedCredential } from '@elastosfoundation/elastos-connectivity-sdk-js/typings/did/model/importedcredential';
 
 @Injectable({
   providedIn: 'root'
@@ -179,9 +180,7 @@ export class CredentialsService {
   // }
 
   public async importCredential(credential: VerifiableCredential) {
-    let didAccess = new ConnDID.DIDAccess();
-    let importedCredentials = await didAccess.importCredentials([credential]);
-
+    let importedCredentials = await this.doImportCredentialV2(credential);
     if (importedCredentials.length == 1) {
       this._snackBar.open("Credential successfully imported to your wallet!", "Cool", {
         duration: 3000
@@ -190,13 +189,62 @@ export class CredentialsService {
   }
 
   public async importCredentials(credentials: VerifiableCredential[]) {
-    let didAccess = new ConnDID.DIDAccess();
-    let importedCredentials = await didAccess.importCredentials(credentials);
-
-    if (importedCredentials.length == 1) {
+    let importedCredentials = await this.doImportCredentialsV2(credentials);
+    if (importedCredentials.length > 1) {
       this._snackBar.open("Credential successfully imported to your wallet!", "Cool", {
         duration: 3000
       });
     }
+  }
+
+  public async doImportCredentialV1(credential: VerifiableCredential): Promise<ImportedCredential[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let didAccess = new ConnDID.DIDAccess();
+        let importedCredentials = await didAccess.importCredentials([credential]);
+        resolve(importedCredentials);
+      } catch (error) {
+        resolve(null);
+      }
+
+    });
+  }
+
+  public async doImportCredentialsV1(credentials: VerifiableCredential[]): Promise<ImportedCredential[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let didAccess = new ConnDID.DIDAccess();
+        let importedCredentials = await didAccess.importCredentials(credentials);
+        resolve(importedCredentials);
+      } catch (error) {
+        resolve(null);
+      }
+    });
+  }
+
+  public async doImportCredentialV2(credential: VerifiableCredential): Promise<ImportedCredential[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const importedCredentials = await this.doImportCredentialsV2([credential]);
+        resolve(importedCredentials);
+      } catch (error) {
+        resolve(null);
+      }
+    });
+  }
+
+  public async doImportCredentialsV2(credentials: VerifiableCredential[]): Promise<ImportedCredential[]> {
+    return new Promise(async (resolve, reject) => {
+      didAccessV2.onImportCredentialsResponse((context, importedCredentials, error) => {
+        console.log("onImportCredentialsResponse", context, importedCredentials);
+        console.log("onImportCredentials error", error);
+        if (!error) {
+          resolve(null);
+          return;
+        }
+        resolve(importedCredentials);
+      });
+      await didAccessV2.importCredentials(credentials);
+    });
   }
 }
