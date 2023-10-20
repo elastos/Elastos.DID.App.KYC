@@ -233,8 +233,10 @@ export class CommonUtils {
 
     const y = parts[0];
     const monthInt = parseInt(parts[1]);
+    const dayInt = parseInt(parts[2]);
+
     const m = monthInt < 10 ? "0" + monthInt : parts[1];
-    const d = parts[2];
+    const d = dayInt < 10 ? "0" + dayInt : parts[2];
     return `${y}-${m}-${d}`;
   }
 
