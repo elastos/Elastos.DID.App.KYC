@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { User } from '../model/user';
 import { ConnectivityService } from './connectivity.service';
 import { VerifiablePresentation } from '@elastosfoundation/did-js-sdk';
+import { SignStatus } from '../model/signstatus';
 const AUTH_TOKEN_STORAGE_KEY = "didauthtoken";
 const CONNECTOR_NAME = "connectorname";
 
@@ -16,6 +17,7 @@ const CONNECTOR_NAME = "connectorname";
 export class AuthService {
   private postAuthRoute: string = null;
   public authenticatedUser = new BehaviorSubject<User>(null);
+  public signinStatus = new BehaviorSubject<SignStatus>(null);
 
   constructor(private jwtHelper: JwtHelperService, public router: Router, private connectivityService: ConnectivityService) {
     this.loadUser();
@@ -25,6 +27,7 @@ export class AuthService {
       try {
         if (!presentation) {
           console.warn("Presentation error,", presentation);
+          this.signinStatus.next(SignStatus.ERROR);
           return;
         }
 
@@ -132,9 +135,10 @@ export class AuthService {
         else {
           this.router.navigate(['home']);
         }
-
+        this.signinStatus.next(SignStatus.SUCCESS);
         resolve("SUCCESS");
       } catch (error) {
+        this.signinStatus.next(SignStatus.BACKEND_ERROR);
         console.error(error);
         reject(error);
       }

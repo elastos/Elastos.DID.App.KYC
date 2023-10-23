@@ -6,6 +6,7 @@ import { PromoteService } from 'src/app/services/promote.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PromoteComponent } from 'src/app/components/promote/promote.component';
 import { ConnectorSelectComponent } from 'src/app/components/connectorselect/connectorselect.component';
+import { SignStatus } from 'src/app/model/signstatus';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,26 @@ export class LoginComponent {
     private connectivityService: ConnectivityService,
     private promoteService: PromoteService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    this.authService.signinStatus.subscribe(signStatus => {
+
+      switch (signStatus) {
+        case SignStatus.PREPARE:
+        case SignStatus.PROCESSING:
+          this.signingIn = true;
+          break;
+        case SignStatus.SUCCESS:
+          this.signingIn = false;
+          break;
+
+        case SignStatus.BACKEND_ERROR:
+        case SignStatus.ERROR:
+          this.openDialog("Tips", "Unable to sign in now, please try again later");
+          break;
+      }
+
+    })
+  }
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
