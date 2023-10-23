@@ -94,6 +94,7 @@ class TencentEkycService {
       // 实例化一个client选项，可选的，没有特殊需求可以跳过
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
+      clientProfile.signMethod = 'TC3-HMAC-SHA256';
 
       // 实例化要请求产品的client对象,clientProfile是可选的
       let client = new OcrClient(cred, "ap-singapore", clientProfile);
@@ -133,6 +134,7 @@ class TencentEkycService {
       // 实例化一个client选项，可选的，没有特殊需求可以跳过
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
+      clientProfile.signMethod = 'TC3-HMAC-SHA256';
 
       // 实例化要请求产品的client对象,clientProfile是可选的
       let client = new OcrClient(cred, "ap-beijing", clientProfile);

@@ -25,6 +25,7 @@ export class AuthService {
       try {
         if (!presentation) {
           console.warn("Presentation error,", presentation);
+          return;
         }
 
         await this.processSignInBackend(JSON.stringify(presentation.toJSON()));

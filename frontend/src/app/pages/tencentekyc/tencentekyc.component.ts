@@ -80,10 +80,12 @@ export class TencentEkycComponent {
       this.canvas.hidden = true;
 
       // const height = window.screen.height;
-      const width = window.screen.width;
+      // const width = window.screen.width;
 
-      const videoHeight = width;
-      const videoWidth = width / 1.585;
+      // const videoHeight = width * 4;
+      const videoWidth = 1024;
+      const videoHeight = videoWidth / 1.585;
+
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: videoWidth, height: videoHeight } }).then(
         (stream) => {
           this.video.srcObject = stream;
@@ -94,7 +96,7 @@ export class TencentEkycComponent {
   }
 
   drawCanvas(canvasWidth: number, canvasHeight: number, naturalWidth: number, naturalHeight: number, drawImage: CanvasImageSource, canvas: HTMLCanvasElement) {
-    if (canvasWidth >= naturalHeight && canvasHeight >= naturalHeight) {
+    if (canvasWidth == naturalWidth && canvasHeight == naturalHeight) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
       canvas.getContext('2d').drawImage(drawImage, 0, 0);
@@ -102,6 +104,7 @@ export class TencentEkycComponent {
       let scale = naturalWidth / canvasWidth;
       let height = naturalHeight / scale;
 
+      console.log('canvasWidth = ', canvasWidth, 'canvasHeight', height);
       canvas.width = canvasWidth;
       canvas.height = height;
       canvas.getContext('2d').drawImage(drawImage, 0, 0, canvasWidth, height);
@@ -229,8 +232,8 @@ export class TencentEkycComponent {
     let canvas = document.createElement("canvas");
 
     selectedImage.onload = () => {
-      let selectedImageWidth = selectedImage.width;
-      let selectedImageHeight = selectedImage.height;
+      let selectedImageWidth = 1024;
+      let selectedImageHeight = 0;
       this.drawCanvas(selectedImageWidth, selectedImageHeight, selectedImage.naturalWidth, selectedImage.naturalHeight, selectedImage, canvas);
     }
   }
