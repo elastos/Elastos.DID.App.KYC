@@ -65,7 +65,7 @@ export class VerifyComponent {
       },
       {
         id: DocType.ChinaMainLand2ndIDCard,
-        name: "ChinaMainLand2ndIDCard"
+        name: "China main land ID card"
       }
     ];
     this.selectedCategory = this.categories[0];
@@ -217,6 +217,12 @@ export class VerifyComponent {
         const dataObj = JSON.parse(data);
         console.log('resultObj = ', dataObj);
 
+        if (dataObj.ErrorCode != 0) {
+          this.showFaceLivenessNotPassDialog(dataObj.ErrorCode);
+          resolve(null);
+          return;
+        }
+
         const credentialResponse = await this.credentialsService.fetchTencentEkycCredential(bizToken);
         if (!credentialResponse) {
           console.log('Credential response is null');
@@ -230,15 +236,18 @@ export class VerifyComponent {
         console.log('credentialResponseObj ', credentialResponseObj);
         if (credentialResponseObj.code == EKYCResponseType.DID_NOT_MATCH) {
           this.showDIDNotMatchedDialog(credentialResponseObj.code)
+          resolve(null);
           return;
         }
 
         if (credentialResponseObj.code == EKYCResponseType.FACE_OCCLUSION) {
           this.showFaceOcclusionDialog(credentialResponseObj.code)
+          resolve(null);
           return;
         }
 
         if (credentialResponseObj.code == EKYCResponseType.PASSPORT_EXPIRE) {
+          resolve(null);
           this.showPassportExpireDialog(credentialResponseObj.code)
           return;
         }
@@ -247,6 +256,11 @@ export class VerifyComponent {
         reject(error);
       }
     });
+  }
+
+  showFaceLivenessNotPassDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Face liveness detected not pass");
   }
 
   showDIDNotMatchedDialog(responseCode: string) {

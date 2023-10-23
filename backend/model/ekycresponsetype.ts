@@ -6,5 +6,6 @@ export enum EKYCResponseType {
     PASSPORT_EXPIRE = "60003", //passport expire
 
     TENCENT_OCR_NOPASSPORT = "61001",
-    TENCENT_OCR_NOIDCARD = "61002"
+    TENCENT_OCR_NOIDCARD = "61002",
+    FACE_LIVENESS_NOT_PASS = "61003"
 }

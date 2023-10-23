@@ -570,7 +570,11 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
         let finalResponse = createEmptyResponse();
 
         if (!livenessResultObj || livenessResultObj.ErrorCode != 0) {
-            res.json(finalResponse);
+            const response = {
+                code: EKYCResponseType.FACE_LIVENESS_NOT_PASS,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
             return;
         }
 

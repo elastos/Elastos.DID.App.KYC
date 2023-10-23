@@ -79,13 +79,11 @@ export class TencentEkycComponent {
       this.video.hidden = false;
       this.canvas.hidden = true;
 
-      const height = window.screen.height;
+      // const height = window.screen.height;
       const width = window.screen.width;
 
       const videoHeight = width;
       const videoWidth = width / 1.585;
-      console.log('width = ', width);
-      console.log('height = ', height);
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: videoWidth, height: videoHeight } }).then(
         (stream) => {
           this.video.srcObject = stream;
@@ -116,6 +114,8 @@ export class TencentEkycComponent {
   }
 
   async processOCR() {
+    console.log('this.imageData', this.imageData);
+
     try {
       this.isStartPrcocessEKYC = true;
 
@@ -140,6 +140,11 @@ export class TencentEkycComponent {
         return;
       }
 
+      if (responseObj.code == EKYCResponseType.FACE_LIVENESS_NOT_PASS) {
+        this.showFaceLivenessNotPassDialog(responseObj.code)
+        return;
+      }
+
       if (responseObj.code != EKYCResponseType.SUCCESS) {
         this.showErrorDialog(responseObj.code)
         return;
@@ -153,6 +158,11 @@ export class TencentEkycComponent {
       this.isStartPrcocessEKYC = false;
       console.log('Process ocr error', error);
     }
+  }
+
+  showFaceLivenessNotPassDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Face liveness detected not pass");
   }
 
   showNotFoundPassportDialog(responseCode: string) {
@@ -221,7 +231,6 @@ export class TencentEkycComponent {
     selectedImage.onload = () => {
       let selectedImageWidth = selectedImage.width;
       let selectedImageHeight = selectedImage.height;
-
       this.drawCanvas(selectedImageWidth, selectedImageHeight, selectedImage.naturalWidth, selectedImage.naturalHeight, selectedImage, canvas);
     }
   }
