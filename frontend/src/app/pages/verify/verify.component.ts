@@ -290,6 +290,7 @@ export class VerifyComponent {
     console.log("meta info is ", metainfo);
     this.ekycService.processIDOCR(metainfo);
   }
+
   async processEKYCFromTencent() {
     this.isStartPrcocessEKYC = true;
     setTimeout(() => {
