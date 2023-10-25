@@ -58,9 +58,9 @@ export class LoginComponent {
 
   public async signIn() {
     this.signingIn = true;
-    this.showConnectorSelectDialog().then(async (connectorName: string) => {
-      // await this.authService.signIn(connector).then((status: string) => {
-      await this.authService.signIn(connectorName).then((status: string) => {
+    if ("elastos" in window) {
+      console.log("elastos is in window");
+      await this.authService.signIn('essentials').then((status: string) => {
         if (status != "SUCCESS") {
           //show error dialog
           this.openDialog("Tips", "Unable to sign in now, please try again later")
@@ -68,10 +68,24 @@ export class LoginComponent {
         }
         this.signingIn = false;
         this.isShowDisconnectButton = true;
-      }).catch((error) => {
-        console.error(error);
       });
-    });
+    } else {
+      console.log("elastos is not in window");
+      this.showConnectorSelectDialog().then(async (connectorName: string) => {
+        // await this.authService.signIn(connector).then((status: string) => {
+        await this.authService.signIn(connectorName).then((status: string) => {
+          if (status != "SUCCESS") {
+            //show error dialog
+            this.openDialog("Tips", "Unable to sign in now, please try again later")
+            return;
+          }
+          this.signingIn = false;
+          this.isShowDisconnectButton = true;
+        }).catch((error) => {
+          console.error(error);
+        });
+      });
+    }
   }
 
   public canDisconnectWalletConnectEssentials(): boolean {
