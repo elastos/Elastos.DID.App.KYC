@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { DID, didAccessV2 } from "@elastosfoundation/elastos-connectivity-sdk-js";
@@ -19,11 +19,16 @@ export class AuthService {
   public authenticatedUser = new BehaviorSubject<User>(null);
   public signinStatus = new BehaviorSubject<SignStatus>(null);
 
-  constructor(private jwtHelper: JwtHelperService, public router: Router, private connectivityService: ConnectivityService) {
+  constructor(
+    private jwtHelper: JwtHelperService,
+    public router: Router,
+    private connectivityService: ConnectivityService,
+    private zone: NgZone
+  ) {
     this.loadUser();
 
     didAccessV2.onRequestCredentialsResponse(async (context, presentation) => {
-      console.log("onRequestCredentialsResponse2222", context, presentation);
+      console.log("onRequestCredentialsResponse2", context, presentation);
       try {
         if (!presentation) {
           console.warn("Presentation error,", presentation);
@@ -45,7 +50,6 @@ export class AuthService {
     if (token) {
       try {
         this.authenticatedUser.next(jwtDecode(token));
-
         const connectorName = localStorage.getItem(CONNECTOR_NAME)
         console.log('getItem connectorName', connectorName);
         if (connectorName && (connectorName.includes('essentials') || connectorName.includes('mydentity'))) {
@@ -95,8 +99,6 @@ export class AuthService {
     return new Promise(async (resolve, reject) => {
       try {
         await this.prepareSignin(connectorName);
-
-        console.log('setItem connectorName', connectorName);
         await this.connectivityService.setActiveConnector(connectorName);
         let presentation = await this.requestCredentialsV2();
 
@@ -104,7 +106,6 @@ export class AuthService {
           console.warn("Presentation error,", presentation);
           resolve('FAILED');
         }
-
         await this.processSignInBackend(JSON.stringify(presentation.toJSON()));
         resolve('SUCCESS');
       } catch (error) {
@@ -114,10 +115,15 @@ export class AuthService {
   }
 
   async prepareSignin(connectorName: string) {
-    localStorage.setItem(CONNECTOR_NAME, connectorName);
-    // Always disconnect from older WC session first to restart fresh, if needed
-    if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
-      await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+    try {
+      localStorage.setItem(CONNECTOR_NAME, connectorName);
+      // Always disconnect from older WC session first to restart fresh, if needed
+      if (this.connectivityService.getEssentialsConnector().hasWalletConnectSession())
+        await this.connectivityService.getEssentialsConnector().disconnectWalletConnect();
+    } catch (error) {
+      console.log('error', error);
+    }
+
   }
 
   private processSignInBackend(presentationString: string): Promise<string> {
@@ -128,13 +134,15 @@ export class AuthService {
         this.authenticatedUser.next(jwtDecode(token));
         console.log("Sign in: setting user to:", this.authenticatedUser.value);
 
-        if (this.postAuthRoute) {
-          this.router.navigate([this.postAuthRoute]);
-          this.postAuthRoute = null;
-        }
-        else {
-          this.router.navigate(['home']);
-        }
+        this.zone.run(() => {
+          if (this.postAuthRoute) {
+            this.router.navigate([this.postAuthRoute]);
+            this.postAuthRoute = null;
+          } else {
+            this.router.navigate(['home']);
+          }
+        });
+
         this.signinStatus.next(SignStatus.SUCCESS);
         resolve("SUCCESS");
       } catch (error) {

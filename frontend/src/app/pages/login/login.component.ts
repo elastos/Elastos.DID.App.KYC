@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { connectivity } from "@elastosfoundation/elastos-connectivity-sdk-js";
 import { AuthService } from 'src/app/services/auth.service';
 import { ConnectivityService } from 'src/app/services/connectivity.service';
@@ -21,25 +21,26 @@ export class LoginComponent {
     private authService: AuthService,
     private connectivityService: ConnectivityService,
     private promoteService: PromoteService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private zone: NgZone
   ) {
+
     this.authService.signinStatus.subscribe(signStatus => {
-
-      switch (signStatus) {
-        case SignStatus.PREPARE:
-        case SignStatus.PROCESSING:
-          this.signingIn = true;
-          break;
-        case SignStatus.SUCCESS:
-          this.signingIn = false;
-          break;
-
-        case SignStatus.BACKEND_ERROR:
-        case SignStatus.ERROR:
-          this.openDialog("Tips", "Unable to sign in now, please try again later");
-          break;
-      }
-
+      zone.run(() => {
+        switch (signStatus) {
+          case SignStatus.PREPARE:
+          case SignStatus.PROCESSING:
+            this.signingIn = true;
+            break;
+          case SignStatus.SUCCESS:
+            this.signingIn = false;
+            break;
+          case SignStatus.BACKEND_ERROR:
+          case SignStatus.ERROR:
+            this.openDialog("Tips", "Unable to sign in now, please try again later");
+            break;
+        }
+      });
     })
   }
 
