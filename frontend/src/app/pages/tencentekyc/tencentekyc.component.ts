@@ -143,6 +143,11 @@ export class TencentEkycComponent {
         return;
       }
 
+      if (responseObj.code == EKYCResponseType.OCR_NOT_PASS) {
+        this.showOCRNotPassedDialog(responseObj.code)
+        return;
+      }
+
       if (responseObj.code == EKYCResponseType.FACE_LIVENESS_NOT_PASS) {
         this.showFaceLivenessNotPassDialog(responseObj.code)
         return;
@@ -171,6 +176,11 @@ export class TencentEkycComponent {
   showNotFoundPassportDialog(responseCode: string) {
     console.log("responseCode", responseCode);
     this.openDialog("Tips", "Passport was not detected");
+  }
+
+  showOCRNotPassedDialog(responseCode: string) {
+    console.log("responseCode", responseCode);
+    this.openDialog("Tips", "Identification failed. Make sure your photo is fully visible, glare free and not blurrred.");
   }
 
   showNotFoundIDCardDialog(responseCode: string) {

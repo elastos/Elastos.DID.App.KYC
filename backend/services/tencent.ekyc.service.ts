@@ -49,7 +49,10 @@ class TencentEkycService {
             console.log('idCardResult,', idCardResult);
             console.log('redirectUrl = ', redirectUrl);
             retImageBase64 = idCardResult.AdvancedInfo.Portrait;
-
+            if (!this.checkIDCardOCRResult(idCardOcrOriginResult)) {
+              reject('IDCard OCR recognition failed');
+              return;
+            }
             break;
           case DocType.Passport:
             const result = await this.processPassportOCR(imageBase64);
@@ -58,6 +61,10 @@ class TencentEkycService {
             const passportOcrResult: PassportOcrResult = this.parsePassportOCRResult(result);
             ocrResult = passportOcrResult;
             retImageBase64 = passportOcrResult.Image;
+            if (!this.checkPassportOCRResult(passportOcrResult)) {
+              reject('Passport OCR recognition failed');
+              return;
+            }
             break;
         }
         const verificationUrlresult = await this.processLiveness(retImageBase64, redirectUrl);
@@ -636,6 +643,63 @@ class TencentEkycService {
   parsePassportOCRResult(result: any): PassportOcrResult {
     const passportOcrResult = result as PassportOcrResult;
     return passportOcrResult;
+  }
+
+  /**
+   * Check Passport ocr result
+   * @returns true: OCR passed,  false: OCR not passed
+   */
+  checkPassportOCRResult(passportOcrResult: PassportOcrResult): boolean {
+    try {
+      if (!passportOcrResult || !passportOcrResult.AdvancedInfo) {
+        return false;
+      }
+
+      const advancedInfoObj = JSON.parse(passportOcrResult.AdvancedInfo);
+      if (!advancedInfoObj || !advancedInfoObj.Name ||
+        !advancedInfoObj.Name || !advancedInfoObj.ID ||
+        !advancedInfoObj.Nationality || !advancedInfoObj.DateOfBirth ||
+        !advancedInfoObj.Sex || !advancedInfoObj.DateOfExpiration ||
+        !advancedInfoObj.Surname || !advancedInfoObj.GivenName) {
+        return false;
+      }
+
+      const nameConfidence = advancedInfoObj.Name.Confidence;
+      const idConfidence = advancedInfoObj.ID.Confidence;
+      const nationalityConfidence = advancedInfoObj.Nationality.Confidence;
+      const dateOfBirthConfidence = advancedInfoObj.DateOfBirth.Confidence;
+      const sexConfidence = advancedInfoObj.Sex.Confidence;
+      const dateOFExpirationConfidence = advancedInfoObj.DateOfExpiration.Confidence;
+      const surnameConfidence = advancedInfoObj.Surname.Confidence;
+      const givenNameConfidence = advancedInfoObj.GivenName.Confidence;
+
+      if (!nameConfidence || !idConfidence ||
+        !nationalityConfidence || !dateOfBirthConfidence ||
+        !sexConfidence || !dateOFExpirationConfidence ||
+        !surnameConfidence || !givenNameConfidence) {
+        return false;
+      }
+
+      if (nameConfidence < 0.9 || idConfidence < 0.9 ||
+        nationalityConfidence < 0.9 || dateOfBirthConfidence < 0.9 ||
+        sexConfidence < 0.9 || dateOFExpirationConfidence < 0.9 ||
+        surnameConfidence < 0.9 || givenNameConfidence < 0.9) {
+        return false
+      }
+
+      return true;
+    } catch (error) {
+      console.log('error', error);
+      return false
+    }
+  }
+
+  /**
+   * Check ID Card ocr result
+   * @returns true: OCR passed,  false: OCR not passed
+   */
+  checkIDCardOCRResult(passportOcrResult: IDCardOCROriginResult): boolean {
+    return true;
   }
 }
 

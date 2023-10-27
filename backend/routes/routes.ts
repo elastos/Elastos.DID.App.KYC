@@ -56,7 +56,6 @@ router.post('/login', async (req, res) => {
             return apiError(res, existingUserDataOrError);
         }
 
-
         // Optional email
         let emailCredential = vp.getCredential(`email`);
         let email = emailCredential ? emailCredential.getSubject().getProperty('email') : '';
@@ -516,6 +515,13 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
             return res.json(JSON.stringify(response));
         }
 
+        if (error.toString().includes('OCR recognition failed')) {
+            const response = {
+                code: EKYCResponseType.OCR_NOT_PASS,
+                data: ""
+            }
+            return res.json(JSON.stringify(response));
+        }
         return res.status(500).json("Server error");
     }
 });
