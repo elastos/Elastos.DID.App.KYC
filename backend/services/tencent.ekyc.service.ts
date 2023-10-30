@@ -49,6 +49,11 @@ class TencentEkycService {
             console.log('idCardResult,', idCardResult);
             console.log('redirectUrl = ', redirectUrl);
             retImageBase64 = idCardResult.AdvancedInfo.Portrait;
+            if (!this.checkIDCardImageQuality(idCardResult.AdvancedInfo.Quality)) {
+              reject({ requestId: '', code: 'ImageQualityScoreLow' });
+              return;
+            }
+
             if (!this.checkIDCardOCRResult(idCardOcrOriginResult)) {
               reject({ requestId: '', code: 'IDCardOCRFailed' });
               return;
@@ -700,6 +705,20 @@ class TencentEkycService {
    */
   checkIDCardOCRResult(passportOcrResult: IDCardOCROriginResult): boolean {
     return true;
+  }
+
+  /**
+   * Check Image quality score
+   * @returns true: passed,  false: not passed
+   */
+  checkIDCardImageQuality(qualityScore: number): boolean {
+    if (!qualityScore) {
+      return false
+    }
+    if (qualityScore > 50) {
+      return true;
+    }
+    return false;
   }
 }
 

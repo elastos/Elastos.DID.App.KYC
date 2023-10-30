@@ -37,5 +37,6 @@ export type IDCardOCRResult = {
 }
 
 type AdvancedInfo = {
-    Portrait: string
+    Portrait: string,
+    Quality: number
 }

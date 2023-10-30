@@ -524,6 +524,7 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
                 break;
 
             case 'FailedOperation.ImageBlur':
+            case 'ImageQualityScoreLow':
                 response = {
                     code: EKYCResponseType.IMAGE_BLUR,
                     data: ""
