@@ -499,30 +499,45 @@ router.post('/user/ekyc/tencent/processeocr', async (req, res) => {
     }
     catch (error) {
         console.log("Process tencent ekyc request error, error is", error);
-        if (error.toString().includes('NoPassport')) {
-            const response = {
-                code: EKYCResponseType.TENCENT_OCR_NOPASSPORT,
-                data: ""
-            }
-            return res.json(JSON.stringify(response));
+        if (!error.code) {
+            return res.status(500).json("Server error");
         }
 
-        if (error.toString().includes('照片未检测到身份证')) {
-            const response = {
-                code: EKYCResponseType.TENCENT_OCR_NOIDCARD,
-                data: ""
-            }
-            return res.json(JSON.stringify(response));
+        let response = {
+            code: EKYCResponseType.UNKNOWN,
+            data: ""
         }
 
-        if (error.toString().includes('OCR recognition failed')) {
-            const response = {
-                code: EKYCResponseType.OCR_NOT_PASS,
-                data: ""
-            }
-            return res.json(JSON.stringify(response));
+        switch (error.code) {
+            case 'FailedOperation.NoPassport':
+                response = {
+                    code: EKYCResponseType.TENCENT_OCR_NOPASSPORT,
+                    data: ""
+                }
+                break;
+
+            case 'FailedOperation.ImageNoIdCard':
+                response = {
+                    code: EKYCResponseType.TENCENT_OCR_NOIDCARD,
+                    data: ""
+                }
+                break;
+
+            case 'FailedOperation.ImageBlur':
+                response = {
+                    code: EKYCResponseType.IMAGE_BLUR,
+                    data: ""
+                }
+                break;
+            case 'IDCardOCRFailed':
+            case 'PassportOCRFailed':
+                response = {
+                    code: EKYCResponseType.OCR_NOT_PASS,
+                    data: ""
+                }
+                break;
         }
-        return res.status(500).json("Server error");
+        return res.json(JSON.stringify(response));
     }
 });
 

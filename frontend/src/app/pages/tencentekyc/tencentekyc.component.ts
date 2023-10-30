@@ -148,6 +148,11 @@ export class TencentEkycComponent {
         return;
       }
 
+      if (responseObj.code == EKYCResponseType.IMAGE_BLUR) {
+        this.showOCRNotPassedDialog(responseObj.code)
+        return;
+      }
+
       if (responseObj.code == EKYCResponseType.FACE_LIVENESS_NOT_PASS) {
         this.showFaceLivenessNotPassDialog(responseObj.code)
         return;
@@ -218,12 +223,14 @@ export class TencentEkycComponent {
   }
 
   async handleSelectFile(event: any) {
+    if (!event.target.files[0]) {
+      return;
+    }
     this.closeCamera();
     this.canvas.hidden = true;
     this.isSelectImage = true;
     const reader = new FileReader();
     reader.readAsDataURL(event.target.files[0]);
-
     reader.onload = async event => {
       try {
         let result = event.target.result.toString();

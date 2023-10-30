@@ -50,7 +50,7 @@ class TencentEkycService {
             console.log('redirectUrl = ', redirectUrl);
             retImageBase64 = idCardResult.AdvancedInfo.Portrait;
             if (!this.checkIDCardOCRResult(idCardOcrOriginResult)) {
-              reject('IDCard OCR recognition failed');
+              reject({ requestId: '', code: 'IDCardOCRFailed' });
               return;
             }
             break;
@@ -62,7 +62,7 @@ class TencentEkycService {
             ocrResult = passportOcrResult;
             retImageBase64 = passportOcrResult.Image;
             if (!this.checkPassportOCRResult(passportOcrResult)) {
-              reject('Passport OCR recognition failed');
+              reject({ requestId: '', code: 'PassportOCRFailed' });
               return;
             }
             break;
@@ -156,7 +156,7 @@ class TencentEkycService {
       //   "Config": null,
       //   "EnableRecognitionRectify": null
       // }
-      const config = { "CropPortrait": true }
+      const config = { "CropPortrait": true, "Quality": true };
 
       let params = { ImageBase64: imageBase64, Config: JSON.stringify(config) };
 
