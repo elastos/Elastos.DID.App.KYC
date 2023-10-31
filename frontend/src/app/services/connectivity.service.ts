@@ -18,18 +18,12 @@ export class ConnectivityService {
     connectivity.registerConnector(this.essentialsConnector);
     console.log('essentialsConnector', this.essentialsConnector.name);
 
-    // const webConnector = new MydentityConnector();
-    // connectivity.registerConnector(webConnector);
-
-    // const connector = new MydentityConnector();
-    // connectivity.registerConnector(connector);
-    // const webcon = webConnector.getWeb3Provider()
-
     this.myDentityConnector = new MydentityConnector({
       webServiceEndpoint: "https://staging.ownmydentity.com",
       webServiceAPIEndpoint: "https://staging-api.ownmydentity.com"
     })
     connectivity.registerConnector(this.myDentityConnector);
+    connectivity.setApplicationDID('did:elastos:iqjN3CLRjd7a4jGCZe6B3isXyeLy7KKDuK');
     console.log('myDentityConnector.name', this.myDentityConnector.name);
   }
 
