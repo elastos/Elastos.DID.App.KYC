@@ -97,21 +97,21 @@ class TencentEkycService {
       const ClientProfile = tencentcloud.common.ClientProfile;
       const HttpProfile = tencentcloud.common.HttpProfile;
 
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      // Initial
+      // set scretId and secretKey, The key is available on the official website console https://console.tencentcloud.com/capi
       let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      // Instantiate an http option. (optional)
       let httpProfile = new HttpProfile();
       httpProfile.endpoint = "ocr.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      // Instantiate a client option. (Optional)
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
       clientProfile.signMethod = 'TC3-HMAC-SHA256';
 
-      // 实例化要请求产品的client对象,clientProfile是可选的
+      // Instantiate a clientProfile. (Optional)
       let client = new OcrClient(cred, "ap-singapore", clientProfile);
 
-      // 实例化一个请求对象,每个接口都会对应一个request对象
+      // Instantiate a request object, one for each interface
       let req = new models.MLIDPassportOCRRequest();
 
       let params = {
@@ -122,52 +122,44 @@ class TencentEkycService {
       console.log('params', params);
       req.from_json_string(JSON.stringify(params))
 
-      // 返回的resp是一个MLIDPassportOCRResponse的实例，与请求对象对应
+      // The returned resp is an instance of MLIDPassportOCRResponse, corresponding to the request object
       client.MLIDPassportOCR(req, function (err: any, response: any) {
         if (err) {
           console.log(err);
           reject(err)
           return;
         }
-        // 输出json格式的字符串回包
+        // Output a string in json format back to the package
         console.log(response.to_json_string());
         resolve(response);
       });
     });
   }
+
   processIDCardOCR(imageBase64: string): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      // Initial
+      // set scretId and secretKey, The key is available on the official website console https://console.tencentcloud.com/capi
       let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      // Instantiate an http option. (optional)
       let httpProfile = new HttpProfile();
       httpProfile.endpoint = "ocr.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      // Instantiate a client option. (Optional)
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
       clientProfile.signMethod = 'TC3-HMAC-SHA256';
 
-      // 实例化要请求产品的client对象,clientProfile是可选的
+      // Instantiate a clientProfile. (Optional)
       let client = new OcrClient(cred, "ap-beijing", clientProfile);
 
-      // 实例化一个请求对象,每个接口都会对应一个request对象
+      // Instantiate a request object, one for each interface
       let req = new models.IDCardOCRRequest();
 
-      // {
-      //   "ImageBase64": null,
-      //   "ImageUrl": null,
-      //   "CardSide": null,
-      //   "Config": null,
-      //   "EnableRecognitionRectify": null
-      // }
       const config = { "CropPortrait": true, "Quality": true };
-
       let params = { ImageBase64: imageBase64, Config: JSON.stringify(config) };
-
       req.from_json_string(JSON.stringify(params))
 
-      // 返回的resp是一个IDCardOCRResponse的实例，与请求对象对应
+      // The returned resp is an instance of IDCardOCRResponse, corresponding to the request object
       client.IDCardOCR(req, (err: any, response: any) => {
         console.log("err,", err);
         console.log("response,", response);
@@ -177,9 +169,7 @@ class TencentEkycService {
           return;
         }
 
-
-        // console.log("response,", response.substring(0, 100));
-        // 输出json格式的字符串回包
+        // Output a string in json format back to the package
         console.log(response.to_json_string());
         resolve(response);
       });
@@ -187,30 +177,11 @@ class TencentEkycService {
   }
 
   async processLiveness(imageBase64: string, redirectUrl: string): Promise<any> {
-    // create upload url
-    // upload image to url
-    // calculate image md5
-    // apply web verification token
-    // redirect to VerificationUrl
     return new Promise(async (resolve, reject) => {
       try {
-        // const uploadUrlResult: UploadUrlResult = await this.createUploadUrl();
-        // console.log('uploadUrlResult', uploadUrlResult);
-
-        // const uploadUrl = uploadUrlResult.UploadUrl;
-        // await this.uploadImage(uploadUrl, imageBase64);
-
-        // let imageMd5 = SparkMD5.hash(imageBase64);
-        // console.log('imageMd5', imageMd5);
-
-        // const compareImageUrl = uploadUrlResult.ResourceUrl;
-        // const verificationUrlresult = await this.applyWebVerificationToken(redirectUrl, compareImageUrl, imageMd5) as VerificationUrlresult;
-
-
         const verificationUrlresult = await this.applyWebVerificationBizToken(redirectUrl, imageBase64, 'extratest:testvalue');
         console.log('result = ', verificationUrlresult);
 
-        // console.log("verificationUrlresult = ", verificationUrlresult);
         resolve(verificationUrlresult);
       } catch (error) {
         reject(error);
@@ -218,162 +189,55 @@ class TencentEkycService {
     });
   }
 
-  createUploadUrl(): Promise<UploadUrlResult> {
-    return new Promise((resolve, reject) => {
-      const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
+  // applyWebVerificationToken(redirectUrl: string, compareImageUrl: string, imageMd5: string): Promise<any> {
+  //   return new Promise(async (resolve, reject) => {
+  //     const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
 
-      const FaceidClient = tencentcloud.faceid.v20180301.Client;
-      const models = tencentcloud.faceid.v20180301.Models;
+  //     const FaceidClient = tencentcloud.faceid.v20180301.Client;
+  //     const models = tencentcloud.faceid.v20180301.Models;
 
-      const Credential = tencentcloud.common.Credential;
-      const ClientProfile = tencentcloud.common.ClientProfile;
-      const HttpProfile = tencentcloud.common.HttpProfile;
+  //     const Credential = tencentcloud.common.Credential;
+  //     const ClientProfile = tencentcloud.common.ClientProfile;
+  //     const HttpProfile = tencentcloud.common.HttpProfile;
 
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
-      let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
-      let httpProfile = new HttpProfile();
-      httpProfile.endpoint = "faceid.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
-      let clientProfile = new ClientProfile();
-      clientProfile.httpProfile = httpProfile;
+  //     // Initial
+  //     // set scretId and secretKey, The key is available on the official website console https://console.tencentcloud.com/capi
+  //     let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
+  //     // Instantiate an http option. (optional)
+  //     let httpProfile = new HttpProfile();
+  //     httpProfile.endpoint = "faceid.tencentcloudapi.com";
+  //     // Instantiate a client option. (Optional)
+  //     let clientProfile = new ClientProfile();
+  //     clientProfile.httpProfile = httpProfile;
 
-      // 实例化要请求产品的client对象,clientProfile是可选的
-      let client = new FaceidClient(cred, "ap-singapore", clientProfile);
+  //     // Instantiate a clientProfile. (Optional)
+  //     let client = new FaceidClient(cred, "ap-singapore", clientProfile);
 
-      // 实例化一个请求对象,每个接口都会对应一个request对象
-      let req = new models.CreateUploadUrlRequest();
+  //     // Instantiate a request object, one for each interface
+  //     let req = new models.ApplyWebVerificationTokenRequest();
 
-      let params = {
-        "TargetAction": "ApplyWebVerificationToken"
-      };
+  //     let params = {
+  //       "RedirectUrl": redirectUrl,
+  //       "CompareImageUrl": compareImageUrl,
+  //       "CompareImageMd5": imageMd5
+  //     };
+  //     req.from_json_string(JSON.stringify(params))
+  //     console.log('Input params is ', JSON.stringify(params));
 
-      req.from_json_string(JSON.stringify(params))
-
-      // 返回的resp是一个CreateUploadUrlResponse的实例，与请求对象对应
-      client.CreateUploadUrl(req, function (err: any, response: any) {
-        if (err) {
-          console.log(err);
-          reject(err);
-          return;
-        }
-
-        // 输出json格式的字符串回包
-        console.log(response.to_json_string());
-
-        const resultJsonString = response.to_json_string();
-
-        const resultobj: UploadUrlResult = JSON.parse(resultJsonString);
-        console.log('resultobj ResourceUrl', resultobj.ResourceUrl);
-        console.log('resultobj UploadUrl', resultobj.UploadUrl);
-        console.log('resultobj ExpiredTimestamp', resultobj.ExpiredTimestamp);
-        console.log('resultobj RequestId', resultobj.RequestId);
-
-        resolve(resultobj);
-      });
-    });
-
-  }
-
-  async uploadImage(uploadImageUrl: string, imageBase64: string) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const url = new URL(uploadImageUrl);
-        const hostName = url.hostname;
-
-        const pathUrl = uploadImageUrl.replace(url.origin, '');
-        console.log('pathUrl= ', pathUrl);
-
-        const options: RequestOptions = {
-          host: hostName,
-          method: 'PUT',
-          path: pathUrl,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-        };
-
-        const req = request(options, response => {
-          let data: any = '';
-          response.on('data', (chunk) => {
-            data += chunk
-          });
-
-          response.on("end", () => {
-            if (response.statusCode == 200) {
-              resolve('SUCCESS');
-            } else {
-              reject('FAILED');
-            }
-            console.log('response.statusCode', response.statusCode);
-            console.log('response', data);
-          });
-
-          response.on("error", (error) => {
-            console.log('upload image error', error);
-            reject('FAILD');
-          });
-        });
-        // const body = Buffer.from(imageBase64)
-        req.write(imageBase64);
-        req.end();
-      } catch (error) {
-        console.error(error);
-        reject('FAILED');
-      }
-    });
-  }
-
-  applyWebVerificationToken(redirectUrl: string, compareImageUrl: string, imageMd5: string): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      const tencentcloud = require("tencentcloud-sdk-nodejs-intl-en");
-
-      const FaceidClient = tencentcloud.faceid.v20180301.Client;
-      const models = tencentcloud.faceid.v20180301.Models;
-
-      const Credential = tencentcloud.common.Credential;
-      const ClientProfile = tencentcloud.common.ClientProfile;
-      const HttpProfile = tencentcloud.common.HttpProfile;
-
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
-      let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
-      let httpProfile = new HttpProfile();
-      httpProfile.endpoint = "faceid.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
-      let clientProfile = new ClientProfile();
-      clientProfile.httpProfile = httpProfile;
-
-      // 实例化要请求产品的client对象,clientProfile是可选的
-      let client = new FaceidClient(cred, "ap-singapore", clientProfile);
-
-      // 实例化一个请求对象,每个接口都会对应一个request对象
-      let req = new models.ApplyWebVerificationTokenRequest();
-
-      let params = {
-        "RedirectUrl": redirectUrl,
-        "CompareImageUrl": compareImageUrl,
-        "CompareImageMd5": imageMd5
-      };
-      req.from_json_string(JSON.stringify(params))
-      console.log('params = ', JSON.stringify(params));
-      console.log('req = ', req);
-      // 返回的resp是一个ApplyWebVerificationTokenResponse的实例，与请求对象对应
-      client.ApplyWebVerificationToken(req, function (err: any, response: any) {
-        if (err) {
-          console.log(err);
-          reject(err);
-          return;
-        }
-        // 输出json格式的字符串回包
-        console.log('ApplyWebVerificationToken = ', response.to_json_string());
-        resolve(response);
-        return response;
-      });
-    });
-  }
+  //     // return resp is a ApplyWebVerificationTokenResponse instance, corresponding to the request object
+  //     client.ApplyWebVerificationToken(req, function (err: any, response: any) {
+  //       if (err) {
+  //         console.log(err);
+  //         reject(err);
+  //         return;
+  //       }
+  //       // Output a string in json format back to the package
+  //       console.log('ApplyWebVerificationToken = ', response.to_json_string());
+  //       resolve(response);
+  //       return response;
+  //     });
+  //   });
+  // }
 
   applyWebVerificationBizToken(redirectUrl: string, CompareImageBase64: string, extraInfo: string) {
     return new Promise(async (resolve, reject) => {
@@ -386,20 +250,20 @@ class TencentEkycService {
       const ClientProfile = tencentcloud.common.ClientProfile;
       const HttpProfile = tencentcloud.common.HttpProfile;
 
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      // Initial
+      // set scretId and secretKey, The key is available on the official website console https://console.tencentcloud.com/capi
       let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      // Instantiate an http option. (optional)
       let httpProfile = new HttpProfile();
       httpProfile.endpoint = "faceid.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      // Instantiate a client option. (Optional)
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
 
-      // 实例化要请求产品的client对象,clientProfile是可选的
+      // Instantiate a clientProfile. (Optional)
       let client = new FaceidClient(cred, "ap-singapore", clientProfile);
 
-      // 实例化一个请求对象,每个接口都会对应一个request对象
+      // Instantiate a request object, one for each interface
       let req = new models.ApplyWebVerificationBizTokenIntlRequest();
 
       let params = {
@@ -412,14 +276,14 @@ class TencentEkycService {
       };
       req.from_json_string(JSON.stringify(params))
 
-      // 返回的resp是一个ApplyWebVerificationBizTokenIntlResponse的实例，与请求对象对应
+      // Return resp is a ApplyWebVerificationBizTokenIntlResponse instance, corresponding to the request object
       client.ApplyWebVerificationBizTokenIntl(req, function (err: any, response: any) {
         if (err) {
           console.log(err);
           reject(err);
           return;
         }
-        // 输出json格式的字符串回包
+        // Output a string in json format back to the package
         console.log(response.to_json_string());
         resolve(response.to_json_string());
       });
@@ -437,20 +301,20 @@ class TencentEkycService {
       const ClientProfile = tencentcloud.common.ClientProfile;
       const HttpProfile = tencentcloud.common.HttpProfile;
 
-      // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-      // 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。密钥可前往官网控制台 https://console.tencentcloud.com/capi 进行获取
+      // Initial
+      // set scretId and secretKey, The key is available on the official website console https://console.tencentcloud.com/capi
       let cred = new Credential(SecretConfig.TencentEkyc.SecretId, SecretConfig.TencentEkyc.SecretKey);
-      // 实例化一个http选项，可选的，没有特殊需求可以跳过
+      // Instantiate an http option. (optional)
       let httpProfile = new HttpProfile();
       httpProfile.endpoint = "faceid.tencentcloudapi.com";
-      // 实例化一个client选项，可选的，没有特殊需求可以跳过
+      // Instantiate a client option. (Optional)
       let clientProfile = new ClientProfile();
       clientProfile.httpProfile = httpProfile;
 
-      // 实例化要请求产品的client对象,clientProfile是可选的
+      // Instantiate a clientProfile. (Optional)
       let client = new FaceidClient(cred, "ap-singapore", clientProfile);
 
-      // 实例化一个请求对象,每个接口都会对应一个request对象
+      // Instantiate a request object, one for each interface
       let req = new models.GetWebVerificationResultIntlRequest();
 
       let params = {
@@ -458,14 +322,14 @@ class TencentEkycService {
       };
       req.from_json_string(JSON.stringify(params))
 
-      // 返回的resp是一个GetWebVerificationResultIntlResponse的实例，与请求对象对应
+      // Return resp is a GetWebVerificationResultIntlResponse instance, corresponding to the request object
       client.GetWebVerificationResultIntl(req, function (err: any, response: any) {
         if (err) {
           console.log(err);
           reject(err);
           return;
         }
-        // 输出json格式的字符串回包
+        // Output a string in json format back to the package
         console.log(response.to_json_string());
         resolve(response.to_json_string());
       });
