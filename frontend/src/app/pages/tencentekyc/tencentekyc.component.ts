@@ -200,7 +200,7 @@ export class TencentEkycComponent {
 
   showErrorDialog(responseCode: string) {
     console.log("responseCode", responseCode);
-    this.openDialog("Tips", "Process ekyc error, please try again");
+    this.openDialog("Tips", "The certificate information cannot be recognized. Please collect the certificate photos again");
   }
 
   openDialog(title: string, content: string) {
