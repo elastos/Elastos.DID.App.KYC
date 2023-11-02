@@ -108,7 +108,7 @@ export class VerifyComponent {
         }
 
         if (params.token) {
-          credentialResponseObj = await this.processTencentEkycResult(params);//TODO 
+          credentialResponseObj = await this.processTencentEkycResult(params);
         }
 
         if (!credentialResponseObj) {
@@ -206,7 +206,7 @@ export class VerifyComponent {
         window.history.replaceState({}, '', '/verify');
         console.log('params.token = ', bizToken);
         const response = await this.tencentEkycService.checkResult(bizToken);
-        //TODO check liveness valid
+        // Check liveness valid
         if (!response) {
           reject('Response is null');
           return;
@@ -218,6 +218,7 @@ export class VerifyComponent {
         console.log('resultObj = ', dataObj);
 
         if (dataObj.ErrorCode != 0) {
+          this.tencentEkycService.deleteCachedData(bizToken);
           this.showFaceLivenessNotPassDialog(dataObj.ErrorCode);
           resolve(null);
           return;
@@ -230,8 +231,7 @@ export class VerifyComponent {
           return;
         }
 
-        //TODO delete cached data
-        // this.deleteCachedData(transactionId);
+        this.tencentEkycService.deleteCachedData(bizToken);
         const credentialResponseObj = JSON.parse(credentialResponse)
         console.log('credentialResponseObj ', credentialResponseObj);
         if (credentialResponseObj.code == EKYCResponseType.DID_NOT_MATCH) {

@@ -276,6 +276,21 @@ class DBService {
             await this.client.close();
         }
     }
+
+    public async deleteOCRInfo(bizToken: string): Promise<DataOrError<void>> {
+        try {
+            await this.client.connect();
+            const ocrInfoCollection = this.client.db().collection('ekycocrinfo');
+            const doc = await ocrInfoCollection.deleteOne({ bizToken: bizToken });
+            console.log('doc', doc);
+            return {};
+        } catch (err) {
+            logger.error(err);
+            return { errorType: ErrorType.SERVER_ERROR, error: "Server error" };
+        } finally {
+            await this.client.close();
+        }
+    }
 }
 
 export const dbService = new DBService();

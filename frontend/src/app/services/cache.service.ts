@@ -15,6 +15,10 @@ export class CacheService {
 
     private static parseVerificationStatusResult(result: string): VerificationStatus {
         try {
+            if (!result) {
+                return null;
+            }
+
             const status = JSON.parse(result) as RawVerificationStatus;
             if (result.includes("extInfo")) {
                 const finalResult = {

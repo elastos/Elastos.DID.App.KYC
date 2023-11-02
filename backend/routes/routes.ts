@@ -577,6 +577,41 @@ router.post('/user/ekyc/tencent/checkresult', async (req, res) => {
     }
 });
 
+router.post('/user/ekyc/tencent/deleteCachedData', async (req, res) => {
+    const requestBody = req.body;
+    let bizToken = requestBody.bizToken;
+    let userId = requestBody.userId;
+    console.log("Delete cached Data request params are ", bizToken, userId);
+
+    if (!bizToken)
+        return res.json({ code: 403, message: 'Missing transactionId' });
+
+    if (!userId)
+        return res.json({ code: 403, message: 'Missing userId' });
+
+    try {
+        if (userId != req.user.did) {
+            const response = {
+                code: EKYCResponseType.DID_NOT_MATCH,
+                data: ""
+            }
+            res.json(JSON.stringify(response));
+            return;
+        }
+
+        await tencentEkycService.processDeleteCachedData(bizToken, userId);
+        const response = {
+            code: EKYCResponseType.SUCCESS,
+            data: ''
+        }
+        res.json(JSON.stringify(response));
+    }
+    catch (e) {
+        console.log("Delete cached data error, error is", e);
+        return res.status(500).json("Server error");
+    }
+});
+
 router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
     const transactionBody = req.body;
     if (!transactionBody) {

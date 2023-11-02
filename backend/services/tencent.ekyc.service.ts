@@ -336,6 +336,17 @@ class TencentEkycService {
     });
   }
 
+  public async processDeleteCachedData(bizToken: string, did: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await dbService.deleteOCRInfo(bizToken);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   public async generateNewUserPassportCredentials(did: string, passportOcrResult: PassportOcrResult): Promise<VerifiableCredential[]> {
     if (!passportOcrResult) {
       return [];
