@@ -31,6 +31,8 @@ const HttpProfile = tencentcloud.common.HttpProfile;
 const FaceidClient = tencentcloud.faceid.v20180301.Client;
 const faceIdmodels = tencentcloud.faceid.v20180301.Models;
 
+const leastScore = 0.93;
+
 class TencentEkycService {
   public async setup() {
   }
@@ -553,17 +555,23 @@ class TencentEkycService {
       const surnameConfidence = advancedInfoObj.Surname.Confidence;
       const givenNameConfidence = advancedInfoObj.GivenName.Confidence;
 
+      const issuingCountry = advancedInfoObj.IssuingCountry.Confidence;
+      const codeSet = advancedInfoObj.CodeSet.Confidence;
+      const codeCrc = advancedInfoObj.CodeCrc.Confidence;
+
       if (!nameConfidence || !idConfidence ||
         !nationalityConfidence || !dateOfBirthConfidence ||
         !sexConfidence || !dateOFExpirationConfidence ||
-        !surnameConfidence || !givenNameConfidence) {
+        !surnameConfidence || !givenNameConfidence ||
+        !issuingCountry || !codeSet || !codeCrc) {
         return false;
       }
 
-      if (nameConfidence < 0.9 || idConfidence < 0.9 ||
-        nationalityConfidence < 0.9 || dateOfBirthConfidence < 0.9 ||
-        sexConfidence < 0.9 || dateOFExpirationConfidence < 0.9 ||
-        surnameConfidence < 0.9 || givenNameConfidence < 0.9) {
+      if (nameConfidence < leastScore || idConfidence < leastScore ||
+        nationalityConfidence < leastScore || dateOfBirthConfidence < leastScore ||
+        sexConfidence < leastScore || dateOFExpirationConfidence < leastScore ||
+        surnameConfidence < leastScore || givenNameConfidence < leastScore ||
+        issuingCountry < leastScore || codeSet < leastScore || codeCrc < leastScore) {
         return false
       }
 
