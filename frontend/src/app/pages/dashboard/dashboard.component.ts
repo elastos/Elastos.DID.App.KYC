@@ -10,6 +10,7 @@ import { CacheService } from 'src/app/services/cache.service';
 import { CredentialsService } from 'src/app/services/credentials.service';
 import { ThemeService } from 'src/app/services/theme.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { ProviderType } from 'src/app/model/providertype';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,7 @@ export class DashboardComponent {
   public availableCredentials: VerifiableCredential[] = [];
   public isDarkTheme; // TODO: NOT LIKE THIS, REWORK
   public isProcess: { [key: string]: boolean } = {};
+  public ekycProviderType = "";
 
   constructor(
     private _bottomSheet: MatBottomSheet,
@@ -143,6 +145,8 @@ export class DashboardComponent {
       this.overallVerificationStatus = OverallStatus.UNVERIFIED;
       return;
     }
+
+    this.ekycProviderType = this.verificationStatus.extInfo.type;
     this.overallVerificationStatus = OverallStatus.VERIFIED;
   }
 

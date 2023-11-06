@@ -1,6 +1,7 @@
 export enum ProviderType {
   PASSBASE = "passbase",
   EKYC = "ekyc",
-  TENCENTEKYC = "tencentekyc",
+  TENCENT_EKYC = "tencentekyc",
+  ALICLOUD_EKYC = "alicloudekyc",
   UNKNOWN = "unknown"
 }

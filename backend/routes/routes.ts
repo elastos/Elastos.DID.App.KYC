@@ -388,7 +388,7 @@ router.post('/user/ekyc/ekyccredential', async (req, res) => {
         }
 
         const ekycResult = await ekycService.checkEkycResult(transactionId);
-        let finalResponse = createEmptyResponse();
+        let finalResponse = createEmptyResponse(ProviderType.ALICLOUD_EKYC);
 
         if (!ekycResult) {
             res.json(finalResponse);
@@ -624,7 +624,7 @@ router.post('/user/ekyc/tencent/ekyccredential', async (req, res) => {
 
         const livenessResultObj = JSON.parse(livenessResult);
 
-        let finalResponse = createEmptyResponse();
+        let finalResponse = createEmptyResponse(ProviderType.TENCENT_EKYC);
 
         if (!livenessResultObj || livenessResultObj.ErrorCode != 0) {
             const response = {
@@ -687,7 +687,7 @@ const processAlicloudPassport = async (userDid: string, ekycRawResult: EkycRawRe
         //     status: PassbaseVerificationStatus.UNKNOWN
         // },
         extInfo: {
-            type: ProviderType.EKYC,
+            type: ProviderType.ALICLOUD_EKYC,
             status: ProviderVerificationStatus.APPROVED
         },
         credentials: []
@@ -745,7 +745,7 @@ const processAlicloudIDCard = async (userDid: string, ekycRawResult: EkycRawResu
         //     status: PassbaseVerificationStatus.UNKNOWN
         // },
         extInfo: {
-            type: ProviderType.EKYC,
+            type: ProviderType.ALICLOUD_EKYC,
             status: ProviderVerificationStatus.APPROVED
         },
         credentials: []
@@ -784,7 +784,7 @@ const processTencentPassport = async (userDid: string, passportOCRResult: string
 
     let verificationStatus: VerificationStatus = {
         extInfo: {
-            type: ProviderType.EKYC,
+            type: ProviderType.TENCENT_EKYC,
             status: ProviderVerificationStatus.APPROVED
         },
         credentials: []
@@ -824,7 +824,7 @@ const processTencentIDCard = async (userDid: string, idCardOCRResult: string): P
 
     let verificationStatus: VerificationStatus = {
         extInfo: {
-            type: ProviderType.EKYC,
+            type: ProviderType.TENCENT_EKYC,
             status: ProviderVerificationStatus.APPROVED
         },
         credentials: []
@@ -847,10 +847,10 @@ const processTencentIDCard = async (userDid: string, idCardOCRResult: string): P
     return JSON.stringify(response);
 }
 
-const createEmptyResponse = (): string => {
+const createEmptyResponse = (providerType: ProviderType): string => {
     const verificationStatus: VerificationStatus = {
         extInfo: {
-            type: ProviderType.EKYC,
+            type: providerType,
             status: ProviderVerificationStatus.APPROVED
         },
         credentials: []

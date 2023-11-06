@@ -10,7 +10,7 @@ export type RawVerificationStatus = {
   //   status: PassbaseVerificationStatus
   // }
   extInfo: {
-    providertype: ProviderType,
+    type: ProviderType,
     status: ProviderVerificationStatus
   }
   credentials: JSONObject[] // All credentials that we have for a user (serialized to JSON objects)
@@ -24,7 +24,7 @@ export type VerificationStatus = {
   //   status: PassbaseVerificationStatus
   // }
   extInfo: {
-    providertype: ProviderType,
+    type: ProviderType,
     status: ProviderVerificationStatus
   }
   credentials: VerifiableCredential[] // All credentials that we have for a user

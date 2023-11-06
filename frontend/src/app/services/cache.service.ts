@@ -23,7 +23,7 @@ export class CacheService {
             if (result.includes("extInfo")) {
                 const finalResult = {
                     extInfo: {
-                        providertype: status.extInfo.providertype,
+                        type: status.extInfo.type,
                         status: status.extInfo.status
                     },
                     credentials: status.credentials.map(c => VerifiableCredential.parse(c))
@@ -35,7 +35,7 @@ export class CacheService {
             if (credentials.length > 0) {
                 const finalResult = {
                     extInfo: {
-                        providertype: ProviderType.UNKNOWN,
+                        type: ProviderType.UNKNOWN,
                         status: ProviderVerificationStatus.APPROVED
                     },
                     credentials: status.credentials.map(c => VerifiableCredential.parse(c))

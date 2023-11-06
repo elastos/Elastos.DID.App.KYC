@@ -81,7 +81,8 @@
               <p class="c-4ab4f0 fw-bold">Signed by</p>
             </div>
             <div class="col-8">
-              <p class="c-000000 fw-500">Trinity Tech Co. Ltd. on behalf of Alicloud eKYC</p>
+              <p *ngIf="ekycProviderType != 'tencentekyc'" class="c-000000 fw-500">Trinity Tech Co. Ltd. on behalf of Alicloud eKYC</p>
+              <p *ngIf="ekycProviderType == 'tencentekyc'" class="c-000000 fw-500">Trinity Tech Co. Ltd. on behalf of Tencent eKYC</p>
             </div>
           </div>
           <!-- Creation date -->
