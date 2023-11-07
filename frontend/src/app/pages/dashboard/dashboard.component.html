@@ -69,10 +69,10 @@
           <!-- Properties -->
           <div class="fs-12 row" *ngFor="let property of getCredentialProperties(credential)">
             <div class="col-4">
-              <p class="c-4ab4f0 fw-bold" style="word-wrap: break-word; ">{{getDisplayableCredentialPropertyKey(property.key)}}</p>
+              <p class="c-4ab4f0 fw-bold">{{getDisplayableCredentialPropertyKey(property.key)}}</p>
             </div>
             <div class="col-8">
-              <p class="c-000000 fw-500" style="word-wrap: break-word; ">{{property.value}}</p>
+              <p class="c-000000 fw-500" style="word-wrap: break-word;">{{property.value}}</p>
             </div>
           </div>
           <!-- Signed by -->

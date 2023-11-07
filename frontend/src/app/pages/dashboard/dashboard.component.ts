@@ -87,12 +87,14 @@ export class DashboardComponent {
       case "nationality": return "Nationality";
       case "gender": return "Gender";
       case "mrtdVerified": return "MRTD Verified";
-      case "dateOfBirth": return "Data of birth"
+      case "birthDate": return "Date of birth";
+      case "dateOfBirth": return "Date of birth";
       case "passportNumber": return "Passport number";
       case "passportNumberHash": return "Passport number hash";
 
       case "name": return "Name";
       case "address": return "Address";
+      case "ethnicGroup": return "Ethnic group";
       case "ethnicgroup": return "Ethnic group";
       case "nationalId": return "National Id";
       case "nationalIdHash": return "National Id hash";
