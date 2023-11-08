@@ -84,11 +84,10 @@ export class VerifyComponent {
   }
 
   ngOnInit() {
-    const metainfo = this.getMetaInfo();
-    if (!this.checkIsH5(metainfo)) {
-      this.enableVerify = false;
-    }
-
+    // const metainfo = this.getMetaInfo();
+    // if (!this.checkIsH5(metainfo)) {
+    //   this.enableVerify = false;
+    // }
     this.activatedRoute.queryParams.subscribe(async (params: Params) => {
       try {
         const cerifacations = CacheService.getVerificationStatus(this.authService.signedInDID());
